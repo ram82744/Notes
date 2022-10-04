@@ -1,0 +1,374 @@
+k-means clustering
+naive bayes classification
+support vector machines  
+kernel methods
+hidden markov model
+gaussian mixture model
+
+Recommendation Systems:
+
+https://aman.ai/recsys/index.html
+
+Face Aging Conditional GAN:
+
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://arxiv.org/pdf/1702.01983.pdf
+
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://arxiv.org/pdf/1704.00028.pdf
+---------------------------------------------------------------------------------------------------------------------------------
+Branch And Bound Or Min-Max Algorithm:
+
+https://towardsdatascience.com/the-branch-and-bound-algorithm-a7ae4d227a69
+https://towardsdatascience.com/understanding-the-minimax-algorithm-726582e4f2c6
+---------------------------------------------------------------------------------------------------------------------------------
+
+A* Search Algorithm:
+
+function Astar( source, destination):
+	queue = set containing source 
+	visited = empty set
+	
+	source.g = 0 
+	source.f = source.g + heuristic source, destination),
+
+	while queue is not empty
+		currentNode = pop queue element with lowest f value
+		
+		if currentNode = destination
+			return construct_path( destination) // path found
+
+		remove currentNode from queue 
+		add currentNode to visited
+		
+		for each neighbor in neighbors(currentNode) 
+			if neighbor not in visited 
+				neighbor.f = neighbor.g + heuristic(neighbor, destination) 
+				if neighbor is not in queue
+					add neighbor to queue 
+				else
+					//update g value if node already in queue 
+					existingNeighbour = neighbor in queue 
+					
+					if neighbor.g < existingNeighbour.g:
+						existingNeighbour.g = neighbor.g 
+						existingNeighbour.parent = neighbor.parent
+				
+	return false // no path exists
+
+function neighbors(node):
+	
+	neighbors = set of valid neighbors to node // check for obstacles here
+	for each neighbor in neighbors:
+		if neighbor is diagonal:
+			//if diagonal nodes can be visited from a node 
+			neighbor.g = node.g + diagonal_cost 
+		else
+			neighbor.g = node.g + normal_cost 
+		neighbor.parent = node 
+	
+	return neighbors
+	
+function construct_path(node):
+	path = set containing node 
+	while node.parent exists
+		node = node.parent
+		add node to path 
+	return path
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Greedy Algorithm Notes:
+
+Interval Scheduling:
+	Sort all intervals according to some order(their finish time in the increasing order).   - O(nlogn)
+	pi = 0
+	for j=1 to n:                                                                        
+		Add Ij to 0 if Ij is compatible with all intervals that are already in 0               -  O(n)
+		
+		(Remove all the intervals with their start time that overlaps with the end time).
+		
+pick by  - sort according to # no of incompatiable intervals in ascending order and pick intervals based on the 
+lesser incompatablity.
+
+
+		___4____  _____4___	___4_____	_____4____
+		
+		     ___4___	_____2____	___4____
+			 
+			 ___4____				___4____
+			 
+			 ___4____				____4___
+			 
+Dosen't work for above example.
+
+For Greedy ALgorithms the proof of correctness is always important because the algorithm gives optimum soln and no other algo gives
+the optimal soln.
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Dijkstra Algorithm For shortest path Algorithm:
+
+	Dijkstra algorithm never works for graphs with negative edge weights. we can replace dijkstra with bfs algorithm by splitting
+the weighted graph into unit edge weights.(BFS is not efficient than dijkstra if edge weights are in million or billion).
+
+	If we use priority queue in dijkstra's algorithm then time complexity will become O((n+m)*log(n)). where n - number of vertices
+m - number of edges. log(n) - comes from priority queue for insert,update and extract_min operations.
+
+Given a source node s find the shortest path from s to any node t such that t~V where V - any vertex in graph. 
+
+S = set(with start node)
+
+d(u) - len of shortest path from s to u.
+d'(u) - len of shortest path from s to u only using nodes in S.
+
+d(s) = 0
+
+while S not equals to V:
+	
+	Select a node not currently in the Set S with atleast one edge from S for which 
+	
+	d'(u) = min(d(u) + {w(u,v) - (edge weight from u to v)} is as small as possible. [Compute for the outgoing neighbors of Set S]
+	Add v to Set S
+	d(v) = d'(v)
+	
+Time Complexity - O(E+logV).	
+	
+PseudoCode:
+	function dijkstra(G, S)
+		for each vertex V in G
+			distance[V] <- infinite
+			previous[V] <- NULL
+			If V != S, add V to Priority Queue Q
+		distance[S] <- 0
+		
+		while Q IS NOT EMPTY
+			U <- Extract MIN from Q
+			for each unvisited neighbour V of U
+				tempDistance <- distance[U] + edge_weight(U, V)
+				if tempDistance < distance[V]
+					distance[V] <- tempDistance
+					previous[V] <- U
+		return distance[], previous[]
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Graph Algorithms:
+
+https://www.oreilly.com/library/view/graph-algorithms/9781492047674/
+
+
+Specifically, the pathfinding algorithms we’ll cover are:
+
+Shortest Path, with two useful variations (A* and Yen’s)
+	Finding the shortest path or paths between two chosen nodes
+
+All Pairs Shortest Path and Single Source Shortest Path
+	For finding the shortest paths between all pairs or from a chosen node to all others
+
+Minimum Spanning Tree
+	For finding a connected tree structure with the smallest cost for visiting all nodes from a chosen node
+
+Random Walk
+	Because it’s a useful preprocessing/sampling step for machine learning workflows and other graph algorithms
+	
+Summary 
+So when to use BFS over A*, when to use Dijkstra over A* to find the shortest paths ? 
+	We can summarise this as below-
+
+	1) One source and One Destination- 
+		→ Use A* Search Algorithm (For Unweighted as well as Weighted Graphs)
+	2) One Source, All Destination – 
+		→ Use BFS (For Unweighted Graphs) 
+		→ Use Dijkstra (For Weighted Graphs without negative weights) 
+		→ Use Bellman Ford (For Weighted Graphs with negative weights)
+	3) Between every pair of nodes- 
+		→ Floyd-Warshall 
+		→ Johnson’s Algorithm
+
+---------------------------------------------------------------------------------------------------------------------------------
+EAI Reference:
+
+	https://github.com/PulkitMathur/Elements-of-Artificial-Intelligence/blob/master
+	
+https://www.linkedin.com/in/ramki-r-086140228/
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Priority Queue:
+
+	Each element in PQ has an (ID,key) for eg in graphs it can be (v,d'(v)) where v is vertex and d'(v) -  distance from source s
+to destination v.
+
+	This datastructure has log(n) time complexity for insertion, extractminimum, update operations.
+	
+	
+---------------------------------------------------------------------------------------------------------------------------------
+
+Detect Cycle in a Graph:
+	O(n)
+	
+	To detect cycle, check for a cycle in individual trees by checking back edges. To detect a back edge, keep track of vertices
+currently in the recursion stack of function for DFS traversal. If a vertex is reached that is already in the recursion stack,
+then there is a cycle in the tree.
+
+	
+Prim's Kruskal, Backward Kruskal MST:
+
+	Assume graph is connected. MST comprises of all the nodes in the graph without cycle.
+	
+	Kruskal - edges are in increasing order.
+	backward kruskal - edges are in decreasing order.
+	
+Cut Property in MST:
+
+	we prove this property by contradiction.
+	
+	For any tree, for a given pair of nodes there will be a unique pass between these pair of nodes.
+	
+	S   --- |  ----   V/S
+			|
+	    --- |  ----
+			|
+		--- |  ----
+	
+	Boundary Edges - Delta(S)
+	
+----------------------------------------------------------------------------------------------------------------------------------
+Divide And Conquer Algorithms:
+Merge Sort:
+
+a[1],a[2],a[3],.....,a[n] - n elements.
+b[1],b[2],b[3],.....,b[n] - n elements.
+
+Divide and conquer the array.
+
+		S[i]........S[n/2] |  S[n/2+1]........S[n]
+			recursively				recursively
+				sort					sort
+				
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+Algorithm for finding median in Unsorted List Median of Five ALgorithm.
+
+Closest Pair Problem:
+
+https://brilliant.org/wiki/median-finding-algorithm/
+
+Input: N points x1,x2,.......,xn
+
+Output: minimum pairwise distance between xi and xj.
+
+Naive Solution for this problem is O(n^2). The distances are not independant they're dependant on triangle inequality property.
+
+Better Solution is O(nlogn).
+
+Algorithm:
+
+	1. Choose median of the data and divide the data pass these into recursion.
+	2. Compute Delta3 = min of d(p,q) where p in P1(left side of Median) and q in P2(right side of Median).
+	3. After dividing and finding the delta compute for all the combinations # total number of pairs 
+Output = {Delta1,Delta2,Delta3,....}.
+	4. After finding the appropriate pairs and sorting them to get optimal sorted pairs, merge these data pairs and pass it to 
+the above recursion tree.
+
+Delta = min(Delta1,Delta2)
+
+if(Delta3>=Delta):
+	
+else:
+	This is true.
+
+merge time - we iterate through the data points in the left hand side and find the data points that are within the distance Delta
+on the right hand side. Then, 
+
+F(n) = F(n/2) + merge time O(n*logn)
+
+				.	|	.
+					|		.
+		.			|
+			.		|	.
+					|	
+					|	.
+		.		.	|		.
+					|
+					|	.
+			.		|
+					|	.
+				.	|			
+					|		.
+					|
+					
+https://www.geeksforgeeks.org/closest-pair-of-points-using-divide-and-conquer-algorithm/
+----------------------------------------------------------------------------------------------------------------------------------
+BFS and DFS:
+
+	Time Complexity of Both BFS and DFS is O(V+E). but for binary tree the total nodes will be n and total edges will become n-1
+that equates to O(n+(n-1)) = O(n).
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Minimax Algorithm:
+	
+	Max						  Root(L0)
+	
+	Min					L1				 L1
+	
+	Max				L2	   L2 		 L2		 L2
+	
+	Min 		 L3  L3  L3  L3   L3   L3  L3   L3
+	
+	
+Both Min_Val and Max_Val are mutually recursive so max val calls min value and min val calls max value this call occurs all the 
+way to the bottom of the tree. State - particular state of the tree, alpha - best alternative(already explored option) for the
+max player on the particular path of the tree, beta - best alternative(already explored option) for the min player on the 
+particular path of the tree.
+
+
+Here alpha is the lower bound for the current state to consider and initially it is -Infinity.
+Here beta is the upper bound for the current state to consider and initially it is Infinity.
+
+For Max node the inequality constraint becomes >={with Beta} for the other node.Initially the worst case value of -Infinity is
+added for v.	
+For Min node the inequality constraint becomes <={with alpha} for the other node.Initially the worst case value of Infinity is
+added for v.
+	
+def Min_Val(state,alpha,Beta):
+	if(terminal state):
+		return U(s)
+	v = inf
+	for c in next_states(state):
+		v' = Max_Val(c,alpha,beta)
+		if(v'<v):
+			v = v'
+		if(v'<=alpha):
+			return v
+		if(v'<Beta):
+			Beta = v'
+	return v
+
+def Max_val(state,alpha,Beta):
+	if(terminal state):
+		return U(s)
+	v = -inf
+	for c in next states(s):
+		v' = Min_val(c,alpha,beta)
+		if(v'>v):
+			v = v'
+		if(v'>=Beta):
+			return v
+		if(v'>alpha):
+			alpha = v'
+	return v
+	
+	
+	(or)
+	
+def minimax(state,depth,alpha,beta,maximizingPlayer):
+	if(depth==0 or game over in the current state):
+		return static evaluation of the current state.
+	if(maximizingPlayer):
+		maxEval = -Infinity
+		for each next_state in successors(state):
+			eval = minimax()
+	

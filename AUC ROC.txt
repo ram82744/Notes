@@ -1,0 +1,92 @@
+Accuracy:
+
+	The accuracy of a machine learning classification algorithm is a way to measure how often the algorithm
+classifies the data point correctly. Accuracy is the number of correctly predicted data points out of the
+actual data point labels. More formally, it can be defined as the number of true positives and true negatives
+divided by the number of true positives, true negatives, false positives, false negatives.
+
+	True Positive or True Negative -  data points correctly classified by the ml algorithm.
+	False Positive or False Negative - data points incorrectly classified by the ml algorithm.
+
+Confusion Matrix: (Example: Result of preganent test for 100 participants - 50 men, 50 women all 50 women
+were preganent).
+	
+												    Predicted
+									
+										    Negative		  Positive
+					
+					Negative	             49(NP Men)		    1(Men labelled 		
+																  as Pregenant)
+			Actual	
+			
+					Positive 		         1(P Women labelled	49(P Women)
+											   as not Pregenant)	  
+
+	Type 1 Error - 	False Positive (You are not Pregenant but in the test result cames out positive).
+	Type 2 Error -  False Negative (You are Pregenant but in the test result cames out negative).
+	
+Precision:	
+		
+		Precision is the ratio of true positive out of all sum(True Positive + False Positive). It is
+the ratio of TP with respect to the sum of the second column in the confusion matrix. 
+
+		Precision means what portion of correct positive samples the model identified from the total 
+predicted positive samples.
+										
+										True Positive                        True Positive
+				Precision =    -------------------------------  =    ---------------------------- .
+								True Positive + False Positive         Total Predicted Positive 
+		
+		Precision shall be the model metric we use to select our best model when there is a high cost 
+associated with False Positive.
+
+Recall:
+
+		Recall is also called as the sensitivity or True Positive Rate(TPR). it is the ratio of True 
+Positive with respect to the sum of the second row in the confusion matrix.	
+
+		Recall means what portion of the actual positive samples the model identified from the actual
+positive samples present in the data.
+
+								  True Positive							    True Positive								  
+				Recall = ------------------------------      =      ------------------------------ .
+						  True Positive + False Negative			    Total Actual Positive
+
+	    Recall shall be the model metric we use to select our best model when there is a high cost 
+associated with False Negative.
+
+Specificity:
+		
+		Specificity is the measure of the ratio of True Negative with respect to the total actual 
+negative values in the data. 
+									    True Negative						True Negative
+				Specificity = -------------------------------  =    ----------------------------- .
+								True Negative + False Positive			Total Actual Negative
+				
+				Specificity = 1 - False Positive Rate or FPR = 1 - Specificity.
+			
+F1 Score:
+
+		F1 is a function of Precision and Recall. It is the harmonic mean of Precision and Recall. F1 
+score is needed when we need a balance between Precision and Recall and there is an uneven class 
+distribution(large number of Actual Negatives). 
+
+Precision-Recall Curve And Area Under Curve(AUC) Reciever-Operator Characteristic(ROC) Curve:
+
+	ROC Curves: Plot of False Positive Rate Vs True Positive Rate.
+	
+	TruePositiveRate = TruePositives / (TruePositives + False Negatives)
+	
+	FalsePositiveRate = FalsePositives / (FalsePositives + TrueNegatives)
+	
+AUC nearby to 1 means a good measure of seperability. 0 - opposite of the expected results, 0.5 = no 
+capability to accurately classify, 1 - accurately classify all the results. AUC helps us to decide which
+categorization or classification methods is best.
+
+ROC helps us to decide which threshold is best. Lowering threshold increases more False Positive and 
+reduces False Negative almost to zero by increasing the recall.
+
+Increasing threshold increases More False Negative whereas it reduces False positive to almost zero
+by increasing the precision.
+	
+	Precision Recall curves are used for imbalanced classes. People replace FPR with Precision.

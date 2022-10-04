@@ -1,0 +1,2226 @@
+Python Function Arguments:
+
+	A function in python can have unknown number of arguments by putting * in front of the parameter passed to the function.
+	
+Function with keyword Arguments: 
+	 
+	In order to call a function with arguments, the same number of actual arguments must be called. However the arguments can
+be passed in any order while calling the function.	
+
+# sum_integers_args_2.py
+def my_sum(*integers):
+    result = 0
+    for x in integers:
+        result += x
+    return result
+
+print(my_sum(1, 2, 3))
+
+The function still works, even if you pass the iterable object as integers instead of args. All that matters here is that you 
+use the unpacking operator (*). The arguments passed is tuples so that they are immutable.
+
+Keyword Argument (**kwargs):
+	
+	The function have a single parameter prefixed with **. This type of parameter initialized to a new ordered mapping recieving
+any excess keyword arguments, defaulting to a new empty mapping of the same type. **kwargs works just like *args,
+but instead of accepting positional arguments it accepts keyword (or named) arguments. Take the following example:
+
+def greet(**person):
+	print('Hello ', person['firstname'],  person['lastname'])
+
+greet(firstname='Steve', lastname='Jobs')
+greet(lastname='Jobs', firstname='Steve')
+greet(firstname='Bill', lastname='Gates', age=55) 
+greet(firstname='Bill') # raises KeyError 
+
+--------------------------------------------------------------------------------------------------------------------------------
+Python Dictionary Comprehension:
+
+Dictionary comprehension is an elegant and concise way to create dictionaries.Dictionaries are data types in Python which allows 
+us to store data in key/value pair.
+	
+Syntax:
+	The minimal syntax for dictionary comprehension is:
+		dictionary = {key: value for vars in iterable}
+
+Conditionals in Dictionary Comprehension
+	We can further customize dictionary comprehension by adding conditions to it. Let's look at an example.
+
+Eg:
+
+original_dict = {'jack': 38, 'michael': 48, 'guido': 57, 'john': 33}
+
+even_dict = {k: v for (k, v) in original_dict.items() if v % 2 == 0}
+print(even_dict)
+{'jack': 38, 'michael': 48}
+	
+
+Eg:
+# dictionary comprehension example
+square_dict = {num: num*num for num in range(1, 11)}
+print(square_dict)
+
+The output of both programs will be the same.
+{1: 1, 2: 4, 3: 9, 4: 16, 5: 25, 6: 36, 7: 49, 8: 64, 9: 81, 10: 100}
+
+
+Python Dictionary Functions:
+
+update - the update() method updates the dictionary with the elements from another dictionary object or from an iterable of 
+key/Value pairs
+
+update() method updates the dictionary with elements from a dictionary object or an iterable object of key/value pairs.
+
+It doesn't return any value (returns None).
+
+Eg:
+	d = {1: "one", 2: "three"}
+	d1 = {2: "two"}
+
+	# updates the value of key 2
+	  d.update(d1)
+ 
+    print(d)
+	{1: 'one', 2: 'two'}
+
+	dictionary = {'x': 2}
+
+	dictionary.update([('y', 3), ('z', 0)])
+
+	print(dictionary)
+	{'x': 2, 'y': 3, 'z': 0}
+	
+keys - The keys() method extracts the keys of the dictionary and returns the list of keys as a view object. update in the dictionary
+updates the view object.
+
+the keys method returns:
+	1. a view object that returns the list of all keys.
+
+numbers = {1: 'one', 2: 'two', 3: 'three'}
+
+# extracts the keys of the dictionary
+dictionaryKeys = numbers.keys()
+
+print(dictionaryKeys)
+O/P: dict_keys([1, 2, 3])
+
+get - The get method returns the value for the specified key if the key is in the dictionary.
+ 
+Python get() method Vs dict[key] to Access Elements - get() method returns a default value if the key is missing.
+However, if the key is not found when you use dict[key], KeyError exception is raised.
+
+Syntax:
+dict.get(key[, value])
+
+Parameters:
+get() method takes maximum of two parameters:
+	key - key to be searched in the dictionary.
+	value - value to be returned if key is not found. the default value is None.
+
+Returns:
+get() method returns:
+
+	the value -  for the specified key if key is in the dictionary.
+	None -  if the key is not found and value is not specified.
+	value  - if the key is not found and value is specified.
+
+Eg:
+1. marks = {'Physics':67, 'Maths':87}
+
+print(marks.get('Physics'))
+
+O/P: 67
+
+2. a = {'one':1 , 'two':2, 'three':3}
+
+print(a.get('four',0.0))
+
+O/P: 0.0 # default value is returned.
+
+fromkeys - The fromkeys() method creates a dictionary from the given sequence of keys and values.
+
+Parameters:
+
+The fromkeys() method can take two parameters:
+	alphabets - are the keys that can be any iterables like string, set, list, etc.
+	numbers (Optional) - are the values that can be of any type or any iterables like string, set, list, etc.
+
+	Note: The same value is assigned to all the keys of the dictionary.
+	
+Return:
+
+	The fromkeys() method returns:  a new dictionary with the given sequence of keys and values
+	
+	Note: If the value of the dictionary is not provided, None is assigned to the keys.
+
+Eg:
+1. 
+# keys for the dictionary
+ alphabets = {'a', 'b', 'c'}
+
+# value for the dictionary
+number = 1
+
+# creates a dictionary with keys and values
+dictionary = dict.fromkeys(alphabets, number)
+
+print(dictionary)
+O/P: {'a': 1, 'c': 1, 'b': 1}
+
+2.
+# list of numbers
+keys = [1, 2, 4 ]
+
+# creates a dictionary with keys only
+numbers = dict.fromkeys(keys)
+
+print(numbers)
+O/P: {1: None, 2: None, 4: None} # Default None value is assigned.
+
+Syntax:
+The syntax of the fromkeys() method is:
+dict.fromkeys(alphabets,number)
+Here, alphabets and numbers are the key and value of the dictionary.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Python Globals and Locals Function:
+
+	A symbol table is a data structure maintained by a compiler which contains all necessary information
+about the program. These include variable names,methods,classes etc;
+	
+There are two kinds of symbol table:
+		1. Local Symbol Table.
+		2. Global Symbol Table.
+
+Local Symbol Table stores all information related to the local scope of the program, and is accessed in
+Python using locals() method. The Local Scope could be within a function,class etc;
+
+Likewise, a Global Symbol Table stores all information related to the global scope of the program, and is
+accessed in Python using globals() method. The Global Scope contains all functions and variables that are
+not associated with any class or function.
+
+The globals table dictionary is the dictionary of the current module(inside a function, that is a module
+where it is defined, not where the model is called). globals() method doesn't take any parameters.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Pytorch Functions:	
+
+What is the difference between Tensor.size and Tensor.shape, Tensor.numel() in Pytorch?
+
+Tensor.size and Tensor.shape, Tensor.numel() -  these are metadata for a tensor object.
+
+Tensor.Size - this is a function that is same as shape attribute.
+Tensor.Shape - this is  a attribute that is same as size function.
+Tensor.numel - this gives the total number of elements present in the tensor object.
+-----------------------------------------------------------------
+
+What does x.contiguous() do for a tensor x
+
+There are a few operations on Tensors in PyTorch that do not change the contents of a tensor, but change the way the data is 
+organized. These operations include:
+
+narrow(), view(), expand() and transpose()
+
+For example: when you call transpose(), PyTorch doesn't generate a new tensor with a new layout, it just modifies meta 
+information in the Tensor object so that the offset and stride describe the desired new shape. In this example, the transposed 
+tensor and original tensor share the same memory:
+
+x = torch.randn(3,2)
+y = torch.transpose(x, 0, 1)
+x[0, 0] = 42
+print(y[0,0])
+# prints 42
+
+This is where the concept of contiguous comes in. In the example above, x is contiguous but y is not because its memory 
+layout is different to that of a tensor of same shape made from scratch. Note that the word "contiguous" is a bit misleading 
+because it's not that the content of the tensor is spread out around disconnected blocks of memory. Here bytes are still 
+allocated in one block of memory but the order of the elements is different!
+
+When you call contiguous(), it actually makes a copy of the tensor such that the order of its elements in memory is the same 
+as if it had been created from scratch with the same data.
+
+Normally you don't need to worry about this. You're generally safe to assume everything will work, and wait until you get a 
+RuntimeError: input is not contiguous where PyTorch expects a contiguous tensor to add a call to contiguous().
+
+---------------------------------------------------------------
+	torch.nn.Parameter(torch.FloatTensor(2,2))
+	
+I will break it down for you. Tensors, as you might know, are multi dimensional matrices. Parameter, in its raw form, is a 
+tensor i.e. a multi dimensional matrix. It sub-classes the Variable class.
+
+The difference between a Variable and a Parameter comes in when associated with a module. When a Parameter is associated with 
+a module as a model attribute, it gets added to the parameter list automatically and can be accessed using the 'parameters' 
+iterator.
+
+Initially in Torch, a Variable (which could for example be an intermediate state) would also get added as a parameter of the 
+model upon assignment. Later on there were use cases identified where a need to cache the variables instead of having them added 
+to the parameter list was identified.
+
+One such case, as mentioned in the documentation is that of RNN, where in you need to save the last hidden state so you don't 
+have to pass it again and again.The need to cache a Variable instead of having it automatically register as a parameter to the
+model is why we have an explicit way of registering parameters to our model i.e. nn.Parameter class.
+
+In the online official guide, it says ‘torch.Tensor() is just an alias to torch.FloatTensor()’. 
+And from the torch for numpy users notes, it seems that torch.FloatTensor() is a drop-in replacement 
+of numpy.empty() 
+---------------------------------------------------------------
+torch.scatter(dim, index, src)
+
+The official document scatter_(dim, index, src) → Tensor tells us that parameters include the dim, index tensor, and the source
+tensor. dim specifies where the index tensor is functioning, and we will keep the other dimensions unchanged. And as the 
+function name suggests, the goal is to scatter values in the source tensor to the input tensor self. What we are going to do 
+is to loop through the values in the source tensor, find its position in the input tensor, and replace the old one.
+
+https://yuyangyy.medium.com/understand-torch-scatter-b0fd6275331c
+
+---------------------------------------------------------------
+
+	torch.full(size, fill_value, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)
+	
+Creates a tensor of size size filled with fill_value. The tensor’s dtype is inferred from fill_value.
+
+Parameters:
+	size (int...) – a list, tuple, or torch.Size of integers defining the shape of the output tensor.
+
+	fill_value (Scalar) – the value to fill the output tensor with.
+	
+Keyword Arguments:
+	out (Tensor, optional) – the output tensor.
+
+	dtype (torch.dtype, optional) – the desired data type of returned tensor. Default: if None, uses a global default 
+(see torch.set_default_tensor_type()).
+
+	layout (torch.layout, optional) – the desired layout of returned Tensor. Default: torch.strided.
+
+	device (torch.device, optional) – the desired device of returned tensor. Default: if None, uses the current device for the
+default tensor type (see torch.set_default_tensor_type()). device will be the CPU for CPU tensor types and the current CUDA
+ device for CUDA tensor types.
+
+requires_grad (bool, optional) – If autograd should record operations on the returned tensor. Default: False.
+
+Example:
+
+	torch.full((2, 3), 3.141592)
+	
+	tensor([[ 3.1416,  3.1416,  3.1416],
+        [ 3.1416,  3.1416,  3.1416]]
+		)
+
+---------------------------------------------------------------
+	torch.nn.Linear(in_features, out_features, bias=True)
+
+We can set bias to False to make nn.Linear() perform like a simple matrix transformation. 
+In my case, I used
+
+	weight = torch.nn.Linear(2, 2, bias=False)
+
+---------------------------------------------------------------
+nn.Embedding() creates a simple lookup table that stores embeddings of a fixed dictionary and size. 
+This module is often used to store word embeddings and retrieve them using indices. The input to 
+the module is a list of indices, and the output is the corresponding word embeddings.
+
+To create a nn.Embedding() parameter, a typical instance is
+
+	nn.Embedding(num_embedding, embedding_dim)
+
+nn.Parameter() receives the tensor that is passed into it, and does not do any initial processing such as
+ uniformization. That means that if the tensor passed into is empty or uninitialized, the parameter will
+also be empty or uninitialized. But nn.Linear() and nn.Embedding() initialize their weight tensors with 
+the uniform operation and normalization operation respectively. You won’t get an empty parameter even 
+you only give the shape.
+
+--------------------------------------------------------------
+	torch.sum(input, dim, keepdim=False, dtype=None) → Tensor
+	
+	input (Tensor) – the input tensor.
+	dim (int or tuple of python:ints) – the dimension or dimensions to reduce.
+	keepdim (bool) – whether the output tensor has dim retained or not.
+
+Returns the sum of each row of the input tensor in the given dimension dim.
+
+		For a 2*3 matrix we can think like the first dimension (dim=0) stays for rows and the second one 
+(dim=1) for columns. Following the reasoning we can assume that the dimension dim=0 means row-wise, the
+reality was the opposite of what we can expect. dim=0 means column wise, dim=1 means rowwise. Similar to
+NumPy matrices where we pass a second parameter called axis. NumPy sum is almost identical to what
+we have in PyTorch except that dim in PyTorch is called axis in NumPy.
+
+		it becomes trickier when we introduce a third dimension. When we look at the shape of a 3D tensor 
+we’ll notice that the new dimension gets prepended and takes the first position (in bold below) i.e.
+the third dimension becomes dim=0.
+
+	For dim=0 in 3-D matrix, The first dimension (dim=0) of this 3D tensor is the highest one and 
+contains 3 two-dimensional tensors. we have to collapse the 2-D tensors.
+	For dim=1 in 3-D matrix, we have to collapse the rows.
+	For dim=2 in 3-D matrix, we have to collapse the columns.
+The minus essentially means you go backwards through the dimensions. Let A be a n-dimensional matrix.
+Then dim=n-1=-1, dim=n-2=-2, ..., dim=1=-(n-1), dim=0=-n. 
+
+Example for torch.sum :
+	In [210]: X
+	Out[210]: 
+	tensor([[  1,  -3,   0,  10],
+			[  9,   3,   2,  10],
+			[  0,   3, -12,  32]])
+
+	In [211]: X.sum(1)
+	Out[211]: tensor([ 8, 24, 23])
+
+	In [212]: X.sum(0)
+	Out[212]: tensor([ 10,   3, -10,  52])
+	
+	As, we can see from the above outputs, in both cases, the output is a 1D tensor. If you, on the other hand, wish to retain
+the dimension of the original tensor in the output as well, then you've set the boolean kwarg keepdim to True as in:
+
+	In [217]: X.sum(0, keepdim=True)
+	Out[217]: tensor([[ 10,   3, -10,  52]])
+
+	In [218]: X.sum(1, keepdim=True)
+	Out[218]: 
+	tensor([[ 8],
+			[24],
+			[23]])
+------------------------------------------------------------------			
+			
+	torch.argmin(input, dim=None, keepdim=False) → LongTensor
+	
+	Returns the indices of the minimum value(s) of the flattened tensor or along a dimension
+
+	NOTE: If there are multiple minimal values then the indices of the first minimal value are returned.
+
+	Parameters:
+		input (Tensor) – the input tensor.
+		dim (int) – the dimension to reduce. If None, the argmin of the flattened input is returned.
+		keepdim (bool) – whether the output tensor has dim retained or not. Ignored if dim=None.
+
+Example:
+
+	>>> a = torch.randn(4, 4)
+	>>> a
+	tensor([[ 0.1139,  0.2254, -0.1381,  0.3687],
+			[ 1.0100, -1.1975, -0.0102, -0.4732],
+			[-0.9240,  0.1207, -0.7506, -1.0213],
+			[ 1.7809, -1.2960,  0.9384,  0.1438]])
+	>>> torch.argmin(a)
+	tensor(13)
+	>>> torch.argmin(a, dim=1)
+	tensor([ 2,  1,  3,  1])
+	>>> torch.argmin(a, dim=1, keepdim=True)
+	tensor([[2],
+			[1],
+			[3],
+			[1]])
+
+-----------------------------------------------------------------------------			
+torch.argmax(input) → LongTensor
+	Returns the indices of the maximum value of all elements in the input tensor.
+
+	NOTE:If there are multiple maximal values then the indices of the first maximal value are returned.
+
+	Parameters
+	input (Tensor) – the input tensor.
+
+	Example:
+
+	>>> a = torch.randn(4, 4)
+	>>> a
+	tensor([[ 1.3398,  0.2663, -0.2686,  0.2450],
+			[-0.7401, -0.8805, -0.3402, -1.1936],
+			[ 0.4907, -1.3948, -1.0691, -0.3132],
+			[-1.6092,  0.5419, -0.2993,  0.3195]])
+	>>> torch.argmax(a)
+	tensor(0)
+	torch.argmax(input, dim, keepdim=False) → LongTensor
+	Returns the indices of the maximum values of a tensor across a dimension.
+
+	Parameters
+	input (Tensor) – the input tensor.
+
+	dim (int) – the dimension to reduce. If None, the argmax of the flattened input is returned.
+
+	keepdim (bool) – whether the output tensor has dim retained or not. Ignored if dim=None.
+
+	Example:
+
+	>>> a = torch.randn(4, 4)
+	>>> a
+	tensor([[ 1.3398,  0.2663, -0.2686,  0.2450],
+			[-0.7401, -0.8805, -0.3402, -1.1936],
+			[ 0.4907, -1.3948, -1.0691, -0.3132],
+			[-1.6092,  0.5419, -0.2993,  0.3195]])
+	>>> torch.argmax(a, dim=1)
+	tensor([ 0,  2,  0,  1])
+
+---------------------------------------------------------------------------
+
+	torch.mean(input, dim, keepdim=False, *, dtype=None, out=None)
+
+Returns the mean value of each row of the input tensor in the given dimension dim. If dim is a list
+of dimensions, reduce over all of them.
+
+If keepdim is True, the output tensor is of the same size as input except in the dimension(s) dim
+where it is of size 1.Otherwise, dim is squeezed (see torch.squeeze()), resulting in the output tensor
+having 1
+
+----------------------------------------------------------------------------
+torch.randn(*size, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)
+	
+	Returns a tensor filled with random numbers from a normal distribution with mean 0 and variance 1 
+(also called the standard normal distribution).
+
+	out ~ N(0,1)
+	
+	The shape of the tensor is defined by the variable argument size.
+	
+	Parameters:
+	
+		size (int...) – a sequence of integers defining the shape of the output tensor.
+Can be a variable number of arguments or a collection like a list or tuple.
+
+	Keyword Arguments:
+	
+		generator (torch.Generator, optional) – a pseudorandom number generator for sampling
+
+		out (Tensor, optional) – the output tensor.
+
+		dtype (torch.dtype, optional) – the desired data type of returned tensor. Default: if None, uses a
+global default (see torch.set_default_tensor_type()).
+
+		layout (torch.layout, optional) – the desired layout of returned Tensor. Default: torch.strided.
+
+		device (torch.device, optional) – the desired device of returned tensor. Default: if None, uses the current device
+for the default tensor type (see torch.set_default_tensor_type()). device will be the CPU for CPU tensor types and the current
+CUDA device for CUDA tensor types.
+
+		requires_grad (bool, optional) – If autograd should record operations on the returned tensor. Default: False.
+----------------------------------------------------------------------------
+
+nn.Embedding(num_embedding,embedding_dim,padding_idx=None,max_norm=None,norm_type=2.0,_weight=None,device=None,dtype=None)
+
+A simple lookup table that stores the embeddings of a fixed dictionary and size.
+
+	This module is often used to store word embeddings and retrive them using indices. The input to the module is a list of 
+indices and output is the corresponding word embeddings.
+
+num_embeddings (int) – size of the dictionary of embeddings
+
+embedding_dim (int) – the size of each embedding vector
+
+padding_idx (int, optional) – If specified, the entries at padding_idx do not contribute to the gradient; therefore, the embedding vector at padding_idx is not updated during training, i.e. it remains as a fixed “pad”. For a newly constructed Embedding, the embedding vector at padding_idx will default to all zeros, but can be updated to another value to be used as the padding vector.
+
+max_norm (float, optional) – If given, each embedding vector with norm larger than max_norm is renormalized to have norm max_norm.
+
+norm_type (float, optional) – The p of the p-norm to compute for the max_norm option. Default 2.
+
+scale_grad_by_freq (boolean, optional) – If given, this will scale gradients by the inverse of frequency of the words in the mini-batch. Default False.
+
+sparse (bool, optional) – If True, gradient w.r.t. weight matrix will be a sparse tensor. See Notes for more details regarding sparse gradients.
+-----------------------------------------------------------------------------
+Pytorch:-
+		1. squeeze - removes dimensions whichever are size 1 in the shape of the torch tensor and 
+compresses it into compact tensor.It will just eliminate the dimension at the specific index if dim=1.
+If not, it won’t change anything.
+
+		2. unsqueeze - it inserts a new dimension of size 1 at the specified position of dim and 
+returns the tensor.
+		3. view - The view function is meant to reshape the tensor.Drawing a similarity between numpy and
+pytorch, view is similar to numpy's reshape function
+eg: Suppose we have a tensor a with 16 elements and we want to reshape it to 4*4 tensor we use view(4,4).
+	import torch
+	a = torch.range(1, 16)
+	a = a.view(4,4)
+Note:- after the reshape the total number of elements need to remain the same. Reshaping the tensor a 
+to a 3 x 5 tensor would not be appropriate.
+
+Meaning of parameter -1 in view:
+	If there is any situation that you don't know how many rows you want but are sure of the number of
+columns, then you can specify this with a -1. (Note that you can extend this to tensors with more
+dimensions. Only one of the axis value can be -1). This is a way of telling the library: "give me a 
+tensor that has these many columns and you compute the appropriate number of rows that is necessary to
+make this happen".
+
+The view(-1) operation flattens the tensor, if it wasn’t already flattened as seen here:
+
+	x = torch.randn(2, 3, 4)
+	print(x.shape)
+	O/P: torch.Size([2, 3, 4])
+	x = x.view(-1)
+	print(x.shape)
+	O/P: torch.Size([24])
+
+It’ll modify the tensor metadata and will not create a copy of it.
+
+		4. all - checks if all the boolean condition in the specified axis is True or Not. returns: Boolean array along the specified 
+axis if keepdim is True otherwise returns array along the other dimension. 
+		
+		5. permute - pemutes the order of tensor shape given in the order accordingly
+		
+		a = torch.randn(4,3,5)
+		a.permute(2,1,0)
+		a.shape #(5,3,4)
+		
+-----------------------------------------------------------------------------
+
+Tensor.detach():
+	
+	This method is used to detach a tensor from the current computational graph. It returns a new tensor that doesn't require a 
+gradient.
+
+	When we don't need a tensor to be traced for the gradient computation, we detach the tensor from the current computational 
+graph.
+	We also need to detach a tensor when we need to move the tensor from GPU to CPU.
+
+It returns a new tensor without requires_grad = True. The gradient with respect to this tensor will no longer be computed.
+-----------------------------------------------------------------------------
+
+Yeild Function and Generators in Python:
+		
+		Yeild will suspend the function execution and stores the local variables in memory and returns the
+last executed value.
+Benefits of yield: 
+1. Using a yield statement in a function definition is sufficient to cause that definition to create a 
+generator function instead of a normal function. 
+2. We should use yield when we want to iterate over a sequence but don't want to store the entire 
+sequence in memory 
+3. yield is used in Python generators. A generator function or expression will defined like a 
+normal function, but whenever it needs to generate a value, it does so with the yield keyword rather than
+return.
+
+
+https://www.knowledgehut.com/blog/programming/yield-in-python
+
+math.floor(x) - this function returns the floor value of x.
+|_x_| is represented as floor of x in mathematics.
+|_x_| <= x(gives value lesser than or equal to x). 
+eg:- 
+floor(2) = floor(2.00001) = floor(2.9999) = 2, 
+floor(3) = floor(3.00001) = floor(3.9999) = 3,
+floor(-2) = floor(-1.001) = floor(-1.999) = -2,
+floor(-3) = floor(-2.001) = floor(-2.999) = -3 
+floor of any number between 2 to 3 is 2 only.
+
+math.ceil(x) - this function returns the cieling value of x.
+eg:
+ceil(2) = ceil(2.4) = ceil(2.999) = 3. 
+
+
+Modulo − represents as % operator. 
+Modulo gives the value of the remainder of an integer division.
+
+Floor Division  - represents as // operator.
+Floor Division gives the integer value of the quotient of a division.
+Floor Division always gives the floor of the division.
+ 
+Division − represents as / operator. 
+Division gives the floor value of the quotient of a division. 
+Division always gives the floating point value of the division.
+
+Collections:-
+1. Counters - 
+2. OrderedDict -
+3. DefaultDict -
+4. ChainMap -
+5. NamedTuple -
+6. Deque -
+7. UserDict -
+8. UserList - 
+9. UserString -
+
+Copy Function in Python:
+
+copy.copy(x):
+Return a shallow copy of x.
+
+copy.deepcopy(x[, memo]):
+Return a deep copy of x.
+
+Minimum window Substring:
+1. Given: two strings s,t of length m and n. 
+2. return minimum window substring of s such that every character of t is included (duplicates allowed) in the window
+3. for no such substring return "" empty string)
+4. s and t contains both lower case and upper case letters.
+
+Breadth First Traversal (Queue)
+
+Diff Types of Depth First Traversal in Trees(Stack): 123 -> 213 -> 231.
+
+PreOrder Traversal - Root Left Right (RoLeRi) 123
+PostOrder Traversal - Left Right Root (LeRiRo) 231
+InOrder Traversal - Left Root Right (LeRoRi) 213
+
+
+In a binary tree, a node can have maximum two children. (All the rules in BST are same as in binary tree 
+and can be visualized in the same way.)
+
+Calculating minimum and maximum height from number of nodes – 
+If there are n nodes in binary tree, maximum height of the binary tree is n-1 and minimum height 
+is floor(log2n). 
+
+			log2n = log10(n)/log10(2) = 3.322*log10(n).
+
+Calculating minimum and maximum number of nodes from height – 
+If binary tree has height h, minimum number of nodes is h+1 (in case of left skewed and right skewed 
+binary tree). 
+
+For example, for the binary tree with height 2 has 3 nodes.If binary tree has height h, maximum number 
+of nodes will be when all levels are completely full.Total number of nodes will be 
+2^0 + 2^1 + …. 2^h = 2^(h+1)-1. 
+
+Ascii Values:
+a - 97  A - 65 0 - 48
+z - 122 Z - 90 9 - 57
+ord() - character to byte encoding.
+chr() - byte encoding to character conversion.
+
+When you compare chars, their ordinal values are compared
+
+So 'a' < 'b' just means ord('a') < ord('b')
+
+Deque Methods:
+1. append -  add value to right side of deque.
+2. appendleft - add value to left side of deque.
+3. pop - remove value from right side of deque.
+4. popleft - remove value from left side of deque.
+5. index(ele, beg, end) - This function returns the first index of the value mentioned in arguments, 
+starting from searching start index till end index.
+6. insert(i, a) - This function inserts the value mentioned in arguments(a)
+at index(i) specified in arguments.
+7. remove - This function removes the first occurrence of value mentioned in arguments.
+8. count - This function counts the number of occurrences of value mentioned in arguments.
+9. extend(iterable) - This function is used to add multiple values at the right end of the deque. The argument passed is iterable.
+10. extendleft(iterable) - This function is used to add multiple values at the left end of the deque. The argument passed is iterable. Order is reversed as a result of left appends.
+11. reverse - This function is used to reverse the order of deque elements.
+12. rotate(i) - This function rotates the deque by the number i specified in arguments. 
+If i is negative, rotation occurs to the left. Else rotation is to right.
+
+
+Set Methods:
+1. add -  adds element to a set
+2. copy - if you need the original set to be unchanged when the new set is modified,
+you can use the copy() method. if =(equals) is used then whatever changes in copied set done
+is reflected in original set.
+3. clear - The clear method removes all the elements from the set.
+4. difference - The difference() method returns the set difference of two sets.
+	If A = {1, 2, 3, 4}
+	   B = {2, 3, 9}
+	Then,
+	   A - B = {1, 4}
+       B - A = {9}
+5. intersection - The intersection() method returns a new set with elements 
+that are common to all sets. (& operator - shortcut).
+A.intersection(*other_sets)
+	eg:
+		A = {2, 3, 5, 4}
+		B = {2, 5, 100}
+		C = {2, 3, 8, 9, 10}
+
+		print(B.intersection(A)) - {2, 5}
+		print(B.intersection(C)) - {2}
+		print(A.intersection(C)) - {2, 3}
+		print(C.intersection(A, B)) - {2}
+6. intersection-update - The intersection_update() updates the set calling 
+intersection_update() method with the intersection of sets.
+7. isdisjoint - The isdisjoint() method returns True if two sets are disjoint sets.
+If not, it returns False.
+8. issubset - returns true if one set is subset of another set.
+9. pop - The pop() method removes an arbitrary element from the set 
+and returns the element removed.
+10. union - This method returns a new set with distinct elements from all the sets.
+The union() method returns a new set with elements from the set
+and all other sets (passed as an argument). (| operator - shortcut).
+If the argument is not passed to union(), it returns a shallow copy of the set.
+11. symmetric_difference() - Symmetric Difference of A and B is a set of elements in A and B but not in
+ both (excluding the intersection). (^ operator - shortcut).
+12. all()	Returns True if all elements of the set are true (or if the set is empty).
+13. any()	Returns True if any element of the set is true. If the set is empty, returns False.
+14. remove()	Removes an element from the set. If the element is not a member, raises a KeyError.
+
+FrozenSet:
+
+Frozenset is a new class that has the characteristics of a set, but its elements cannot be changed once 
+assigned. While tuples are immutable lists, frozensets are immutable sets.
+
+Sets being mutable are unhashable, so they can't be used as dictionary keys. On the other hand,
+frozensets are hashable and can be used as keys to a dictionary.Frozensets can be created using the 
+frozenset() function.
+
+This data type supports methods like copy(), difference(), intersection(), isdisjoint(), issubset(),
+issuperset(), symmetric_difference() and union(). Being immutable, it does not have methods that add
+or remove elements.
+
+-------------------------------------------------------------------------------------------------
+Map Methods:
+
+map.get(key,default_value):
+
+Example:
+
+	It allows you to provide a default value if the key is missing:
+
+	dictionary.get("bogus", default_value)
+	returns default_value (whatever you choose it to be), whereas
+
+	dictionary["bogus"]
+	would raise a KeyError.
+
+	If omitted, default_value is None, such that
+
+	dictionary.get("bogus")  # <-- No default specified -- defaults to None
+	returns None just like dictionary.get("bogus", None) would.
+-------------------------------------------------------------------------------------------------
+Numpy Functions:
+
+Numpy quantile Func:
+			numpy.quantile(arr, q, axis = None)
+Parameters :
+	arr : [array_like]input array.
+	q : quantile value.	
+	axis : [int or tuples of int] (axis along which we want to calculate the quantile value. 
+		    Otherwise, it will consider arr to be flattened(works on all the axis). 
+			axis = 0 means the column and axis = 1 means along the row.)
+	
+Output:
+	out : [ndarray, optional] (Different array in which we want to place the result.
+		   The array must have same dimensions as expected output.)
+		   
+np.argsort() - Return the indices of the sorted array to sort the array.
+
+Numpy matrix Reshape:
+
+z = np.array([[1, 2, 3, 4],
+			  [5, 6, 7, 8],
+			  [9, 10, 11, 12]])
+
+z.shape
+(3, 4)
+
+z.reshape(-1)
+array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12])
+
+z.reshape(-1,1)
+Output:   array([[ 1],
+				 [ 2],
+				 [ 3],
+				 [ 4],
+				 [ 5],
+				 [ 6],
+				 [ 7],
+				 [ 8],
+				 [ 9],
+				 [10],
+				 [11],
+				 [12]])
+   
+z.reshape(-1, 2)
+Output:  array([[ 1,  2],
+			   [ 3,  4],
+               [ 5,  6],
+			   [ 7,  8],
+			   [ 9, 10],
+			   [11, 12]])  
+
+z.reshape(1,-1)
+array([[ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12]])
+
+z.reshape(2, -1)
+array([[ 1,  2,  3,  4,  5,  6],
+   [ 7,  8,  9, 10, 11, 12]])
+
+z.reshape(3, -1)
+array([[ 1,  2,  3,  4],
+   [ 5,  6,  7,  8],
+   [ 9, 10, 11, 12]])
+
+And finally, if we try to provide both dimension as unknown i.e new shape as (-1,-1). It will throw an error
+
+z.reshape(-1, -1)
+ValueError: can only specify one unknown dimension.
+
+np.size - count no of elements in numpy array.
+
+Eye Function:
+
+	numpy.eye(N, M=None, k=0, dtype=<class 'float'>, order='C', *, like=None)[source]
+	
+	Return a 2-D array with ones on the diagonal and zeros elsewhere.
+
+	Parameters
+	N - Number of rows in the output.
+
+	M - Number of columns in the output. If None, defaults to N.
+
+	k - Index of the diagonal: 0 (the default) refers to the main diagonal, a positive value refers to
+an upper diagonal, and a negative value to a lower diagonal.
+
+example:
+
+np.eye(3, k=1)
+
+O/P:	array([[0.,  1.,  0.],
+			   [0.,  0.,  1.],
+			   [0.,  0.,  0.]])
+
+What Is a Joint Probability?
+
+Joint probability is a statistical measure that calculates the likelihood of 
+two events occurring together and at the same point in time.
+Joint probability is the probability of event Y occurring at the same time 
+that event X occurs.
+
+Joint probability only factors the likelihood of both events occurring.
+Conditional probability can be used to calculate joint probability, 
+as seen in this formula:
+
+P(X and Y) = P(X|Y)*P(Y)P(X∩Y) = P(X∣Y)×P(Y)
+
+Bayes Theoram:
+
+		Bayes theoram is a principled way of calculating conditional probability 
+without joint probability. Bayesian theoram accounts for the alternate conditional probability
+calculation without joint probability(which is challenging to calculate) or when 
+reverse conditional probability is available or easy to calculate.
+
+					P(A|B) = P(A,B)/P(B) = (P(B|A)*P(A))/P(B)
+									(or)
+					P(B|A) = P(B,A)/P(A) = (P(A|B)*P(B))/P(A)
+	 
+	 P(A) -  The Probability of A occuring.
+	 P(B) -  The Probability of B occuring.
+	 P(A|B) - The probability of A occured given B.
+	 P(B|A) -  The probability of B occured given A.
+	 P(A intersect B) -  The probability of both A and B occuring.
+P(A intersect B)= P(A)*P(B|A).
+
+Marginal Probability - The probability of an event irrespective of the outcome of 
+other random variables P(A),P(B).
+
+	P(A) - P(A|B)*P(B) + P(A|not B)*P(not B),  P(not B) = 1 - P(B), P(A|not B) = 1 - P(not A|not B).
+	P(B) - P(B|A)*P(A) + P(B|not A)*P(not A),  P(not A) = 1 - P(A), P(B|not A) = 1 - P(not B|not A).
+
+Joint Probability -  The probability of two or more simultaneous events 
+eg. P(A and B) = P(A,B), P(B and A) = P(B,A). P(A,B)=P(A|B)*P(B).
+
+Conditional Probability -  The probability of one event given the occurence of another event.
+eg. P(A given B) or P(A|B).
+
+
+Expected Value in Probability & Statistics:
+
+	In probability theory the expected value (also called expectation) is a generalization of the weighted average. Informally,
+the expected value is the arithmetic mean of a large number of independently selected outcomes of a random variable.
+
+Expectation of continuous random variable:
+		E(x) = Integral{-Inf to Inf} [x*P(x)]dx
+		
+		E(x) - expectation value of continuous random Variable X
+		x - value of continuous random Variable X.
+		P(x) - probability density function.
+		
+
+Expectation of discrete random variable:
+
+		E(x) = Summ{i}(xi*P(x))
+		
+		E(x) - Expectation value of discrete random variable X.
+		x - value of discrete random variable.
+		P(x) - probability mass function of x.
+		
+Properties of Expectation:
+	Linearity:
+		E(aX) = aE(x)
+		E(X+Y) = E(x) + E(Y)
+		
+	Product:
+		E(X.Y) = E(X).E(Y)
+	conditional expectation.
+	
+Example: purchase 10$ ticket, 200 tickets sold, and 1st prize car, 2nd price CD player, 3rd prize - Luggage Set.
+
+						Win			Win			Win		  Lose
+						Car		   CD Player   Luggage	  Ticket Cost
+	Gain(x)			  14900$		100$        200$		-10$
+	Probability P(x)    1/200		1/200		1/200	  197/200
+	
+Then multiply and add probabilities = 14900*(1/200)+100*(1/200)+200*(1/200)+-10*(197/200) = 66.15 (Expected Value).
+
+Prior,Posterior Probability and Likelihood:
+
+			The terms in the Bayes Theoram equation can also be alternatively described as:
+
+		P(A|B) or P(B|A) = Posterior Probability(the left side term of the bayes theoram).
+		P(B|A) or P(A|B) = Likelihood(The first term on right side or reverse 
+		conditional probability).
+		P(A) or P(B) = Prior Probability(The second term on right side multiplied 
+		with likelihood).
+		P(B) or P(A) = Normalizing Factor or Evidence(The denominator part).
+
+Prior refers to whatever preconcieved notions or beliefs that we hold.
+
+Likelihood refers to the probability of observing what we did given that our priors are true.
+
+Posterior refers to updated prior conditioned on what we have observed.
+
+Normalizing factor refers to the evidence and is used to ensure that posterior is a 
+probability and is not above 1.
+
+
+
+Lagrange Multipliers:
+
+the method of Lagrange multipliers is a strategy for finding the local maxima and minima of a function subject to equality constraints (i.e., subject to the condition that one or more equations have to be satisfied exactly by the chosen values of the variables).[1] It is named after the mathematician Joseph-Louis Lagrange. The basic idea is to convert a constrained problem into a form such that the derivative test of an unconstrained problem can still be applied. The relationship between the gradient of the function and gradients of the constraints rather naturally leads to a reformulation of the original problem, known as the Lagrangian function.[2]
+
+The method can be summarized as follows: in order to find the maximum or minimum of a function {\displaystyle f(x)}f(x) subjected to the equality constraint {\displaystyle g(x)=0}g(x)=0, form the Lagrangian function
+
+{\displaystyle {\mathcal {L}}(x,\lambda )=f(x)+\lambda g(x)}{\displaystyle {\mathcal {L}}(x,\lambda )=f(x)+\lambda g(x)}
+and find the stationary points of {\displaystyle {\mathcal {L}}}{\mathcal {L}} considered as a function of {\displaystyle x}x and the Lagrange multiplier {\d
+
+
+				Lagrange multipliers is a simple and elegant method for calculating the local
+minima or local maxima of a function subject to equality and inequality constraints. 
+
+		Suppose we have the following optimiztion problem:
+							Minimize F(x)
+						subject to w.r.t. condition, 
+						g_1(x)=0,g_2(x)=0,g_3(x)=0....g_n(x)=0
+						
+						L(x,y) = F(x) + L_1*g_1(x) + L_2*g_2(x) + L_3*g_3(x)+....+L_n*g_n(x)
+						
+						L_v = [L_1,L_2,L_3,....,L_n] where L_v represents vector of Lagrange 
+						multipliers.
+
+
+
+Variance, Covariance and Correlation Coefficient Definition and examples:
+
+s = summation(xi - x(mean))2//(n-1)  -> correlation.
+
+
+Covariance is a measure of how much two random variables vary together. It’s similar to variance, 
+but where variance tells you how a single variable varies, co variance tells you how two variables vary together.
+
+Note on dividing by n or n-1:
+
+When dealing with samples, there are n-1 terms that have the freedom to vary (see: Degrees of Freedom). 
+If you are finding the covariance of just two random variables, just divide by n.
+
+var(x) = ((xi-x(mean))*(xi-x(mean)))/(n-1) -> variance
+
+cov(x,y) = (xi - x(mean))*(yi - y(mean)) // (n-1) -> covariance.
+
+r(xy) = cov(x,y)/s(x)*s(y) =
+ (summation(xi-x(mean))*summation(yi-y(mean)))/(sqrt(summation(xi-x(mean)))*sqrt(summation(yi-y(mean))))
+ 
+Pearson’s Correlation – 
+Covariance standardized for variance (covariance divided by product of standard deviations)
+
+r(xy) = cov(x,y)/s(x)*s(y) = (xi - x(mean)) * (yi - y(mean)) / sqrt(summation(x(i)-x(mean))) * sqrt(summation(y(i)-y(mean)))
+
+
+Clustering:
+
+Introduction
+
+In supervised learning, K-Means Clustering is a simple yet powerful algorithm in data science
+There are a plethora of real-world applications of K-Means Clustering (a few of which 
+we will cover here) This comprehensive guide will introduce you to the world of clustering 
+and K-Means Clustering along with an implementation in Python on a real-world dataset
+
+I love working on recommendation engines.Whenever I come across any recommendation engine
+on a website, I can’t wait to break it down and understand how it works underneath.
+It’s one of the many great things about being a data scientist!
+
+What truly fascinates me about these systems is how we can group similar items, products, 
+and users together. This grouping, or segmenting, works across industries. 
+And that’s what makes the concept of clustering such an important one in data science.
+
+Clustering helps us understand our data in a unique way – by grouping things together into 
+– you guessed it – clusters. k_means_clustering:
+
+In this article, we will cover k-means clustering and it’s components comprehensively. 
+We’ll look at clustering, why it matters, its applications and then deep dive into 
+k-means clustering (including how to perform it in Python on a real-world dataset).
+
+What is Clustering?
+Let’s kick things off with a simple example. 
+A bank wants to give credit card offers to its customers. 
+Currently, they look at the details of each customer and based on this information, 
+decide which offer should be given to which customer.
+
+Now, the bank can potentially have millions of customers.
+Does it make sense to look at the details of each customer separately and then make a decision?
+Certainly not! It is a manual process and will take a huge amount of time.
+
+So what can the bank do? One option is to segment its customers into different groups. 
+For instance, the bank can group the customers based on their income:
+
+customer segmentation
+Can you see where I’m going with this? The bank can now make three different strategies or offers, 
+one for each group. Here, instead of creating different strategies for individual customers, 
+they only have to make 3 strategies. This will reduce the effort as well as the time.
+
+The groups I have shown above are known as clusters and the process of
+ creating these groups is known as clustering. Formally, we can say that:
+
+Clustering is the process of dividing the entire data into groups 
+(also known as clusters) based on the patterns in the data.
+
+Can you guess which type of learning problem clustering is? 
+Is it a supervised or unsupervised learning problem?
+
+Think about it for a moment and make use of the example we just saw. 
+Got it? Clustering is an unsupervised learning problem!
+
+ 
+
+How is Clustering an Unsupervised Learning Problem?
+Let’s say you are working on a project where you need to predict the sales of a big mart:
+
+In supervised learning, We have a fixed target to predict.So, we have a target variable to predict 
+based on a given set of predictors or independent variables.
+ 
+In unsupervised learning, we do not have a target to predict. 
+We look at the data and then try to club similar observations and form different groups. 
+
+Properties of Clustering: 
+1. All the data points in a cluster should be similar to each other.
+2. The data points from different clusters should be as different as possible.		
+
+
+Eigen Values and Eigen Vectors:
+
+Matrices acts on vectors and multiplies vector X. 
+The way matrix acts is (in goes a vector X and out comes a vector
+AX) like a function with multiple dimensions.
+
+The vectors we are specially interested in are the vectors 
+that come out in the same direction parallely. These vectors are called EigenVectors.
+
+EigenVectors are AX vectors parallel to X. ie. AX = (Lamda)X -> some multiple of X
+(ie. they are parallel).
+
+In machine learning, information is tangled in raw data. 
+Intelligence is based on the ability to extract the principal components of information 
+inside a stack of hay. Mathematically, eigenvalues and eigenvectors provide a way 
+to identify them. Eigenvectors identify the components and eigenvalues quantify its
+significance.
+
+Marginalization:
+
+       Marginalisation is a method that requires summing over the possible values of 
+one variable to determine the marginal contribution of another.
+
+Sometimes the method is called integrating out the nuisance variable.
+
+
+https://towardsdatascience.com/probability-concepts-explained-marginalisation-2296846344fc#:~:text=Marginalisation%20tells%20us%20to%20just,properties%20we%20want%20(inference).
+
+Binomial and Multinomial distribution:
+       These distributions rely on the outcome of events. If the outcome is 2 then binomial
+else if its multiple then it's multinomial.
+
+In probability theory, the multinomial distribution is a 
+generalization of the binomial distribution. For Example,
+You roll a die ten times to see what number you roll. 
+There are 6 possibilities (1, 2, 3, 4, 5, 6), so this is a multinomial experiment.
+If you rolled the die ten times to see how many times you roll a three, 
+that would be a binomial experiment (3 = success, 1, 2, 4, 5, 6 = failure)
+
+Degrees of Freedom:
+
+
+Student-T Distribution(Cauchy Distribution):
+
+       t-distribution is also similar to Gaussian or normal distribution which is also symmetrical and
+bell shaped but with heavier tail than the normal distribution.(ie.) more values in the distribution
+are located in the tail than at the center compared to gaussian distribution.
+
+This distribution is used for confidence interval estimation for population.It assumes that the 
+underlying population is normally distributed.Beyond 30 degrees of freedom, the t-distribution
+and the normal distribution become so similar
+
+In statistical terms we use a metric called kurtosis to measure how "heavy-tailed" a distribution is.
+Thus, kurtosis of t-distribution is greater than the normal distribution.
+
+In practice, we use the t-distribution most often when performing hypothesis tests or constructing 
+confidence intervals.  
+
+
+Univariate Gaussian Distribution:
+
+     the normal distribution also known as Gaussian Distr is defined by two parameters:
+	 1. Mean(mu) - controls the Gaussian Ceter's position.
+	 2. Standard Deviation(sigma) - controls the shape of the distribution.
+	 
+	def univariate_normal(x, mean, variance):
+		return ((1. / np.sqrt(2 * np.pi * variance)) *
+									np.exp(-(x - mean)**2 / (2 * variance)))
+									
+Multivariate Gaussian Distribution:
+
+	it is a multidimensional Generalization of the one dimentional normal distribution.
+it represents the distribution of multivariate random variable, that is made up of 
+multiple random variables which can be correlated with each other.
+
+	Like the univariate normal distribution, the multivariate normal is defined by sets of
+parameters: 
+	1. the mean vector μ. which is expected value of the distribution 
+	2. the variance-covariance matrix Σ, which measures how two random variables
+       depend on each other and how they change together,
+	   We denote the covariance between variables X and Y as Cov(X,Y).
+	 
+	 If x1 and x2 is independent, covariance between x1 and x2 is set to zero.
+	 If x1 and x2 is set to be different than 0, we can say that both variable 
+	 are correlated.
+	   
+	def multivariate_normal(x, d, mean, covariance):
+		x_m = x - mean
+		return (1. / (np.sqrt((2 * np.pi)**d * np.linalg.det(covariance))) * 
+            np.exp(-(np.linalg.solve(covariance, x_m).T.dot(x_m)) / 2))
+			
+		
+where x is a random vector of size d, μ is d×1 mean vector. 
+Σ is the (symmetric and positive definite) covariance matrix of size d×d. 
+|Σ| is the determinant.We denote this multivariate normal distribution as N(μ,Σ).
+
+1st plot - circular or spherical
+2nd plot - centered eliptical 
+3rd plot - left aligned eliptical due to negative value in non diagonal elements.
+
+The first plot is refered to as a Spherical Gaussian, since the probability distribution has spherical (circular) symmetry. The covariance matrix is a diagonal covariance with equal elements along the diagonal. By specifying a diagonal covariance, what we’re seeing is that there’s no correlation between our two random variables, because the off-diagonal correlations takes the value of 0. You can simply interpret it as there is no linear relationship exists between variables. However, note that this does not necessarily mean that they are independent. Furthermore, by having equal values of the variances along the diagonal, we end up with a circular shape to the distribution because we are saying that the spread along each one of these two dimensions is exactly the same.
+
+In contrast, the middle plot’s covariance matrix is also a diagonal one, but we can see that if we were to specify different variances along the diagonal, then the spread in each of these dimensions is different and so what we end up with are these axis-aligned ellipses. This is refered to as a Diagonal Gaussian.
+
+Finally, we have the full Gaussian distribution. A full covariance matrix allows for correlation between the two random variables (non-zero off-diagonal value) we can provide these non-axis aligned ellipses. So in this example that we’re showing here, these two variables are negatively correlated, meaning if one variable is high, it’s more likely that the other value is low.
+
+
+Gaussian Mixture Model:
+
+Probability of MultiVariate Gaussian Distribution:
+			j - the jth number of the gaussian distribution from total gaussians available.
+			i - the ith number of the data sample from total data samples available.
+			
+			
+		N(xi,mu(j),sigma(j)) = 1/(((2*pi)**(D/2))*(sigma(j)**1/2)) * 
+		(PDF of a Gaussian)									exp(-(1/2)*((xi-mu(j))trans)*(sigma(j)-1)*(xi-mu(j)))
+
+Estimation Using EM Algorithm:
+	1. do E step - to find the likelihood or probability based on previous estimated
+parameters
+	2. do M step - to find the distribution parameters like Mean,Covariance,Variance
+based on the likelihood calculated.
+
+Hidden Markov Models:
+
+Markov chain or Markov model - special type of discrete stochastic process in which
+probability of an event occuring only depend on the immediate previous event.
+
+Markov chains are generally defined by a set of states and the transition probabilities 
+between each state. -> "Future is independent of the past given the present."
+
+Markov Process - stochastic process in which the distribution of future event only depend 
+on the present state or event.
+Markov Chain - any chain that follows the markov property is called the markov chain.
+Markov Property - The future state depend only on current state and independent of past
+state. p(x[t+1]|x[t]).
+
+   State:       Probability:  
+1. hidden        Transition
+2. observable    Emission 
+3.               Initial or Prior.
+
+Transition Probability Matrix(A) -  Markov chains are generally defined by a set of states 
+and transition probabilities between each state.
+
+The transition probabilities from one state to another are
+generally represented in the form of a matrix known as Transition Matrix. also known
+as Markov Matrix.
+
+Initial Probability Vector(Pi)- Initial probability of the hidden state.  
+
+Emission Probabilities - These define the probability of seeing a certain observed state
+given a certain probability value for the hidden variables.
+
+There are three fundamental problems for HMMs:
+
+Given the model parameters and observed data, estimate the optimal sequence
+of hidden states.
+
+Given the model parameters and observed data, calculate the model likelihood.
+
+Given just the observed data, estimate the model parameters.
+
+The first and the second problem can be solved by the dynamic programming algorithms
+known as the Viterbi algorithm and the Forward-Backward algorithm, respectively. 
+The last one can be solved by an iterative Expectation-Maximization (EM) algorithm,
+known as the Baum-Welch algorithm.  
+
+Maximum Likelihood Estimation:
+
+In Maximum Likelihood Estimation, we wish to maximize the probability of observing
+the data from the joint probability distribution given a specific probability 
+distribution and its parameters, stated formally as:
+
+P(X,theta)  or  P(x1, x2, x3, …, xn ; theta)
+
+This resulting conditional probability is referred to as the likelihood of observing 
+the data given the model parameters.
+
+The objective of Maximum Likelihood Estimation is to find the set of parameters (theta)
+that maximize the likelihood function, e.g. result in the largest likelihood value.
+
+maximize P(X,theta)
+
+Maximum a Posteriori (MAP):
+
+Recall that the Bayes theorem provides a principled way of calculating a 
+conditional probability.
+
+It involves calculating the conditional probability of one outcome 
+given another outcome, using the inverse of this relationship, stated as follows:
+
+P(A | B) = (P(B | A) * P(A)) / P(B)
+
+The quantity that we are calculating is typically referred to as the posterior
+probability of A given B. P(A) is referred to as the prior probability of A.
+
+The normalizing constant of P(B) can be removed,
+the posterior can be shown to be proportional to the probability of B given A
+multiplied by the prior.
+
+P(A | B) is proportional to P(B | A) * P(A)
+Or, simply:
+P(A | B) = P(B | A) * P(A)
+
+This is a helpful simplification as we are not interested in estimating a probability,
+but instead in optimizing a quantity. A proportional quantity is good enough 
+for this purpose.
+
+We can now relate this calculation to our desire to estimate a distribution 
+and parameters (theta) that best explains our dataset (X), as we described 
+in the previous section. This can be stated as:
+
+P(theta | X) = P(X | theta) * P(theta)
+
+Maximizing this quantity over a range of theta solves an optimization problem
+for estimating the central tendency of the posterior probability
+(e.g. the model of the distribution). As such, this technique is referred 
+to as “maximum a posteriori estimation,” or MAP estimation for short.
+
+maximize P(X | theta) * P(theta)
+
+We are typically not calculating the full posterior probability distribution,
+and in fact, this may not be tractable for many problems of interest.
+
+
+Rejection Sampling:
+    In this method we take a easier to handle distribution ie. something which we have
+known and this distribution size should be bigger than our unknown distribution. After
+rejecting the samples which are from the unknown distribution we can determine the 
+parameter of the unknown distribution.
+    eg: Uniform and Gaussian are easier to sample from.
+	P(x) = 1/Z * cos(x) if -pi/2<=x<=+pi/2
+	           0       otherwise.
+			   
+	what's the mean and standard deviation of this distribution function?
+if we draw a gaussian distribution over this distribution. it's greater than the cosine
+function distribution and easier to sample from. And after rejecting the points/samples
+from the cosine distribution, we can able to determine the parameters mean & std. dev
+for that distribution.
+
+This works for some simpler distributions and also depending on when we're able to come
+up with a nice proposed distribution.
+
+Markov Chain Monte Carlo: 
+
+	Probabilistic Inference involves estimating expected value or density using a
+probabilistic model. Often, directly inferring values is not tractable with 
+probabilistic models,and instead, approximation methods must be used.
+
+    Monte Carlo is a technique for randomly sampling a probability distribution and 
+approximating a desired quantity.  From the samples that are drawn, we can then 
+estimate the sum or integral quantity as the mean or variance of the drawn samples.
+The problem with this is high dimensionality of probability distribution and the
+assumption of samples drawn from target distribution to be independant.
+
+    Markov chain Monte carlo provides class of algorithms for systematic random sampling
+from high dimensional probability distributions. Unlike Monte Carlo methods that draws
+independant samples from distribution,Markov Chain Monte Carlo methods draw samples where
+next sample is dependent on the existing sample by the markov chain property. This allows
+the algorithms to narrow down in on the quantity that is being approximated from the 
+distribution.The idea is that the chain will settle on (find equilibrium) on the
+desired quantity we are inferring
+
+The most common general Markov Chain Monte Carlo algorithm is called Gibbs Sampling; 
+a more general version of this sampler is called the Metropolis-Hastings algorithm.
+   
+Gibbs Sampling:
+
+   It's one of the markov chain monte carlo sampling methods. If we have a good sampled 
+distribution from the unknown distribution then we can estimate the original distribution.
+It breaks the target distribution into pieces so that we can easily sample in a piece.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Drichlet Distribution:
+
+This is a probability distribution as well - but it is not sampling from the space of 
+real numbers. Instead it is sampling over a probability simplex.
+
+And what is a probability simplex? It’s a bunch of numbers that add up to 1.
+For example:
+
+(0.6, 0.4)
+(0.1, 0.1, 0.8)
+(0.05, 0.2, 0.15, 0.1, 0.3, 0.2)
+
+These numbers represent probabilities over K distinct categories. In the above examples,
+K is 2, 3, and 6 respectively.
+
+Accuracy Metrics in Regression:
+
+unlike classification, accuracy in a regression model is slightly harder to illustrate. 
+It is impossible for you to predict the exact value but rather how close your prediction is against
+the real value.
+
+There are 3 main metrics for model evaluation in regression:
+1. R Square/Adjusted R Square
+
+2. Mean Square Error(MSE)/Root Mean Square Error(RMSE)
+
+3. Mean Absolute Error(MAE)
+
+1. R Square/Adjusted R Square:
+         R square measures how much variablity in the dependant variable(y) is explained by the model.
+it is the square of the correlation coefficient(R).
+
+R Square is calculated by the sum of squared of prediction error divided by the total sum of the square
+which replaces the calculated prediction with mean.R Square value is between 0 to 1 and a bigger value
+indicates a better fit between prediction and actual value.
+		  SS(res) = Sum of Squares of residuals
+		  SS(reg) = Sum of Squares of regression
+		  SS(tot) = SS(res) + SS(reg) this measures the total variation in the dependant variable.
+		  
+		 (R squared) =  1 - SS(res)/SS(tot) = 1 - sum((y_label - y_hat)2)/sum((y_label - y_mean)2)
+
+However, it does not take into consideration of overfitting problem. If your regression model has many
+independent variables, because the model is too complicated, it may fit very well to the training data 
+but performs badly for testing data. That is why Adjusted R Square is introduced because it penalizes you
+for adding independent variable that do not help in predicting the dependent variable and adjust the 
+metric to prevent overfitting issues. the diff between r squared and adj r squared is based on degrees of
+freedom.
+
+          adj(R squared) = 1 - [((1-(R squared))(n-1))/n-k-1]
+
+dft is the degrees of freedom n– 1 of the estimate of the population variance of the dependent variable,
+and dfe is the degrees of freedom n – p – 1 of the estimate of the underlying population error variance.		  
+
+2. Mean Squared Error(MSE):
+
+While R Square is a relative measure of how well the model fits dependent variables, Mean Square Error 
+is an absolute measure of the goodness for the fit.
+
+
+		  MSE = (1/N)*sum((y_label - y_hat)2)
+MSE is calculated by the sum of square of prediction error which is real output minus predicted output 
+and then divide by the number of data points.It gives you an absolute number on how much your predicted
+results deviate from the actual number.
+
+3. Mean Absolute Error(MAE):
+	 Mean Absolute Error(MAE) is similar to Mean Square Error(MSE). 
+However, instead of the sum of square of error in MSE, MAE is taking the sum of the absolute value 
+of error.
+		MAE = (1/N)*sum(abs(y_label - y_hat))
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Probabilistic Latent Semantic Analysis:
+
+PLSA or Probabilistic Latent Semantic Analysis is a technique used to model topic 
+information to documents under a probabilistic framework.Latent because the topics
+are treated as latent or hidden variables.
+
+In this parametrization, we sample a document first then based on the document
+we sample a topic, and based on the topic we sample a word, which means d and w
+are conditionally independent given a hidden topic ‘z’.
+
+Let’s formally define the variables that appear in PLSA.
+
+         1. Document - D={d1,d2,d3,...,d(N)},N is the no of documents. 
+		 2. Words - W={w1,w2,w3,...,w(M)},M is the size of our vocabulary.
+		 3. Topics - Z={z1,z2,z3,...,z(K)},K is the no of topics which is defined by us.
+This is the Latent or Hidden Variable.
+
+Basic Assumption for Topic Modelling:
+
+	1. Each document consists of a mixture of topics, and
+	2. Each topic consists of a collection of words.
+	
+
+Given a document d, a topic z is present in that selected document with probability P(z|d)
+Given a topic z, word w is drawn from the topic z with probability P(w|z)
+Here we associate z with (d,w) and described a generative process where we select
+a document, then a topic, and finally a word from that topic. 
+
+	1. We select a document from the corpus with a probability P(d)
+
+	2. For every word in the selected document dn, and word wi
+
+Select a topic zi from a conditional distribution with a probability P(z|dn).
+Select a word with a probability P(w|zi).
+
+There are two main assumptions in PLSI:
+    1. In text vectorization techniques, the word order doesn't matter.
+	2. Words and documents are conditionally independant. (ie.) P(w,d|z) = P(z|d)*P(w|z)
+	
+Parmeterization-1:
+	 We start with P(d). then P(d,w),
+     P(d,w) = P(w|d)*P(d)
+	 P(w|d) = P(w,z|d) = Sum for all z{P(w|d,z)*P(z|d)}
+	 P(w|d) = P(w|z)*P(z|d) By conditional independence assumption.
+	 
+	 P(d,w) = P(w|d)*P(d) = P(d)*Sum for all z{P(z|d)*P(w|z)}.
+	 
+The right-hand side of the above equation tells us that how likely it is to observe
+some document and then based upon the distribution of topics in that document, how 
+likely it is to find a certain word within that document. This is the exact 
+interpretation of that component in the equation.
+	 
+	 For P(w|z) - (M-1)*K parameters to determine. P(z|d) - (K-1)*N parameters to 
+determine.
+
+Parmeterization-2:
+	 We start with P(z).then,
+	 P(d,w) = P(z)*P(d|z)*P(w|z). this can be equivalently modelled as,
+	 A~ U(t)*S(t)*V(t) - Singular value Decomposition.
+	 P(z) corresponds to singular Value of S(t).
+	 P(d|z) corresponds to document-topic matrix U(t).
+	 P(w|z) corresponds to Term-topic matrix V(t).
+	 
+Both these parameters are modelled as multinomial distributions. they can be trained
+using Expectation Maximization Algorithm.
+
+EM is a method of finding the likeliest parameter estimates for a model 
+which depends on unobserved, latent/hidden variables.
+
+EM algorithm has the following two steps:
+
+Step-1: This step is known as the expectation (E) step, where posterior probabilities 
+are computed for the latent variables,
+
+Step-2: This step is known as the maximization (M) step, where parameters are updated
+according to the likelihood function.
+	 
+It can be designed in two ways:
+		Latent Variable Model
+		Matrix Factorization
+
+Matrix Factorization:
+
+Consider a document-word matrix of dimensions N*M, where N is the number of documents
+and M is the size of the vocabulary. The elements of the matrix are counts of the 
+occurences of a word in a document.
+
+
+Entropy in Information Theory:
+
+	In information theory, the entropy of a random variable is the average level of "information", 
+"surprise", or "uncertainty" inherent to the variable's possible outcomes.
+
+	The information content, also called the surprisal or self-information, of an event E is a function 
+which increases as the probability P(E) of an event decreases. When P(E) is close to 1, the surprisal
+of the event is low, but if P(E) is close to 0, the surprisal of the event is high. This relationship
+is described by the function:
+
+	I(X) = log2(1/P(X)) = -log2(P(X))
+
+KullBack-Leibler Divergence:
+		
+	In mathematical Statistics,KL Divergence also called the relative entropy is the statistical 
+distance between how one Probability Distribution P is different from the second Distribution Q. 
+Relative Entropy is a non-negative function of two distributions or measures. a relative entropy of
+0 indicates that the two distributions in general are identical quantities of information.
+
+		Dkl(P||Q) = Sum(P(X)*log(P(X)/Q(X))).
+		
+	In other words, it is the expectation of the logarithmic difference between the probabilities
+P and Q, where the expectation is taken using the probabilities P. For continuous variables, the 
+integration is taken over.
+
+-------------------------------------------------------------------------------------------------------------------------------
+	
+L1 and L2 Regularization:
+
+          The implementation of Gradient Descent has no regularization. Because of this our 
+model will likely to be overfit the training data. when our task is a simple one but the model
+we're using is complex. we need to use regularizers to overcome overfitting the training data.
+
+L1 - L1 norm or Lasso regularization combats overfitting by shrinking parameters towards 0.
+this makes some features obsolete.
+
+A selection of the input features would have weights equal to zero,
+and the rest would be non-zero. 
+
+For example, imagine we want to predict housing prices using machine learning. 
+Consider the following features: 
+
+Street – road access,
+Neighborhood – property location,
+Accessibility – transport access,
+Year Built – year the house was built in,
+Rooms – number of rooms,
+Kitchens – number of kitchens,
+Fireplaces – number of fireplaces in the house. 
+
+When predicting the value of a house, intuition tells us that different input features 
+won’t have the same influence on the price.For example, it’s highly likely that the neighborhood
+or the number of rooms have a higher influence on the price of the property than the number of fireplaces.
+
+So, our L1 regularization technique would assign the fireplaces feature with a zero weight, 
+because it doesn’t have a significant effect on the price.
+We can expect the neighborhood and the number rooms to be assigned non-zero weights,
+because these features influence the price of a property significantly. 
+
+Mathematically, we express L1 regularization by extending our loss function like such: 
+
+Essentially, when we use L1 regularization, we are penalizing the absolute value of the weights. 
+
+In real world environments, we often have features that are highly correlated. 
+For example, the year our home was built and the number of rooms in the home may have a high correlation.
+Something to consider when using L1 regularization is that when we have highly correlated features, 
+the L1 norm would select only 1 of the features from the group of correlated features in an arbitrary nature, 
+which is something that we might not want.
+
+Nonetheless, for our example regression problem,
+Lasso regression (Linear Regression with L1 regularization) 
+would produce a model that is highly interpretable, and only uses a subset of input features,
+thus reducing the complexity of the model.  
+
+L2 - L2 regularization, or the L2 norm, or Ridge (in regression problems), 
+combats overfitting by forcing weights to be small, but not making them exactly 0. 
+
+
+So, if we’re predicting house prices again, this means the less significant features 
+for predicting the house price would still have some influence over the final prediction,
+but it would only be a small influence. 
+
+The regularization term that we add to the loss function when performing L2 regularization
+is the sum of squares of all of the feature weights:
+
+
+So, L2 regularization returns a non-sparse solution since the weights will be non-zero 
+(although some may be close to 0).
+
+A major snag to consider when using L2 regularization is that it’s not robust to outliers. 
+The squared terms will blow up the differences in the error of the outliers. 
+The regularization would then attempt to fix this by penalizing the weights. 
+
+https://medium.com/analytics-vidhya/topic-modeling-with-latent-dirichlet-allocation-lda-196c287e221
+
+jumedwar@indiana.edu
+
+
+BIT DEPTH is determined by the number of bits used to define each pixel. The greater the bit depth,
+the greater the number of tones (grayscale or color) that can be represented. Digital images may be 
+produced in black and white (bitonal), grayscale, or color.
+
+Bit Depth: Left to right - 1-bit bitonal(B&W), 8-bit grayscale, and 24-bit color images.
+
+Binary calculations for the number of tones represented by common bit depths:
+
+1 bit (21) = 2 tones
+2 bits (22) = 4 tones
+3 bits (23) = 8 tones
+4 bits (24) = 16 tones
+8 bits (28) = 256 tones
+16 bits (216) = 65,536 tones
+24 bits (224) = 16.7 million tones
+
+Researchers From MIT and Cornell Develop STEGO (Self-Supervised Transformer With Energy-Based
+Graph Optimization): A Novel AI Framework That Distills Unsupervised Features Into High-Quality
+Discrete Semantic Labels
+Quick Read: https://lnkd.in/ggsVt4kz
+
+Paper: https://lnkd.in/gZyMXENK
+
+Github: https://lnkd.in/gDwVascQ
+
+-------------------------------------------------------------------------------------------------------------------
+References:
+
+https://ruihongqiu.github.io/posts/2021/06/nngp/
+https://towardsdatascience.com/infinitely-wide-neural-networks-neural-tangents-explained-d6c6d896fcbf
+https://rajatvd.github.io/NTK/
+
+width of neural network - number of neurons in each layer corresponds to the width of each layer.
+
+Depth of neural network - the number of layers present in the network including output and input layer
+corresponds to the depth of the neural network. 
+
+
+Neural Network Tangent:
+
+		Sometimes neural networks become become black boxes after fitted to an classification or regression
+problem. We cannot make sense of the final weights that have been learned or adequately visualize the 
+problem space. 
+	
+	We will explore the background and application of neural networks at infinite width. Neural tangents
+offers elegant solution by providing a framework to build these networks and from this we can gain more
+insights from our model and can provide better analytics. 
+
+Neural Network Primer:
+	
+	Generally, we build a neural network from assumptions about the problem space. Usually a network 
+topology fits to solve a class of problems. We initialize a network weights from a standard normal 
+distribution and then we train the model by adapting the model parameters(network weigths) to minimize
+a loss function for the problem defined previously. After training we test on unseen data with some 
+evaluation metrics. One Important Question is: Why deep neural networks genearlize so well eventhough
+they tend to be overparameterized?.
+
+What happens when we stretch DNN?
+	
+	When we increase the width of the neural network we can gain some insights and overall better 
+understanding. Very wide networks show convergence to gaussian processes(a stochastic processs in
+which every finite collection of random variables has a multivariate normal distribution such that
+this joint distribution is a continuous distribution over function with a continuous time domain).
+This is also applicable for deeper networks. What do we get from transforming a network into 
+gaussian process?.
+	
+	This allows for better understanding and analysis over uncertainities in the network. we can also
+perform bayesian inference over the prior and posterior and analyze them. One important aspect is that
+the covariance of the Gaussian Process(GP) is assosiated with a kernel for its covariance function. 
+These kernels allow for better analytical properties.
+ 
+There are two kernels namely:
+	1. Neural Network Gaussian Process.
+		
+		NNGP is simply defined as Kz = E(theta)[z(i),z(i).T]
+		
+		where z is the predefined network architecture with parameters,activations and pre-activations
+like convolutions,pooling etc.,
+
+	2. Neural Tangent Kernel.
+		
+		NTK is defined as Tz = E(theta)[Diff(z(i)/theta),Diff(z(i)/theta).T]
+		
+		In layman’s terms, the last kernel describes the change in the network parameters up until z.
+
+
+Bias - Variance TradeOff:
+
+Consider a common neural network task such as image recognition, and think over a neural network that recognizes the presence of pandas in a picture. 
+We can confidently assess that a human can carry out this task with a near 0% error. As a consequence, this is a reasonable 
+benchmark for the accuracy of the image recognition network.After training the neural network on the training set and 
+evaluating its performances on both the training and validation sets, we may come up with these different results:
+
+train error = 20% and validation error = 22%
+train error = 1% and validation error = 15%
+train error = 0.5% and validation error = 1%
+train error = 20% and validation error = 30%
+
+The first example is a typical instance of high bias: the error is large on both the train and validation sets. Conversely,
+the second example suffers from high variance, having a much lower accuracy when dealing with data the model didn’t learn from.
+The third result represents low variance and bias, the model can be considered valid. Finally, the fourth example shows a case
+of both high bias and variance: not only the training error is large when compared with the benchmark, but the validation 
+error is also higher.
+
+L1 and L2 Regularization for Neural Networks:
+
+Similar to classical regression algorithms (linear, logistic, polynomial, etc.), L1 and L2 regularizations find place also for
+preventing overfitting in high variance neural networks. In order to keep this article short and on-point, I won’t recall how
+L1 and L2 regularizations work on regression algorithms, but you can check this article for additional information.
+
+The idea behind the L1 and L2 regularization techniques is to constrain the model’s weights to be smaller or to shrink some of
+them to 0.
+
+Consider the cost function J of a classical deep neural network:
+
+			J(w1,b1,......,wL,bL)  = (1/m)*(Summ{1 to m}(L(y_hat,y)))
+			
+The cost function J is, of course a function of weights and biases of each layer 1 to L. m is number of training examples and
+L is the loss function.
+
+L1 Regularization:
+
+	In L1 Regularization we add the following term to the cost function J:
+			(lambda/2m)*Summ{1 to L}(||wL||1)
+	
+	where the matrix norm is the sum of the absolute value of the weights for each layer 1, …, L of the network:
+			||wL||1 = Summ{i}{j}(w(L)ij)
+	
+	λ is the regularization term. It’s a hyperparameter that must be carefully tuned. λ directly controls the impact of the 
+regularization: as λ increases, the effects on the weights shrinking are more severe.
+
+The complete cost function under L1 Regularization becomes:
+
+	J(w1,b1,.......,wL,bL) = (1/m)*(Summ{1 to m}(L(y_hat,y))) + (lambda/2m)*Summ{1 to L}(||wL||)
+	
+For λ=0, the effects of L1 Regularization are null. Instead, choosing a value of λ which is too big, will over-simplify the
+model, probably resulting in an underfitting network.L1 Regularization can be considered as a sort of neuron selection process
+because it would bring to zero the weights of some hidden neurons.
+	
+L2 Regularization
+	
+	In L2 Regularization, the term we add to the cost function is the following:
+			
+			(Lambda/2m)*Summ{1 to L}(||wL||2^2)
+			
+	In this case, the regularization term is the squared norm of the weights of each network’s layer. This matrix norm is called
+Frobenius norm and, explicitly, it’s computed as follows:
+
+			||wL||2^2 = Summ{i= 1 to L}{j = 1 to L-1}(wL)^2
+
+	Please note that the weight matrix relative to layer l has n^{[l]} rows and n^{[l-1]} columns.Again, λ is the regularization
+term and for λ=0 the effects of L2 Regularization are null.L2 Regularization brings towards zero the values of the weights, 
+resulting in a more simple model.
+
+How do L1 and L2 Regularization reduce overfitting?
+	
+	L1 and L2 Regularization techniques have positive effects on overfitting to the training data for two reasons:
+
+the weights of some hidden units become closer (or equal) to 0. As a consequence, their effect is weakened and the resulting 
+network is simpler because it’s closer to a smaller network. As stated in the introduction, a simpler network is less prone to
+overfitting.
+
+for smaller weights, also the input z of the activation function of a hidden neuron becomes smaller. For values close to 0, 
+many activation functions behave linearly. The second reason is not trivial and deserves an expansion. Consider a hyperbolic 
+tangent (tanh) activation function, whose graph is the following:
+       
+	From the function plot we can see that if the input value x is small, the function tanh(x) behaves almost linearly. 
+When tanh is used as the activation function of a neural network’s hidden layers, the input value is:
+
+		zL = wL*a(L-1)+bL
+	which for small weights w is also close to zero.
+	
+	If every layer of the neural network is linear, we can prove that the whole network behaves linearly. Thus, constraining
+some of the hidden units to mimic linear functions, leads to a simpler network and, as a consequence, helps to prevent 
+overfitting.A simpler model often is not capable to capture the noise in the training data and therefore, overfitting is less
+frequent.
+
+Dropout:
+
+	The idea of dropout regularization is to randomly remove some nodes in the network. Before the training process,
+we set a probability (suppose p = 50%) for each node of the network. During the training phase, each node has a p probability
+to be turned off. The dropout process is random, and it is performed separately for each training example. As a consequence,
+each training example might be trained on a different network.
+
+	As for L2 Regularization, the result of dropout regularization is a simpler network, and a simpler network leads to a less
+complex model.
+
+Consider the network illustrated above, and focus on the first unit of the second layer. Because some of its inputs may be 
+temporarily shut down due to dropout, the unit can’t always rely on them during the training phase.As a consequence, the hidden 
+unit is encouraged to spread its weights across its inputs. Spreading the weights has the effect of decreasing the squared norm
+of the weight matrix, resulting in a sort of L2 regularization.
+
+Setting the keeping probability is a fundamental step for an effective dropout regularization. Typically, the keeping probability
+is set separately for each layer of the neural network. For layers with a large weight matrix, we usually set a smaller keeping
+probability because, at each step, we want to conserve proportionally fewer weights with respect to smaller layers.
+
+Other Regularization Techniques:
+	
+	In addition to L1/L2 regularization and dropout, there exist other regularization techniques. Two of them are data augmentation and early stopping.
+
+From the theory, we know that training a network on more data has positive effects on reducing high variance. As getting more 
+data is often a demanding task, data augmentation is a technique that, for some applications, allows machine learning 
+practitioners to get more data almost for free.In computer vision, data augmentation provides larger training set by flipping,
+zooming, and translating the original images.In the case of digits recognition, we can also impose distortion on the images.
+
+Early stopping, as the name suggests, involves stopping the training phase before the initially defined number of iterations. 
+If we plot the cost function on both the training set and the validation set as a function of the iterations, we can experience
+that, for an overfitting model, the training error always keeps decreasing but the validation error might start to increase 
+after a certain number of iterations. When the validation error stops decreasing, that is exactly the time to stop the training
+process. By stopping the training process earlier, we force the model to be simpler, thus reducing overfitting.
+
+In statistics and machine learning, the bias–variance tradeoff is the property of a model that the variance of the parameter 
+estimated across samples can be reduced by increasing the bias in the estimated parameters. The bias–variance dilemma or 
+bias–variance problem is the conflict in trying to simultaneously minimize these two sources of error that prevent supervised
+learning algorithms from generalizing beyond their training set:[1][2]
+
+The bias error is an error from erroneous assumptions in the learning algorithm. High bias can cause an algorithm to miss the
+relevant relations between features and target outputs (underfitting).
+
+The variance is an error from sensitivity to small fluctuations in the training set. High variance may result from an algorithm
+modeling the random noise in the training data (overfitting).The bias–variance decomposition is a way of analyzing a learning 
+algorithm's expected generalization error with respect to a particular problem as a sum of three terms, the bias, variance, 
+and a quantity called the irreducible error, resulting from noise in the problem itself.
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Kernel Definition:
+
+Briefly speaking, a kernel is a shortcut that helps us do certain calculation faster which otherwise would involve computations
+in higher dimensional space.
+
+Mathematical definition: K(x, y) = <f(x), f(y)>. Here K is the kernel function, x, y are n dimensional inputs. f is a map from
+n-dimension to m-dimension space. < x,y> denotes the dot product. usually m is much larger than n.
+
+Intuition: normally calculating <f(x), f(y)> requires us to calculate f(x), f(y) first, and then do the dot product. These two 
+computation steps can be quite expensive as they involve manipulations in m dimensional space,
+where m can be a large number. But after all the trouble of going to the high dimensional space, the result of the dot product
+is really a scalar: we come back to one-dimensional space again! Now, the question we have is: do we really need to go through 
+all the trouble to get this one number? do we really have to go to the m-dimensional space? The answer is no, if you find a 
+clever kernel.
+
+Simple Example: x = (x1, x2, x3); y = (y1, y2, y3). Then for the function f(x) = (x1x1, x1x2, x1x3, x2x1, x2x2, x2x3, x3x1, x3x2, x3x3), the kernel is K(x, y ) = (<x, y>)^2.
+
+Let's plug in some numbers to make this more intuitive: suppose x = (1, 2, 3); y = (4, 5, 6). Then:
+f(x) = (1, 2, 3, 2, 4, 6, 3, 6, 9)
+f(y) = (16, 20, 24, 20, 25, 30, 24, 30, 36)
+<f(x), f(y)> = 16 + 40 + 72 + 40 + 100+ 180 + 72 + 180 + 324 = 1024
+
+A lot of algebra. Mainly because f is a mapping from 3-dimensional to 9 dimensional space.
+
+Now let us use the kernel instead:
+K(x, y) = (4 + 10 + 18 ) ^2 = 32^2 = 1024
+Same result, but this calculation is so much easier.
+
+Additional beauty of Kernel: kernels allow us to do stuff in infinite dimensions! Sometimes going to higher dimension is not 
+just computationally expensive, but also impossible. f(x) can be a mapping from n dimension to infinite dimension which we may 
+have little idea of how to deal with. Then kernel gives us a wonderful shortcut.
+
+Relation to SVM: now how is related to SVM? The idea of SVM is that y = w phi(x) +b, where w is the weight, phi is the feature 
+vector, and b is the bias. if y> 0, then we classify datum to class 1, else to class 0. We want to find a set of weight and 
+bias such that the margin is maximized. Previous answers mention that kernel makes data linearly separable for SVM. I think a 
+more precise way to put this is, kernels do not make the data linearly separable. The feature vector phi(x) makes the data 
+linearly separable. Kernel is to make the calculation process faster and easier, especially when the feature vector phi is of 
+very high dimension (for example, x1, x2, x3, ..., x_D^n, x1^2, x2^2, ...., x_D^2).
+
+Why it can also be understood as a measure of similarity:
+if we put the definition of kernel above, <f(x), f(y)>, in the context of SVM and feature vectors, it becomes <phi(x), phi(y)>.
+The inner product means the projection of phi(x) onto phi(y). or colloquially, how much overlap do x and y have in their 
+feature space. In other words, how similar they are.
+
+The kernel has two properties:
+It is symmetric in nature k(xn , xm) = k(xm , xn).
+It is Positive semi-definite.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Support Vector Machine:
+
+	The objective of the support vector machine algorithm is to find a hyperplane in an N-dimensional space(N — the number of 
+features) that distinctly classifies the data points.
+
+Margin
+
+	Margin represents the shortest perpendicular distance between the decision boundary and the data points.
+	You find the hyperplane that maximizes the margin.By the way, those closest data samples are support vectors
+
+	Which one do you prefer?
+		You prefer the one with the larger margin z1<z2.
+	
+SVM Mathematics:	
+https://www.analyticsvidhya.com/blog/2020/10/the-mathematics-behind-svm/#:~:text=A%20Support%20Vector%20Machine%20or,to%20as%20Support%20Vector%20Classification.
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+Bernoulli Distribution:
+
+A Bernoulli event is one for which the probability the event occurs is p and the probability the event does not occur is 1-p;
+i.e., the event is has two possible outcomes (usually viewed as success or failure) occurring with probability p and 1-p, 
+respectively.  A Bernoulli trial is an instantiation of a Bernoulli event.  So long as the probability of success or failure
+remains the same from trial to trial (i.e., each trial is independent of the others), a sequence of Bernoulli trials is called
+a Bernoulli process
+
+Binomial Distribution:
+
+The Bernoulli distribution represents the success or failure of a single Bernoulli trial.  The Binomial Distribution represents
+the number of successes and failures in n independent Bernoulli trials for some given value of n.  For example, if a 
+manufactured item is defective with probability p, then the binomial distribution represents the number of successes and 
+failures in a lot of n items.  In particular, sampling from this distribution gives a count of the number of defective items 
+in a sample lot.Another example is the number of heads obtained in tossing a coin n times
+
+Poisson Distribution:
+
+the Poisson distribution is a discrete probability distribution that expresses the probability of a given number of events 
+occurring in a fixed interval of time or space if these events occur with a known constant mean rate and independently of the
+time since the last event.
+
+	f(k,lambda) = (lambda)^k * exp^-(lambda)/k!
+	
+Eg: For instance, a call center receives an average of 180 calls per hour, 24 hours a day. The calls are independent; receiving
+one does not change the probability of when the next one will arrive. The number of calls received during any minute has a 
+Poisson probability distribution with mean 3: the most likely numbers are 2 and 3 but 1 and 4 are also 
+likely and there is a small probability of it being as low as zero and a very small probability it could be 10.
+	
+Precision Matrix:
+
+	In statistics, the precision matrix or concentration matrix is the matrix inverse of the covariance matrix or dispersion 
+matrix, P=C-1.[1][2][3] For univariate distributions, the precision matrix degenerates into a scalar precision, defined as the
+reciprocal of the variance, p=1/σ2.
+
+
+Gamma Distribution:
+
+	In probability theory and statistics, the gamma distribution is a two-parameter family of continuous probability distributions.
+The exponential distribution, Erlang distribution, and chi-square distribution are special cases of the gamma distribution. 
+There are two different parameterizations in common use:
+
+	With a shape parameter k and a scale parameter θ.
+	With a shape parameter α = k and an inverse scale parameter β = 1/θ, called a rate parameter.
+
+In each of these forms, both parameters are positive real numbers.
+
+	The gamma distribution is the maximum entropy probability distribution (both with respect to a uniform base measure and with
+respect to a 1/x base measure) for a random variable X for which E[X] = kθ = α/β is fixed and greater than zero, and 
+E[ln(X)] = ψ(k) + ln(θ) = ψ(α) − ln(β) is fixed
+
+Gaussian-Gamma Distribution:
+
+	In probability theory and statistics, the normal-gamma distribution (or Gaussian-gamma distribution) is a bivariate four-
+parameter family of continuous probability distributions.It is the conjugate prior of a normal distribution with unknown mean 
+and precision.	
+	
+-------------------------------------------------------------------------------------------------------------------------------
+
+Density Estimation:
+
+	Density Estimation is the problem of estimating the probability distribution given the observation samples. Typically, 
+estimating the entire distribution is intractable and we are fine with the expected value of the distribution such as 
+mean or mode.
+
+	There are many techniques for solving this problem, although two common approaches are:
+
+1. Maximum a Posteriori (MAP), a Bayesian method.
+2. Maximum Likelihood Estimation (MLE), a frequentist method
+
+	Both approaches frame the problem as optimization and involve searching for a distribution and set of parameters
+for the distribution that best describes the observed data.
+
+
+
+Maximum Likelihood Estimation(MLE):
+
+	In Maximum Likelihood Estimation, we wish to maximize the probability of observing the data from the joint probability 
+distribution given a specific probability distribution and its parameters, stated formally as:
+
+	P(X ; theta)
+or
+
+	P(x1, x2, x3, …, xn ; theta)
+
+This resulting conditional probability is referred to as the likelihood of observing the data given the model parameters.
+
+The objective of Maximum Likelihood Estimation is to find the set of parameters (theta) that maximize the likelihood function, 
+e.g. result in the largest likelihood value.
+
+Maximum A-Posteriori (MAP) Estimation:
+
+	Bayes Theoram:   P(A | B) = (P(B | A) * P(A)) / P(B)
+	
+The quantity that we are calculating is typically referred to as the posterior probability of A given B and P(A) 
+is referred to as the prior probability of A.The normalizing constant of P(B) can be removed, and the posterior can be 
+shown to be proportional to the probability of B given A multiplied by the prior.
+
+	P(A | B) is proportional to P(B | A) * P(A)
+	
+We can now relate this calculation to our desire to estimate a distribution and parameters (theta) that best explains our 
+dataset (X), as we described in the previous section. This can be stated as:
+
+	P(theta | X) = P(X | theta) * P(theta)
+
+Maximizing this quantity over a range of theta solves an optimization problem for estimating the central tendency of the 
+posterior probability (e.g. the model of the distribution). As such, this technique is referred to as 
+“maximum a posteriori estimation,” or MAP estimation for short, and sometimes simply “maximum posterior estimation.”
+
+	maximize P(X | theta) * P(theta)
+	
+We are typically not calculating the full posterior probability distribution, and in fact, this may not be tractable
+for many problems of interest.Instead, we are calculating a point estimation such as a moment of the distribution, like the mode,
+the most common value, which is the same as the mean for the normal distribution.
+
+
+In fact, if we assume that all values of theta are equally likely because we don’t have any prior information (e.g. a uniform 
+prior),then both calculations are equivalent.Because of this equivalence, both MLE and MAP often converge to the same optimization
+problem for many machine learning algorithms. This is not always the case; if the calculation of the MLE and MAP optimization 
+problem differ, the MLE and MAP solution found for an algorithm may also differ.
+
+RelationShip between MAP and Machine Learning:
+	
+We can make the relationship between MAP and machine learning clearer by re-framing the optimization problem as being performed 
+over candidate modeling hypotheses (h in H) instead of the more abstract distribution and parameters (theta); for example:
+
+	maximize P(X | h) * P(h)
+
+Here, we can see that we want a model or hypothesis (h) that best explains the observed training dataset (X) and that the prior
+(P(h)) is our belief about how useful a hypothesis is expected to be, generally, regardless of the training data. The 
+optimization problem involves estimating the posterior probability for each candidate hypothesis.
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Conjugate Prior:
+
+	In Bayesian probability theory, if the posterior distribution p(θ | x) is in the same probability distribution family as the
+prior probability distribution p(θ), the prior and posterior are then called conjugate distributions, and the prior is called a
+conjugate prior for the likelihood function p(x | θ).
+
+Prior vs Posterior Predictive Distribution:
+
+	The prior predictive distribution, in a Bayesian context, is the distribution of a data point marginalized over its prior 
+distribution. x~F(x~|theta) and theta~G(theta|alpha). That is, if , then the prior predictive distribution is the corresponding
+distribution H(x~|alpha), where
+
+	Ph(x~|alpha) = Integral(theta){Pf(x~|theta)Pg(theta|alpha)}.
+
+This is similar to the posterior predictive distribution except that the marginalization (or equivalently, expectation) is taken
+with respect to the prior distribution instead of the posterior distribution.
+
+Furthermore, if the prior distribution G(theta|alpha) is a conjugate prior, then the posterior predictive distribution will 
+belong to the same family of distributions as the prior predictive distribution. This is easy to see. If the prior distribution
+  is conjugate, then
+
+i.e. the posterior distribution also belongs to G(theta|alpha), but simply with a different parameter alpha' 
+instead of the original parameter alpha. Then,
+
+	P(x~|X,alpha) = Integral(theta){Pf(x~|theta)P(theta|X,alpha)}
+				  = Integral(theta){Pf(x~|theta)P(theta|alpha')}
+				  = Ph(x~|alpha)
+
+Hence, the posterior predictive distribution follows the same distribution H as the prior predictive distribution, but with the
+posterior values of the hyperparameters substituted for the prior ones.
+
+-------------------------------------------------------------------------------------------------------------------------------
+Marginal Likelihood:
+
+	In Bayes theorem of a parameter θ with data D, we have:
+
+	P(θ|D)=P(D|θ)P(θ)/P(D)
+
+where P(D) as the marginal likelihood. Also, P(D) is the model evidence, unfortunately "model" is often dropped. The model 
+evidence is also referred to as marginal likelihood.
+
+	A marginal likelihood is a likelihood function that has been integrated over the parameter space. In Bayesian statistics,
+it represents the probability of generating the observed sample from a prior and is therefore often referred to as model 
+evidence or simply evidence.
+
+
+Given a set of independent identically distributed data points X={x1,x2,x3...,xn} where xi~p(x|theta) according to some 
+probability distribution parameterized by theta , where theta itself is a random variable described by a distribution, i.e.
+theta ~ p(theta|alpha) the marginal likelihood in general asks what the probability p(X|alpha) is, where 
+theta has been marginalized out (integrated out):
+
+	p(X|alpha) = Integral(theta){p(X|theta)p(theta|alpha)}
+
+The above definition is phrased in the context of Bayesian statistics. In classical (frequentist) statistics, the concept of
+marginal likelihood occurs instead in the context of a joint parameter theta=(sci,lambda), where sci is the actual parameter
+of interest, and lambda is a non-interesting nuisance parameter. If there exists a probability distribution for lambda,
+it is often desirable to consider the likelihood function only in terms of sci, by marginalizing out Lambda:
+
+	Lamda(sci,X) = p(X|sci) = Integral(lamda){P(X|lamda,sci)P(lamda|sci)}
+
+Unfortunately, marginal likelihoods are generally difficult to compute. Exact solutions are known for a small class of 
+distributions, particularly when the marginalized-out parameter is the conjugate prior of the distribution of the data.
+In other cases, some kind of numerical integration method is needed, either a general method such as Gaussian integration or a 
+Monte Carlo method, or a method specialized to statistical problems such as the Laplace approximation, Gibbs/Metropolis 
+sampling, or the EM algorithm.
+
+It is also possible to apply the above considerations to a single random variable (data point) x, rather than a set of 
+observations. In a Bayesian context, this is equivalent to the prior predictive distribution of a data point.
+
+-------------------------------------------------------------------------------------------------------------------------------
+Model Evidence:
+
+	p(y|m)=∫p(y,θ|m)dθ
+		  =∫p(y|θ,m)p(θ|m)dθ
+		  
+the classical rule is P(A,B)=P(A|B)P(B), but it can also be applied to conditional probabilities like P(.|C) instead of P(.).
+It then becomes
+	
+	P(A,B|C)=P(A|B,C)P(B|C)
+
+(you just add a condition on C, but otherwise that's the same formula). You can then apply this formula for A=y, B=θ, and C=m.
+
+You know from the law of total probability that, if {Bn} is a partition of the sample space, we obtain
+
+	p(A)=∑np(A,Bn)
+
+or, using the first formula:
+
+	p(A)=∑np(A|Bn)p(Bn)
+
+This easily extends to continuous random variables, by replacing the sum by an integral:
+
+p(A)=∫p(A|B)p(B)dB
+
+The action of making B "disappear" from p(A,B) by integrating it over B is called "marginalizing" (B has been marginalized out).
+Once again, you can apply this formula for A=y, B=θ, and C=m.
+
+m is the model. Your data y can have been generated from a certain model m, and this model itself has some parameters θ.
+In this setting, p(y|θ,m) is the probability to have data y from model m parametrized with θ, and p(θ|m) is the prior distribution
+of the parameters of model m.For example, imagine you are trying to fit some data using either a straight line or a parabola.
+Your 2 models are thus m2, where data are explained as y=a2x2+a1x+a0+ϵ (ϵ is just some random noise) and its parameters are 
+θ2=[a2 a1 a0] ; and m1, where data are explained as y=a1x+a0+ϵ and its parameters are θ1=[a1 a0].
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Negative Log Likelihood:	
+	It’s a cost function that is used as loss for machine learning models, telling us how bad it’s performing, the lower the
+better.
+
+	Negative: obviously means multiplying by -1. What? The loss of our model. Most machine learning frameworks only have
+minimization optimizations, but we want to maximize the probability of choosing the correct category.
+
+We can maximize by minimizing the negative log likelihood, there you have it, we want somehow to maximize by minimizing.
+
+Likelihood:
+
+	Likelihood refers to the chances of some calculated parameters producing some known data.
+	
+That makes sense as in machine learning we are interested in obtaining some parameters to match the pattern inherent to the data,
+the data is fixed, the parameters aren’t during training.
+
+Typically a model will output a set of probabilities (like [0.1, 0.3, 0.5, 0.1]), how does it relates with the likelihood? We 
+are using NLL as the loss and the model outputs probabilities, but we said they mean something different.
+
+how do they play together? Well, to calculate the likelihood we have to use the probabilities. To continue with
+the example above, imagine for some input we got the following probabilities: [0.1, 0.3, 0.5, 0.1], 4 possible classes. If the
+true answer would be the forth class, as a vector [0, 0, 0, 1], the likelihood of the current state of the model producing the
+input is:
+
+0*0.3 + 0*0.1 + 0*0.5 + 1*0.1 = 0.1.
+
+NLL: -ln(0.1) = 2.3
+
+Instead, if the correct category would have been the third class [0, 0, 1, 0]:
+
+0*0.3 + 0*0.1 + 1*0.5 + 0*0.1 = 0.5
+
+NLL: -ln(0.5) = 0.69
+
+Take a breath and look at the values obtained by using the logarithm and multiplying by -1.
+
+You see? The better the prediction the lower the NLL loss, exactly what we want! And same way works for other losses, the better
+the output, the lower the loss.
+	
+(When do we use it?): we use it for the classification problems and the output of model is a probability distribution.	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

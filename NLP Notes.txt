@@ -1,0 +1,628 @@
+
+https://blog.floydhub.com/a-beginners-guide-on-recurrent-neural-networks-with-pytorch/
+https://blog.floydhub.com/long-short-term-memory-from-zero-to-hero-with-pytorch/
+
+
+ToDo's:
+
+https://github.com/huggingface/blog/blob/main/notebooks/03_reformer.ipynb
+-------------------------------------------------------------------------------------------------------------------------
+
+Word2Vec Intro:
+
+In mathematics, the concept of vector is closely related to geometry. For example, in a 2D plane, a vector (x, y) represents
+the coordinate of a point. More generally, the vector  represents a point in the n-dimensional space. Therefore in a 
+distributed representation, each word is represented by a vector of length n, which corresponds to a point in the n-D space.
+
+Since word semantics are quite complex, it is very difficult to partition different regions in the n-D space to represent
+different types of words. But we can leverage an important concept in geometry: distance. A reasonable word embedding should
+map two semantically similar words to two close-by points, and map two irrelevant words to two points far apart. It follows 
+that in the distributed representation, searching for synonyms of a word entails looking for word vectors near its embedded 
+point.
+
+In addition to incorporating semantic information, distributed representation has a fixed length of word vector, which makes
+ following procedures more convenient. As a result, most NLP methods employ the distributed representation for word vectors.
+
+However, it is not always easy to obtain a distributed representation of high quality. It often requires careful mathematical
+modeling and a large text corpus. In the next section, we will describe in detail a popular distributed representation method:
+word2vec.
+-------------------------------------------------------------------------------------------------------------------------
+Different Types of Normalization:
+Batch Normalization:
+	Batch Normalization focuses on standardizing the inputs to any particular layer(i.e. activations from previous layers). 
+Standardizing the inputs mean that inputs to any layer in the network should have approximately zero mean and unit variance.
+Mathematically, BN layer transforms each input in the current mini-batch by subtracting the input mean in the current mini-batch
+and dividing it by the standard deviation.
+
+	But each layer doesn’t need to expect inputs with zero mean and unit variance, but instead, probably the model might perform
+better with some other mean and variance. Hence the BN layer also introduces two learnable parameters γ and β.
+
+The whole layer operation is as follows. It takes an input x_i and transforms it into y_i as described in the below eqns.
+		
+		u-b =  (1/m)* summ{1 to N}(xi)
+		
+		sigma-b = (1/m) * summ{1 to N}(xi-ub)^2
+			
+		xi = (xi - ub)/sqrt(sigma-b^2+Epsilon)
+		
+		yi = gamma*(xi) + Beta ~ BN{gamma,beta}(xi)
+		
+The question is how BN helps NN training? Intuitively, In gradient descent, the network calculates the gradient based on the
+current inputs to any layer and reduce the weights in the direction indicated by the gradient. But since the layers are stacked
+one after the other, the data distribution of input to any particular layer changes too much due to slight update in weights 
+of earlier layer, and hence the current gradient might produce suboptimal signals for the network. But BN restricts the 
+distribution of the input data to any particular layer(i.e. the activations from the previous layer) in the network, which helps
+the network to produce better gradients for weights update. Hence BN often provides a much stable and accelerated training 
+regime.
+
+Cons:
+
+BN calculates the batch statistics(Mini-batch mean and variance) in every training iteration, therefore it requires larger batch
+sizes while training so that it can effectively approximate the population mean and variance from the mini-batch. This makes BN
+harder to train networks for application such as object detection, semantic segmentation, etc because they generally work with 
+high input resolution(often as big as 1024x 2048)and training with larger batch sizes is not computationally feasible.
+		
+Weight Normalization:
+	
+	Their idea is to decouple the length from the direction of the weight vector and hence reparameterize the network to speed up
+the training.
+
+	The authors of the Weight Normalization paper suggested using two parameters g(for length of the weight vector) and v(the 
+direction of the weight vector) instead of w for gradient descent in the following manner.
+	 
+	 w =  (g/||v||)*v
+	 
+Weight Normalization speeds up the training similar to batch normalization and unlike BN, it is applicable to RNNs as well. 
+But the training of deep networks with Weight Normalization is significantly less stable compared to Batch Normalization and
+hence it is not widely used in practice.
+
+Layer Normalization
+	Inspired by the results of Batch Normalization, Geoffrey Hinton et al. proposed Layer Normalization which normalizes the 
+activations along the feature direction instead of mini-batch direction. This overcomes the cons of BN by removing the dependency
+on batches and makes it easier to apply for RNNs as well.
+
+	In essence, Layer Normalization normalizes each feature of the activations to zero mean and unit variance.
+	
+Group Normalization
+	
+	Similar to layer Normalization, Group Normalization is also applied along the feature direction but unlike LN, it divides the
+features into certain groups and normalizes each group separately. In practice, Group normalization performs better than layer
+normalization, and its parameter num_groups is tuned as a hyperparameter.
+
+If you find BN, LN, GN confusing, the below image summarizes them very precisely. Given the activation of shape (N, C, H, W), 
+BN normalizes the N direction, LN and GN normalize the C direction but GN additionally divides the C channels into groups and 
+normalizes the groups individually.
+
+Weight Standarization:
+	Weight Standardization is transforming the weights of any layer to have zero mean and unit variance. This layer could be a 
+convolution layer, RNN layer or linear layer, etc. For any given layer with shape(N, *) where * represents 1 or more dimensions,
+weight standardization, transforms the weights along the * dimension(s).
+
+Regularization:
+
+	Neural Nets are models with huge number of parameters! Regularization!.
+	
+	A full loss function includes regularization over all parameters (theta) eg. L2 Regularization.
+	
+	Regularization works to prevent overfitting when we have a lot of features(or a very powerful/deep model etc;)
+	
+DropOut(A form of Regularization):
+
+	50% of connections are dropped out so the features that are mostly dependant will be cancelled out so they won't play a 
+decision.
+
+Parameter Initialization(Weight Initialization):
+
+	Initialize all other weights - Uniform(-r,r) with r chosen so numbers get neither too big or too small[later this need is 
+removed by using layer normalization] 
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Sequence to Sequence task models:
+
+		Seq2Seq models are a special class of Recurrent Neural Network architectures typically used to 
+solve complex language problems like Machine Translation, Question Answering, creating Chat Bots and
+Text Summarization etc;
+
+	Types:
+		1. One to One   - Vanilla Mode of RNN fixed sized input to Fixed sized output.(Image Classification).
+		2. One to Many  - Sequence Output(eg. Image Captioning takes an image and outputs a sentence of words).
+		3. Many to One  - Sequence Inputs(eg. Sentiment Analysis - given sentence classified as expressing positive or negative).
+		4. Many to Many - Sequence Input and Output (eg. Machine Translation - RNN reads a sentence in english and outputs a sentence in French).
+		5. Synced Many to Many - Synced Sequence Input and Output(eg.Video Classification - we label each frame of the video).
+	
+	
+Encoder-Decoder Architecture:
+
+		1. Both the encoder and decoder are typically LSTM Models,GRU Models or transformers.
+		2. Encoder reads the input sequence and summarizes the information in something called the
+internal state vectors(hidden and output cell state vectors). We discard the outputs of the encoder
+and only preserve the internal states.
+		3. Decoder in an LSTM whose initial states are initialized to the final states of the encoder
+LSTM. Using these initial states, decoder starts generating the output sequence.
+		4. The decoder behaves differently during training and inference procedure. During the 
+training, we use a technique called the teacher forcing which helps to train the decoder faster.During
+inference, the input to the decoder at each time step is the output from the previous step.
+		5. Intuitively, the encoder summarizes the input sequences into state vectors (sometimes called
+as the thought vectors). which are then fed to the decoder which starts generating the output sequence
+given the thought vectors. The decoder is just a language model conditioned on the initial states.
+
+Encoder LSTM:-
+		
+		
+Attention Mechanism:
+
+			The attention mechanism in Deep Learning is based on the concept of directing focus and it pays
+greater attention to certain factors when processing the data.
+
+		Attention is one component of the network's architecture and is in charge of managing and 
+quantifying the interdependence:
+		1. Between the input and output elements(General Attention).
+		2. Within the input elements(Self Attention).
+
+Example: Working of Attention Mechanism in a translation task:-
+"How was your day?" - English to "Comment se passe ta journee" - French. The attention component of the
+network maps the important and relavant words from the input sentence and assigns higher importance weights
+to these words, enhancing the accuracy of the output prediction.
+
+
+		    The standard seq2seq model is generally unable to accurately process long input sequences,
+since, only the last hidden state of the encoder RNN is given as the context vector for the decoder. On 
+the other hand, the Attention mechanism directly addresses this issue as it retains and utilizes all the 
+hidden states of the input sequence during the decoding process. It does this by creating a unique mapping
+between each time step of the decoder output to all encoder hidden states.This means for each output that
+the decoder makes, it has access to the entire input sequence and can selectively pick out specific elements
+from that sequence to produce the output.
+			Therefore, the mechanism allows the model to focus more attention to relevant parts of the 
+input sequence as needed. There are two different attention mechanisms:
+		1. Bahandau Attention.
+		2. Luong Attention.
+
+(https://blog.floydhub.com/attention-mechanism/) - Attention Mechanism Blog.
+
+Bahandau Attention:-
+			Commenly referred to as Additive Attention.The step by step process of applying Bahdnau Attention
+is as follows:
+			1. Producing Encoder hidden states: Enc produces hidden state for each element in the sequence.
+			2. Calculating Alignment scores: between previous decoder hidden state and each of the encoder
+hidden states are calculated.(Note:- Previous encoder hidden state can be used as first hidden state of the
+starting decoder.)
+			3. Softmaxing Alignment scores: The alignment scores of each of the encoder hidden states are
+combined and represented in a single vector and subsequently softmaxed.
+			4. Calculating Context Vector: The encoder hidden states and their respective alignment scores
+are multiplied to form the context vector.
+			5. Decoding the output: The context vector is concatenated with the previous decoder output and
+fed into the decoder RNN for that time step along with the previous decoder hidden state to produce a new
+output.
+			6. The process repeats itself for each time step of the decoder until a token is produced or 
+output is past the specified maximum length.
+
+Luong Attention:-
+			Commonly referred to as Multiplicative Attention.It was built on top of Bahandau Attention and
+main differences between them are:
+			1. The way that the alignment scores are calculated.
+			2. The position in which attention mechanism is being introduced in the decoder.
+There are three types of alignment scoring functions proposed in Luong's paper compared to Bahdnau one'type
+Also the general structure of the Attention decoder is different for luong attention as the context vector
+is utilized only after the RNN produced the output for that time step.The step by step process is as 
+follows:
+
+		1. Producing Encoder Hidden states: Encoder produces hidden states of each element in the input
+sequence.
+		2. Decoder RNN: The previous decoder output and decoder hidden state is passed through the decoder
+RNN to generate a new hidden state for that time step.
+		3. Calculating Alignment scores: using the new decoder hidden state and the encoder hidden state
+the alignment scores are calculated.
+		4. Softmaxing the ALignment scores: The alignment scores of each encoder hidden state are combined
+and represented in a single vector and subsequently softmaxed.
+		5. Calculate Context Vector: the encoder hiddens states and their respective alignment scores are
+multiplied to form the context vector.
+		6. Decoding the Output: The context vector is concatenated with the decoder output hidden state
+generated in step 2 is passed through a fully connected layer to produce a new output.
+		7. The process(steps 2 to 6) repeats itself for each time step of the decoder until an token or
+output is past the specified maximum length.
+
+From the different steps seen above, Luong Attention is calculated differently from Bahandau Attention.
+
+
+Transformers: 	
+
+		Doing away with cluncky for-loops, the transformers instead finds a way to allow whole sentences
+to simultaneously enter the network in batches.The input to the encoder will be the English sentence and
+the outputs from the decoder will be the French sentence.
+
+In effect, there are five processes that we need to understand to implement this model:
+		1. Encoding the inputs. Embedding input matrix shape - [sentence length * embedding dimension(512)].
+		2. The Positional Encodings. 
+		3. Creating Masks.
+		4. The Multi Head Attention Layer. - Query,Key,Values shape - [sentence length * splitted embedding dimension(64)]
+		5. The Feed Forward Layer.
+Embedding: 
+		Embedding words has become a standard practice in NMT, feeding the network with more information 
+than one hot encoding.
+
+Giving our words context: The positional Encoding.
+		In order for the model to make sense of the sentence, it needs to know two things about the word:
+1. what does the word mean? 2. And what is its position in the sentence?
+		The embedding vector will learn about the meaning of the words, so we need to input something that
+tells the network about the word's position. Vasmari et al answered this problem by using the below funcs
+to create a constant of position specific values:
+		PE(pos,2i)   =  sin(pos/10000^(2*i/d_model))  
+		PE(pos,2i+1) =  cos(pos/10000^(2*i/d_model))
+This constant is 2d matrix.Pos refers to order in the sentence and i refers to the position along the
+embedding vector dimension. Each value in the pos/i matrix is then worked out using the equations above.
+
+
+Self Attention Mechanism:
+
+	step1: Compute dot product between Query and transpose of key matrix - to determine the importance
+between relevant words in the sentence.
+	step2: Take the dot product result and divide it by the square root of the dimension of key matrix
+ie. sqrt(dK)
+	step3: Normalize the result with softmax function. Finally we calculate the attention matrix Z by
+multiplying the score matrix [softmax(Q.K(t)/sqrt(dK))] with the Value Matrix V.
+
+PreTraining on NLP Models:
+
+Most of the modern day NLP systems follow a new approach for training new models for various use cases and
+that is first pre-train and then fine-tune approach.Here, the goal of pre-training is to leverage large
+amount of unlabeled texts and build a general model of language understanding before being fine tuned on
+various task specific work like Machine Translation, text summarization etc;
+
+There is two popular pre-training schemes in language tasks, they are:
+			1. Masked Language Model(MLM).
+			2. Casual Language Model(CLM).
+			
+Masked Language Model:-
+	Under Masked Language Modelling, we typically mask a certain % of words in a given sentence and the
+model is expected to predict those masked words based on other words in the sentence. this model is
+bidirectional in nature since it can peek in both forward and backward direction. You can visualize this
+like a fill-in-blanks kind of problem.
+
+	Here the representation of the masked word could be attention based as in BERT(Bidirectional Encoder
+Representations from Transformers). Based on the distribution of alpha(attention weights) you can weigh 
+the representation of other input word with respective to the masked word representation. eg. alpha=1 
+gives equal weight to the surrounding words(meaning every other word will have equal contribution to the
+Masked representation.)
+
+Casual Language Model:-
+	Under CLM, the idea is to predict masked token in a given sentence, but unlike MLM the model is allowed
+to consider only the words in the left side(ie. previous words) or only on the right side(ie. next words)
+Such a training scheme makes this model unidirectional.
+
+	Based on the prediction made by the model against the actual label, we calculate cross entropy loss
+and backpropagate it to train the model parameters. Here the representation of the masked word could be
+attention based as in GPT(Generative Pre-trained Transformer).Based on the distribution of alpha
+(attention weights) we can weigh the representation of every other word for learning the representation
+of the masked word eg. alpha=1 would give equal weight to surrounding words(meaning that every word will
+hold equal importance to learn the masked representation).
+
+MLM loss is preferred when the goal is to learn a good representation of the input document, CLM is mostly
+preferred when we wish to learn a system that generates fluent text.
+			
+
+Text Corpora: Corpus is a very large collection of text and used to analyse how words, phrases and language
+in general are used.
+Types:- 1. Monolingual Corpus - one language 2. MultiLingual Corpus - multiple language. 
+
+
+Transformer Model Types:
+
+			PreTraining - Self Supervised (The models does not need labels for its pretraining).
+			Fine Tuning - Transfer Learning the weights of the pretrained model to a new model by initializing
+the second model with the weights of the first model and fine tune the models by training with the specific
+dataset.	
+			
+			1. Auto Regressive Models - Also called the decoder models these use only the decoder of the 
+transformers. At each stage, for a given word the attention layers can only access the words positioned
+before it in the sentence. These models are also called as the autoregressive models.
+
+	The pretraining of decoder models involves predicting the next word in the given sentence. These models
+are best suited for tasks involving text generation.
+Models: GPT,GPT-2,Transformer XL,CTRL
+			
+			2. Auto Encoding Models -  Also called as the encoder models these use only the encoder of the
+transformers.These models have bidirectional attention and at each stage the attention layers can access 
+all the words in the initial sentence and by masking some of the random words in the sentence and tasking
+the model with finding or reconstructing the initial sentence.
+			These models are best suited for tasks requiring an understanding of the full sentence, such 
+as sentence classification, named entity recognition, and extractive question answering.
+Models: ALBERT,BERT,DistilBERT,ELECTRA,RoBERTa
+			
+			3. Sequence-Sequence Transformer Models -  Encoder Decoder Models use both parts of the 
+transformer architecture. At each stage the attention layers of the encoder can access all the words in 
+the initial sentence, whereas the attention layers of the decoder can only access the words positioned 
+before a given word in the input.
+			The pretraining of the models can be done by using the objective of the encoder and decoder
+models, but usually involves something a bit complex. For instance, T5 is pretrained by replacing some
+random spans of text(that contain several words) with a single mask special word, and the objective is to
+predict the text that this mask word replaces.
+		
+			These models are best suited for tasks involving generating new sentences depending on a given
+input, such as summarization, translation, or generative question answering.
+
+Models: BART,mBART,T5,Marian.
+
+
+
+Vision Transformer:
+
+		https://theaisummer.com/hugging-face-vit/
+
+Problem Statement:
+
+	For eg. monkey in a image moved from left part of the image to right part while predicting for object
+detection which means different trainable parameters are responsible for firing when the monkey appears. As
+a consequence, the same reasoning needs to be performed, and thus learned for different subsets of parameters
+corresponding to different locations. This is a tremendous waste of computation,representation and requires
+the network to relearn the same reasoning again and again, multiple times. This will also hurt the 
+generalization performance of the model.
+
+Translational Invariance:
+ 
+	Translation invariance requires that output of a mapping/network does not change when the input is 
+translated( predictions of the network doesn't change when the object in the image changes its position).
+This is possible to acheive approximately upto a certain amount but not directly. 
+
+Translation Equivariance(Related property but not the same):
+	A Translational equivariant mapping is a mapping, which when the input is translated, leads to a 
+translated feature mapping. eg: when the input image( a digit taken from mnist dataset and embedded in
+a larger canvas) is translated by a certain amount, the output feature map is translated by the same
+amount.
+     A stack of convolutions produce equivariant mapping. however, they are not invariant, an approximately
+translational invariance can be achieved in neural networks by combining convolutional layers with spatial 
+pooling operators.
+
+LongFormer(The Long Document Transformer):
+
+		Transformer based models are unable to process long sequences due to their self attention mecha-
+nism which scales quadratically with the sequence length. To address this limitation we introduce the 
+longformer with an attention mechanism that scales linearly with sequence length, making it easy to process
+documents of thousands of tokens or longer. Longformer attention mechanism is a drop-in replacement for 
+standard self-attention and combines a local windowed attention with a task motivated global attention.
+
+		The attention mechanism allows the model to enrich each token representation with information from
+anywhere else in the sequence, which is at the core of Transformer model success. To process a sequence of
+n tokens requires n^2 attention calculations for each attention head during a forward pass.
+
+Language Modelling:
+
+	-> Probablistic Language Models have the learning objective of predicting the following tokens in a
+sequence.The probability distribution for sequences of tokens[x1,x2,x3,...,xn] is achieved by factorizin
+the joint probability into conditional probabilities by using the chain rule of probability.
+
+	-> The maximum likelihood objective decomposes into a sequence of prediction problem for each term
+in the sequence given the previous terms. If these observations are discrete, the prediction can be made
+using neural network that outputs a probability distribution over all tokens using a softmax activation
+function. Autoregressive models are only sequential in nature.
+
+Autoregressive Language Modelling:
+
+		ALM is also called left to right language modelling, is the task of predicting the next token,
+either word or character, given the left context. How well a model performs can be evaluated by a metric
+is called Bits Per Character(BPC), the average log loss measured in base two for the correct token. 
+
+The GLUE benchmark score is one example of broader, multi task evaluation for language models. Difference
+between cross entropy and BPC:
+
+Entropy:
+		The goal of any language model is to convey information. To measure the average amount of information
+conveyed in the message, we use a metric called entropy. Meaning of entropy in language modelling is different
+from thermodynamics concept:
+		The entropy is a statistical parameter which measures in certain sense, how much information is 
+produced on average for each letter of text in the language. If the language is translated into binary
+digits(0 or 1) in the most efficient way, the entropy is the average number of binary digits required per
+letter of the original language.
+		Fn = - Summ(p(bn)*log2p(bn))
+		
+Cross Entropy:
+		Owing to the fact that there lacks an infinite amount of text in the language L, the true distri
+bution (P) of the language is unknown. A language model aims to learn, from the sample text, a distribu
+tion (Q) close to the emprical distribution (P) of the language. In order to measure the closeness of 
+the two distributions, cross entropy is often used. Mathematically cross entropy of Q with respect to P
+is defined as follows:
+			H(P,Q) = Ep[-logQ]
+				   = - Summ(P(x)*log(Q(x))
+				   = - Summ(P(x)*[logP(x)+log(Q(x))-log(P(x))])
+				   = - Summ(P(x)*log(P(x))) - Summ(P(x)*log(Q(x)/P(x)))
+				   = H(P) + Dkl(P||Q)
+			Dkl(P||Q) = Kullback-Leibler(KL) Divergence between P and Q also known as relative entropy of
+P with respect to Q. it should be noted that emprical entropy H(P) is unoptimizable, when we train a 
+language model with the objective of minimizing the cross entropy loss, the true objective is to minimize
+the KL divergence of the distribution, which was learned by our model from the emprical distribution of
+the language.
+
+Perplexity:
+		A measurement of how well a probability distribution or probability model predicts a sample.
+Intuitively, perplexity can be understood as a measure of uncertainity. The perplexity of a language 
+model can be seen as the perplexity when predicting the following symbol. Consider a language model with
+an entropy of three bits, in which each bit encodes two possible outcomes of equal probability. This means
+that when predicting the next symbol, that language model has to choose among 2^3 = 8 options. Thus, we
+can argue that this model has a perplexity of 8.
+
+		PPL(P,Q) = 2^H(P,Q)
+
+Bits Per Character(BPC) and Bits Per Word(BPW):
+		
+		Bits per Character (BPC) measures the average number of bits needed to encode on character. This
+leads to revisit Shannons explanation of entropy of language:
+		
+		"If the language is translated into binary digits(0 or 1) in the most efficient way, the entropy
+is the average number of binary digits required per letter of the original language".
+
+By this definition, entropy is the average number of BPC. For word level language models, the quantity is
+called bits-per-word (BPW) - the average number of words required to encode a word. It is imperative to 
+reflect on what we know mathematically about entropy and cross entropy. Firstly, we know smallest possible
+entropy for any distribution is zero. However, the entropy of a language can only be zero if that language
+has exactly one symbol.
+			min H(P) = -1 * log(1) = 0
+
+If a language has two characters that appear with equal probability, a binary system for instance, its 
+entropy would be:
+			H(P) = -0.5*log(0.5)-0.5*log(0.5) = 1
+
+Secondly, we know that entropy of a probability distribution is maximized when its uniform. This gives the
+fact that for all languages sharing the same set of symbols(vocabulary), the language that has the maximal
+entropy is the one in which all the symbols share the same set of equal probability.
+
+			H(P) = -((|V|*(1/|V|))*log(1/|V|)) = log|V| = log(27) = 4.27
+for english vocabulary - 26 letters with space.
+
+				
+Receptive Field of CNN:
+		It is the region in the input tensor space that a particular CNN's feature is affected by. it is 
+the part of a tensor that after convolution results in a feature.So basically, it gives us an idea of where
+we're getting our results from as data flows through the network.
+
+
+XLNet:
+
+Blog:
+https://towardsdatascience.com/xlnet-a-clever-language-modeling-solution-ab41e87798b0
+
+Predecessors: Transformer-XL and BERT.
+
+	->Generalized Autoregressive Pretraining for language understanding is an autoregressive language
+model based on Transformer-XL architecture that has acheived state of the art performance on different 
+NLP Tasks.
+
+	-> proposes permutation language modelling to extract bidirectional representations while avoiding
+disadvantages of using data corruption methods in BERT. The trade-off is model is more resource expensive 
+and requires more computation power. XLNet performs better in longer sequences and may underperform on
+shorter sequences.
+
+Limitations of Vanilla Transformer:
+
+	-> The model can only learn for tokens within the segment length and cannot use tokens that appeared 
+several sequences ago. The segment length limits the advantage of using attention. 	
+
+	-> Fixed-length segments that exceed the upper bound of segement length are trained seperately from
+the scratch. The tokens used to seperate segments ie. the first tokens of each segment offer little to 
+no context for the remaining tokens. This behaviour is called as context fragmentation and leads to 
+inefficient training, which might impact model performance.
+
+The transformer-XL builds on top of the vanilla transformer and introduces two techniques to overcome the
+limitations mentioned earlier:
+
+	1. Segment level Recurrence Mechanism
+	2. Relative Positional Encoding.
+	
+Transformer-XL:
+
+	The segment level recurrence mechanism addresses context fragmentation. During training, transformer-XL
+caches the hidden state of the previous segement and uses it as an extended context for when the model 
+processes the next segment. The gradient is still within the scope of the segment, but additional inputs
+allows the network to include historical information. This is similar to back-propagation through time 
+but instead of caching the last hidden sequence of the sequence, the hidden sequences of current states is
+used.
+
+	Relative Positional Encoding is used to persist the positional information for the hidden states of the
+previous segments. The positional encoding in the vanilla transformer is lost in the hidden state computation.
+eg: the tokens from the different segments could have the same positional encoding, although their position
+and importance across segments are different.
+
+The encoding involves three changes to the attention score computation:
+	
+	1. Replacing the absolute positional encoding with its relative counterpart.
+	2. Replacing the query term with a position-independant trainable parameter.
+	3. Seperate the weight vectors for producing the content-based and location-based key vectors.
+	
+This parameterization is applied to each attention module as opposed to applying a position embedding before
+the first layer and this technique accounts for the relative distance between the tokens instead of their
+absolute position.
+
+	-> Transformer-XL outperforms transformers and RNN's. However autoregressive language modelling is not
+able to capture deep bidirectional contextual information like BERT. BERT is an autoencoding pretraining
+approach that uses data corruption. Autoencoding in this context means ability to reconstruct original data
+from a corrupted input. BERT uses bidirectional information to reconstruct partially masked sequences leading
+to improved performance when compared to the Transformer. However, BERT and the autoencoding approach in
+general has limitations. 
+
+Limitations of BERT:
+
+	-> Through the use of data corruption ie. masking during pretraining and fine-tuning on actual unmasked
+data, a discrepancy arises between pre-training and fine-tuning. Furthermore, by avoiding the sequence 
+dependancies (as in autoregressive modelling) BERT cannot model with high-order long-range dependancies 
+because it assumes the predicted masked tokens independant of each other given the unmasked tokens.
+
+	-> The dependence of the masked tokens for pretraining is mitigated by randomly choosing out of the 
+selected tokens to be masked they are replaced with one of the following three options:
+		1.	The [MASK] Token (80% of the time).
+		2.	A Random Token (10% of the time).
+		3.	The original Token (10% of the time).
+		
+	-> XLNet uses the best of both the auto-encoding and auto-regressive language models to overcome  
+both of their limitations and improve above the BERT's performance.
+
+How DOes XLNet WOrks?:
+
+	Permutations: XLNet improves upon BERT performance by capturing the bidirectional context capture while
+avoiding data corruption and parallel independant predictions. It does this by introducing the variant of
+language modelling called "permutation language-modelling". The order of next-token prediction is not left
+to right and is sampled randomly instead. This drives the model to learn all the dependencies between diff
+combinations of input, thus modeling the bidirectional dependencies.
+	
+	-> In permutation language modeling, the actual order of the input sequence is not changing, only the
+order in which the tokens are predicted. We can choose which input tokens to mask and positional embeddings
+to retain the positional information. 
+
+	-> Therefore, input tokens are fed into the model in an arbitrary order, and provided the positional
+embedding are consistent; the model can figure out the actual order of the tokens.
+	
+	-> BERT predicts all the masked tokens simultaneously and relies on positional encoding to maintain 
+the correct ordering of the tokens. XLNet, on the other hand learns to predict the words in arbitrary 
+order and it is forced to model directionality in the prediction ie.(only one possible permutation is 
+is considered for the sentence out of all the possible combinations order encountered during training).
+
+	-> XLNet uses the positional embedding and recurrence mechanism of Transformer-XL to persist the 
+hidden state information from previous segments while performing permutation language modelling in the 
+current segment. While the permutation language modelling objective is beneficial for language understanding
+it causes slow convergence on preliminary experiments. To improve optimization, the model is trained to 
+predict only a part of the sequence. For tokens not selected for prediction their positional information
+is not calculated which saves speed and memory.
+
+	-> XLNet is able to extract more dependancy pairs given the same target and thus obtain denser effective
+training signals.
+
+Two-Stream Self Attention:
+	->Implementing permutation language modelling with the vanilla transformer model leads to position
+independant hidden representations. The next token probability distribution produced by the model needs 
+to be made target position aware. Two stream self attention involves two hidden representations for the
+attention mechanism to achieve position awareness.
+
+	->The query stream provides positional information but masks the target token for pretraining. The
+model is trained to predict each token in the sequence using data from the query stream. The content stream
+contains the original positional and token embedding. it encodes all the available contextual information 
+for tokens upto the current token. The content stream serves as input to the query stream.
+
+	->eg: "The quick brown fox jumps over the lazy dog." Consider predicting the word fox in the example.
+the previous words provided in the permutation are over and dog. the content stream would encode the 
+positional information for words "over" and "dog". The query stream encodes the positional information
+for "fox" and uses the information from the content stream to predict the word fox.
+
+	-> During the fine tuning process, only the content stream is used as the text representation.
+	
+T5 Transformer(Transfer Learning on Text to Text Transformer):
+
+https://colab.research.google.com/github/google-research/text-to-text-transfer-transformer/blob/main/notebooks/t5-trivia.ipynb#scrollTo=zSeyoqE7WMwu
+
+Regular Expression in Python:
+
+BART - Foods and Events Summary
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+1. Companies la how can we apply
+2. what do they look for in a candidate
+3. what sort of profile we need to build and do we need to do any certifications
+4. what difficulties you faced during job search
+5. how difficult were the interviews you gave
+6. Do we need to maintain a cover letter for companies.
+7. Projects how we need to showcase.
+8. how to build our profile and show improvisation.
+9. when do we need to apply for companies?
+
+
+

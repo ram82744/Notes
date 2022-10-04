@@ -1,0 +1,978 @@
+spinview software/fly cap - cmos camera
+biopac systems - acqknowledge.
+mp4 sound file.
+
+-----------------------------------------------------------------------------------------------------------
+
+Distributed Representations:
+
+		Neural networks use distributed representation to store knowledge which means
+that a concept is represented not by a single neuron, but by a pattern of activation over a large number of neurons.
+
+-----------------------------------------------------------------------------------------------------------
+
+Activation Functions:
+		Sigmoid FUnction: Logistic Function, whatever you input, you get an output ranging between 0 and 1
+ie. Every neuron or node or activation that you input, will be scaled to value between 0 and 1.
+
+		Sigmoid is nolinear activation and we do backpropagation to calaculate gradients and update weights
+of the network to learn better representation and optimize the output through the activation func, 
+throughout the whole network. so that it gives a better output in the output layer, which will in turn
+optimize the cost function.
+		Sigmoid functions introduce the vanishing gradient problem. this is why sigmoid function should 
+never be used over other activation functions, introduced below.
+
+Vanishing Gradient Problem - updates are very low and weights are updated with very less changes. 
+eg. 0.2 weight value can be updated to 0.199999978 value. ALso, different neural network layers learn at
+different rate. layer 1 can learn very slow while layer 4 or output layer can learn very fast since it 
+depends only on it's gradient changes whereas layer 1 weight change requires layer 2,3 and 4 changes 
+respectively.
+
+Exploding Gradient Problem - This is the opposite of vanishing gradient problem. Essentialy, we have the
+chance to run into an exploding prob when w>1 and a vanishing problem when 0<w<1. Though, for a layer to
+experience this problem, there must be more weights that satisfy this condition for either vanishing/
+exploding gradients.
+
+Gradient Clipping and Norms:
+	1. Pick a Threshold Value - If a gradient passes this value, gradient clipping or gradient norm is 
+applied.
+	2. Define if you are using a gradient clipping or gradient norm. If gradient clipping, you specified
+a threshold value eg. 0.5. If gradient explodes from 0.5 then it will be scaled back by the gradient 
+norm or clipped back to the threshold value.
+
+This is used to solve the explodin problem not the vanishing problem.
+
+RELU(Rectified Linear Unit):
+
+		RELU(x) = max(0,x)
+		
+	The relu eqn tells us this:
+		1. If the input x is less than 0, set input equal to 0.
+		2. If the input is greater than 0, set input equal to input.
+Now we have an answer for the vanishing gradient problem, since we don't get extremely small values, when
+using a RELU activation function - like 0.00000048 from the sigmoid function. Instead it either returns 0,
+causing some of the gradients to return nothing or 1.
+
+This spawns another problem: The 'Dead' Relu problem.
+		What happens if too many values are below zero, when calculating the gradients? We get a bunch of
+weights and biases that are not updated, since the update is equal to zero. 
+
+	-> Relu activation functions introduces sparcity in the neural network and this increases efficiency
+with regards to time and space complexity - const values requires less time and space complexity and 
+computationally less expensive.
+	-> Relu does not avoid the exploding gradient problem.
+
+ELU(Exponential Linear Unit):
+		
+		This activation function fixes some of the problems with RELU's and keeps some of the positive 
+things. For this activation function, an alpha (alp) value is picked, a common value is between 0.1 and 
+0.3
+					        x   		if x>0
+		ELU(x) = {								}
+					alp*(exp^(x)-1)		if x<0
+	
+		If the x value is below zero, then we get a y value slightly below zero.The y value depends on the
+x-value input and the parameter alp which you can adjust as needed(not x-value only alp). Furthermore, we
+introduce exponential operation exp^(x) which means ELU is more computationally expensive than RELU.
+
+Derivative of ELU:
+		
+						1        	if x>0
+		ELU'(x) = { 						}.
+						ELU(x)+alp 	if x<0
+
+	-> Produces activations instead of letting them to be zero, when calculating the gradient.
+	-> Does not avoid exploding gradient problem and alpha value is not learned.
+	
+Leaky RELU(Leaky Recitified Linear Unit):
+
+	This activation func also have alpha (alp) value between 0.1 to 0.3. The Leaky RELU function is commonly
+used but it does have some drawbacks compared to ELU. The equation is given as below:
+						x 		if x>0
+		LRELU(x) = {					}
+						alp*x 	if x<0
+	So, if the input is greater than 0 then y value is x. if the input is less than zero then y value is 
+alpha times the x. In this we solved the dead RELU problem but we still have to deal with exploding gradients
+
+Derivative of the Leaky RELU:
+
+							1          if(x)>0
+		LRELU'(x) = {
+							alp 	   if(x)<0
+	-> Faster compared to ELU since we don't need to compute exponential operation.
+	-> alpha value is not learned. Becomes a linear function, when it's differentiated, whereas in ELU it
+is partially linear and non-linear.
+
+SELU(Scaled Exponential Linear Unit): Need to Study.
+
+GELU(Gaussian Error Linear Unit):
+		
+			The GELU nonlinearity weights inputs by their value, rather than gates inputs by their sign 
+as in ReLUs.
+
+			An activation function used in the most recent transformers architectures like Google BERT and
+OpenAI GPT-2. Specifically, the neuron input x can be multiplied by m~Bernoulli(Φ(x)), where Φ(x) = P(X≤x); 
+X~N(0, 1) is the cumulative distribution function of the standard normal distribution.
+
+			This distribution is chosen since neuron inputs tend to follow a normal distribution, 
+especially with Batch Normalization. Since, the cumulative distribution function of a Gaussian is often 
+computed with the error function, the Gaussian Error Linear Unit (GELU) is defined as:
+
+			GELU(x) = x*P(X<=x) = x*phi(x) = x*1/2{1+erf(x/√2)}
+
+The above equation is approximated as:
+
+			GELU(x)=0.5*x*(1+tanh(√(2/π*(x+0.044715*x^3))))
+	
+So it's a combination of some functions (eg. hyperbolic tangents) and approximated numbers - there is nothing
+much to say about it. It has a negative coefficient which shifts to a positive coefficients. SO, when x is 
+greater than zero, the output will be x except from 0 to 1, where it is slights leans to a smaller y-value.
+
+		
+GELU′(x)=0.5*tanh(0.0356774*x^3+0.797885*x)+(0.0535161*x^3+0.398942*x)sech^2(0.0356774*x^3+0.797885*x)+0.5
+
+GELU is kind of doing internal normalization compared to other activation functions and we do Batch 
+Normalization externally for those neural networks using activation functions other than GELU. whereas for
+GELU it's internally normalized. 
+
+
+Parametric RELU and Kiaming Initialization:
+
+		RELU is far better than sigmoid activation functions since it avoids the vanishing gradient 
+problem.We still needed to improve the RELU and LeakyRELU is introduced which doesn't zero out the negative
+input by multiplying it with a small value(0.002 preferably) and keeps the positive input as it is. But
+this has shown a negligible increase in the accuracy of the models.
+
+		What if we learn that small value during training so that our activation function can better adapt
+to the other parameters(like weights and biases).This is where PRELU comes in. We can learn the slope param
+using backpropagation with a negligible increase in training cost.
+
+		In Feed-Forward Models, each layers learns a single slope parameter. In CNN's we can learn them 
+for each layer or we can learn them for each channel for each layer. No of slope parameters to be learned
+is equal to number of layers or sum of all the channels in every layer. This is negligible compared to
+the number of weights and biases to be learned.
+
+					y[i]       if y[i]>0
+		F(y[i]) = { 
+					a[i]y[i]   if y[i]<=0.
+
+	if aᵢ=0, f becomes ReLU.
+	if aᵢ>0, f becomes leaky ReLU
+	if aᵢ is a learnable parameter, f becomes PReLU.
+	
+		F(y[i]) = max(0,y[i]) + a[i]*min(0,y[i])
+		
+	for BackPropagation, its gradient is:
+	
+									 0,		if y[i]>0
+		Diff(F(y[i]))/Diff(a[i]) = {
+									 y[i]    if y[i]<=0
+									 
+Kaiming Initialization, or He Initialization, is an initialization method for neural networks 
+that takes into account the non-linearity of activation functions, such as ReLU activations.
+
+Why do we need to care about initialization if the weight can be updated during
+the training phase.No matter how we initialize the weight, it will be updated “well” eventually.
+
+But the reality is not so sweet. If we random initialize the weight, it will cause two problems,
+ the vanishing gradient problem and exploding gradient problem.
+ 
+Vanishing gradient problem means weights vanish to 0. If we initialize weights very small(<1), 
+the gradients tend to get smaller and smaller as we go backward with hidden layers 
+during backpropagation.Neurons in the earlier layers learn much more slowly than 
+neurons in later layers. This causes minor weight updates.
+
+Exploding gradient problem means weights explode to infinity(NaN).If we initialize weights very large(>1),
+the gradients tend to get larger and larger as we go backward with hidden layers during backpropagation. 
+Neurons in the earlier layers update in huge steps, W=W—alpha*dW, and the downward moment will increase.
+
+	A proper initialization method should avoid reducing or magnifying the magnitudes of the input 
+signals exponentially. The condition to stop this happening is:
+				
+				1/2*(n1*Var[wl]) = 1
+	
+	This implies a initialization scheme of:
+				wl~N(0,2/nl)
+	This is a zero centered Gaussian with standard deviation of sqrt(2/nl). Biases are initialized to 0.
+Kaiming initialization shows better stability than random initialization.	
+	
+Detailed Expl of kiaming initialization:
+	
+	https://towardsdatascience.com/understand-kaiming-initialization-and-implementation-detail-in-pytorch-f7aa967e9138										
+
+
+-------------------------------------------------------------------------------------------------------------
+
+Number of Nodes of complete binary tree =  2^h-1
+
+If binary search tree has height h, minimum number of nodes is h+1 (in case of left skewed and
+right skewed binary search tree). 
+If binary search tree has height h, maximum number of nodes will be when all levels are completely full.
+Total number of nodes will be 2^0 + 2^1 + …. 2^h = 2^(h+1)-1. 
+
+Kadane Algorithm:
+		To solve the maximum sum subarray problem we'll use the kadane algorithm an iterative dynammic 
+programming approach. It calculates the maximum sum subarray ending at a particular position by using
+the maximum sum subarray ending at the previous position. Follow the below steps to solve the problem:
+	
+		1. Define two variables currSum which stores maximum sum ending at the current position and the
+maxSum which stores the maximum sum so far.
+		2. Initialize currSum to 0 and maxSum with INT_MIN.
+		3. Now, iterate over the array and add the value of the current element to the currSum and check,
+a. If currSum is greater than maxSum, then update maxSum equals to currSum. 
+b. If currSum is less than zero, make currSum equals to zero.
+		4. Finally, print the value of maxSum.
+	
+def maxSumSubarray(arr):
+	n = len(arr)
+	maxSum,currSum = -1e8,0
+	for i in range(n):
+		currSum+=arr[i]
+		if(currSum>maxSum):
+			maxSum = currSum
+		if(currSum<0):
+			currSum = 0
+	return maxSum
+	
+	(or)
+	
+def Kadane(arr):
+	maxSum = currSum = None
+	for x in arr:
+		currSum = max(x,currSum+x)
+		maxSum = max(maxSum,currSum)
+	return maxSum
+
+Binary Tree:
+
+A Binary tree has atmost 2 childrens only that why binary represents the two.
+Root Node in Binary Tree has no parent and leaf Node in binary tree has no children.
+
+Binary Tree Criteria:
+	1. At most 2 children per node
+	2. exactly 1 root.
+	3. exactly 1 path between root and any node.
+There can be empty tree with zero nodes.
+
+Each Node can be represented as an object. The attributes for Node object is:
+1. Current Value.
+2. Left pointer for left children. 
+3. Right pointer for right children.
+For nodes with no children the pointers can be represented by None or null.
+ 
+Depth First Traversal:
+          In this traversal we start from the root node and go deeper into the tree vertically until we
+find no children and then we traverse laterally to other child nodes of the root. For DFT we can use the
+Stack Data Structure since we can only add or remove data from the top of the stack.
+For Implementation:
+	1. Check whether our children exits before we add them to the stack.
+	2. Always insert right child before the left child so that left child will be on top of the stack.
+	3. Time COmplexity is O(n) and Space Complexity is O(n)
+
+class Node {
+	constructor(val){
+		this.val = val;
+		this.left = null;
+		this.right = null;
+	}
+}
+
+const dft = (root) =>{
+	if(root == null) return [];
+	const result = [];
+	const stack = [root];
+	while(stack.length>0){
+		last = stack.pop();
+		result.push(last.values);
+		if(last.right) stack.push(last.right);
+		if(last.left)  stack.push(last.left);
+	}
+	return result;
+}
+
+
+Breadth First Traversal:
+         In this traversal we start from root node (level 0 ) and travel the childrens level by level 
+until there is no node left behind. For BFT we can use the queue data structure by adding the childs 
+level by level.
+
+	1. Time Complexity is O(n) and Space Complexity is O(n).
+	2. Queue is Used.
+
+const bft = (root) =>{
+	if(root == null) return [];
+	const queue = [root];
+	result = [];
+	while(queue.length>0){
+		node = queue.pop(0);
+		result.append(node.values);
+		if(node.left) queue.append(node.left);
+		if(node.right) queue.append(node.right);
+	}
+	return result;
+}
+
+
+Tree Includes:
+		This question will be asked to find whether we can find a target value is present or not given 
+the binary tree and return boolean value representing whether it is found or not.
+		
+const TreeIncludes = (root,target) =>{							const TreeIncludes = (root,target) =>{
+	if(root == null) return False;									if(root == null) return False;	
+	queue = [ root ];												if(root.values == target) return True;
+	while(queue.length>0){											leftNode = TreeIncludes(root.left,target);
+		const node = queue.pop(0);                                  rightNode = TreeIncludes(root.right,target);
+		if(node.values == target) return True;						return leftNode || rightNode;
+		if(node.left) queue.append(node.left)
+		if(node.right) queue.append(node.right)
+	}
+	return False; 
+}
+
+Tree Sum:
+		This question will be asked to find the total sum of the tree values. We can implement this for 
+the binary tree where null nodes gives 0.
+const TreeSum = (root) =>{
+	if(root == null) return 0;
+	return TreeSum(root.left) + root.values + TreeSum(root.right); 
+} 
+
+const TreeSum = (root) =>{
+	if(root==null) return 0;
+	let TotalSum = 0;
+	queue = [root];
+	while(queue.length >0){
+		const node = queue.pop(0);
+		TotalSum += node.values;
+		if(node.left) queue.push(node.left);
+		if(node.right) queue.push(node.right);
+	}
+	return TotalSum;
+}
+
+Minimum of Binary Tree:
+		This question will be asked to find the minimum in a binary tree. We can implement this using
+BFT where null nodes represent infinity.
+
+const MinTree = (root) =>{
+	if(root == null) return -1;
+	let smallest = Infinity;
+	const queue = [root];
+	while(queue.length>0){
+		const node = queue.pop(0);
+		if(node.values < smallest) smallest = node.values;
+		if(node.left) queue.push(node.left);
+		if(node.right) queue.push(node.right);
+	}
+	return smallest;
+};
+
+const MinTree = (root) =>{
+	if(root == null) return Infinity;
+	const leftMin = MinTree(root.left);
+	const rightMin = MinTree(root.right);
+	return Math.min(root.val,Math.min(leftMin,rightMin));
+};
+
+Maximum Path Sum:
+		This question will be asked to find the maximum path sum from root to leaf in a binary tree. 
+we can find the node is a leaf by checking whether both its left and right child's are null. Also we
+need to check the base case whether the node is null then we return -Infinity since we are finding the
+maximum Path Sum.
+
+const MaxPathSum = (root) =>{
+	if(root == null) return -Infinity;
+	if(not (root.left and root.right)) return root.val;
+	const MaxChildPathSum = Math.max(MaxPathSum(root.left),MaxPathSum(root.right));
+	return root.values + MaxChildPathSum;
+};
+
+Binary Search Tree:
+	In this data Structure we have a additional constraint (ie.) Every node in the right must contain an 
+integer larger than its parent and every node in the left must contain an integer smaller than its parent.
+Every subtree can be represented as another binary search tree.The common metric used to measure the size
+of the tree is the level of the tree. the level increases when the nodes get added.
+
+Full Binary Tree:
+	In this structure, all the leaf's are in the same level and in the last level all the leaf nodes must
+be filled.
+Complete Binary Tree:
+	In this structure, all the levels are completely filled except the last level where the leaf nodes are
+not yet completely filled. All full Binary Tree is necessarily a complete binary tree whereas not all complete
+binary tree is full. 
+Balanced Binary Tree:
+	1. Height Balanced Binary Tree:
+	2. Not a Height Balanced Binary Tree:
+Binary Search Trees are effectively used to implement searching,insertion and deletion operation.
+
+BST:
+			Average 	Worst Case								Average 	Worst Case
+
+Space		  O(n)			O(n)								  O(n)			O(n)
+Access		  O(log n)		O(n)								  O(1)			O(1)
+Search		  O(log n)      O(n)								  O(n)			O(n)
+Insertion	  O(log n) 		O(n)								  O(n)			O(n)
+Deletion	  O(log n)	    O(n)								  O(n)			O(n)
+
+The worst case when a binary search tree reaches a O(n) complexity is when the tree structure constructed
+is a linked list (ie.) when the child nodes added are larger than the parent node then effectively it gets
+added to the right of the tree. 
+
+
+Height of a Binary Tree:
+
+		-> To determine the height of the binary tree using breadth first search.
+		
+# Import Collections libaray to use Queue Datastructure
+import collections
+ 
+# define a Class Tree, to intiate the binary tree
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+ 
+def height(root):
+    # Set result variable to 0
+    ans = 0
+    # Initialise the queue
+    queue = collections.deque()
+    # Check if the tree has no nodes
+    if root is None:
+        return ans
+ 
+    # Append the nodes to queue and process it in while loop until its empty
+    queue.append(root)
+ 
+    # Process in while loop until there are elements in queue
+ 
+    while queue:
+        currSize = len(queue)
+        # Unless the queue is empty
+        while currSize > 0:
+            # Pop elements one-by-one
+            currNode = queue.popleft()
+            currSize -= 1
+ 
+            # Check if the node has left/right child
+            if currNode.left is not None:
+                queue.append(currNode.left)
+            if currNode.right is not None:
+                queue.append(currNode.right)
+ 
+        # Increment ans when currSize = 0
+        ans += 1
+    return ans
+
+Morris Traversal for Inorder Traversal:
+		
+		Using Morris Traversal, we can traverse the tree without using stack and recursion. The idea of
+Morris traversal is based on Threaded Binary Tree.
+
+	Threaded Binary Tree: A binary tree can be threaded by making all the right child pointers that would
+normally be null point to the in-order successor of the node(if it exists). and all left child pointers 
+that would normally be null point to the in-order predecessor of the node.
+		
+		In this traversal, we first create links to Inorder successor and print the data using these links
+and finally revert the changes to restore the original tree.
+
+Algorithm:
+	1. Initialize current as root.
+		
+	2. while current is not null:
+		if current does not have left child:
+			a. print current's data
+			b. go to the right. i.e. current = current.right
+		else:
+			a. Initialize prev as current's left child.
+			while prev.right is not null and prev.right is not equal to current:
+				prev = prev.right
+			if(prev.right is None):
+				prev.right = current
+				current = current.left
+			else:
+				a. Make prev.right normal agian by removing the thread. prev.right = None
+				b. print current.value
+				c. go to the right. i.e.current = current.right
+
+Morris Traversal for Preorder Traversal:
+	
+		Using Morris Traversal we can traverse the tree without using stack and recursion.
+		
+Algorithm:
+	1. Initialize the current node as root.
+	
+	2. while current is not null:
+		if current does not have left child:
+			a. print current's data
+			b. go to the right. i.e. current = current.right
+		else:
+			a. Initialize prev as current's left child.
+			while prev.right is not null and prev.right is not equal to current:
+				prev = prev.right
+			if prev.right is current:
+				a. Make prev.right again normal by removing the thread. prev.right = None
+				b. go to the right. i.e.current = current.right
+			else:
+				a. print current's data.
+				b. point current to prev.right node. i.e. prev.right = curr.
+				c. go to the right. i.e.current = current.right
+		
+Node Deletion in BST:
+https://www.youtube.com/watch?v=gcULXE7ViZw
+
+Binary Search Tree:
+
+
+Balanced Binary Search Tree:
+
+	A BST is balanced if :
+		1. Height of left subTree and height of right subTree differs by atmost 1
+		2. Left SubTree is Balanced.
+		3. Right SubTree is Balanced.
+
+Algorithm:
+	1. Initialize start=0, end = length-1
+	2. mid = (start+end)//2
+	3. Create a tree with mid as root node (A)
+	4. Recursively do the following steps:
+	5. Calculate mid of left subArray and make it root of left subTree of A.
+	6. Calculate mid of right subArray and make it as root of right subTree of A.
+	
+
+Binary Search Tree:
+
+		In BST the left subTree is always lesser than the root node and right subTree is always greater 
+than the root node in all levels of the tree. 
+
+	Time Complexity for Insertion in a binary Tree is O(log2N) -  since we're cutting the tree while inserting
+by searching for the element value which is larger or smaller than the tree elements value and eliminating all
+other options which is not suitable.	
+
+Node Insertion in BST:
+class TreeNode:
+	def __init__(self,value=None):
+		self.val = value
+		self.left = None
+		self.right = None 
+
+class BST:
+
+	def __init__(self):
+		self.root = None 
+	
+	def insert(self,current,value):
+		if(self.root == None):
+			self.root = TreeNode(value)
+		else:
+			if(value<current.val):
+				if(current.left==None):
+					current.left = TreeNode(value)
+				else:
+					self.insert(current.left,value)
+			else:
+				if(current.right==None):
+					current.right = TreeNode(value)
+				else:
+					self.insert(current.right,value)
+					
+Binary Search Technique Template:
+
+	public int binarySearch(int lo, int hi) {
+		if (lo >= hi) {
+			return lo;
+		}
+		int mid = lo + (hi - lo) / 2;
+		if (f(mid)) return mid;
+		if (g(mid)) {
+			return binarySearch(lo, mid);
+		} else {
+			return binarySearch(mid + 1, hi);
+		}
+	}
+
+--------------------------------------------------------------------------------------------------------
+
+Binary Search:
+
+	Concept:
+	https://www.youtube.com/watch?v=f6UU7V3szVw
+	Questions:
+	https://www.youtube.com/watch?v=W9QJ8HaRvJQ&t=1s
+	
+	When do we need to Apply Binary Search?
+	1. When a sorted array is given try binary search first.
+	2. when we need to work on a sequence of numbers that are sorted we need to apply binary search.
+
+	Binary Search can be done in sorted array. Two pointers start and end pointing to the extreme ends of
+the array can be taken and the following steps are done in recursive order to find the target element:
+	1. Search and find the middle element
+	2. Compare if the target element is greater than the middle then traverse the right side of the array
+starting from middle+1 index else traverse the left side of the array ending at middle-1 index of the array.
+	3. if the target is equal to the middle element then it is the answer we found.
+
+For Descending order:
+		1. compare if the target element is greater than the middle element then traverse the left side of 
+the array ending at middle-1 index else traverse the right side of the array at middle+1 index of the 
+array.
+		2. if the target is equal to the middle element then it is the answer we found.
+	
+	if end > start then it is increasing order sorted array.
+	if end < start then it is decreasing order sorted array.
+	
+	mid = s+((e-s)//2) = (2s+e-s)/2 = (s+e)/2 - Due to integer fixed size constraints we take the first
+approach which is similar to adding start,end and divide the sum by 2. 	
+	Time Complexity is O(log2N) - log of base power 2 to N. 
+	
+	
+Code Template For Order Agnostic Binary Search:
+
+	def BinarySearch(arr:List[int],target:int):
+		strt,end= 0,len(arr)-1
+		isAsc = arr[strt]<arr[end] 
+		while(strt<=end):
+			mid=int(strt +((end-strt)/2))
+			if(arr[mid]==target):
+				return mid
+			if(isAsc):
+				if(target<arr[mid]):
+					end = mid-1
+				else:
+					strt = mid+1
+			else:
+				if(target>arr[mid]):
+					end = mid-1
+				else:
+					strt = mid+1
+		return -1
+
+Binary Search in 2D Arrays:
+
+Given matrix is sorted in a row-wise and col-wise manner:
+
+	In matrixes if we have to search for an element we have to think about reducing rows and columns. We
+will start searching from row 0 and column n-1. we have three cases to think about:
+
+	case1: if matrix[row][col] == target:
+			return element
+	case2: if matrix[row][col] < target:
+			row+=1
+	case3: if matrix[row][col] > target:
+			col-=1
+
+Code Template:
+	Time Complexity is O(2N).
+	
+	def binarySearch2D(matrix:List[List[int]],target:int):
+		row,col = 0,len(matrix[0])-1
+		while(row<len(matrix) and col>=0):
+			elem = matrix[row][col]
+			if(elem == target):
+				return row,col
+			elif(elem > target):
+				col-=1
+			else:
+				row+=1
+		return (-1,-1)
+			
+Given Matrix is a Fully Sorted Matrix:
+	In matrices if we have to search for an element we have to think about reducing rows and columns. We
+will start searching from the middle column of the matrix. We will take rowStart as LowerBound and rowEnd
+as UpperBound and middle as the half of LB and UB.
+
+	rStart,rEnd = 0,len(matrix)-1
+	col = int(rStart+ (rEnd-rStart)/2)
+	case 1: if matrix[row][col] == target:
+			  return matrix[row][col]
+	case 2: if matrix[row][col] > target:
+			  Ignore rows before it.
+	case 3: if matrix[row][col] < target:
+			  Ignore rows after it.
+
+Code Template:
+	Time Complexity is O(log(N*M))
+	
+	
+	def binarySearch(matrix:List[List[int]],row,cStart,cEnd,target):
+		while(cStart<=cEnd):
+			mid = int(cStart+(cEnd-cStart)/2)
+			if(matrix[row][mid] == target):
+				return mid
+			elif(matrix[row][mid]<target):
+				cStart = mid +1
+			else:
+				cEnd = mid -1
+		return -1
+			
+	def binarySearch2D(matrix:List[List[int]],target:int):
+		if(matrix == []):
+			return -1,-1
+		row,col = len(matrix),len(matrix[0])
+		if(row==1):
+			return 0, binarySearch(matrix,0,0,col-1,target)
+		rStart,rEnd = 0,row-1
+		cMid = cols//2
+		# while this is true the rows will be more than 2 else there will be 2 rows only.
+		while(rStart<(rEnd-1)): 
+			mid = rStart + (rEnd-rStart)/2
+			if(matrix[mid][cMid] == target):
+				return mid,cMid
+			elif(matrix[mid][cMid] < target):
+				rStart = mid
+			else:
+				rEnd = mid
+		# there are 2 rows only,check whether the target is in the column of 2 rows.
+		if(matrix[rStart][cMid] == target):
+			return rStart,cMid
+		if(matrix[rStart+1][cMid] == target):
+			return rStart+1,cMid
+		# Check if the target is either in the left part of 1st row or right part of 1st row or left part
+of the 2nd row or right part of 2nd row.		
+		if(target<=matrix[rStart][cMid-1]):
+			return rStart,binarySearch(matrix,rStart,0,cMid-1,target)
+		if(target>=matrix[rStart][cMid+1] and target<=matrix[rStart][cols-1]):
+			return rStart,binarySearch(matrix,rStart,cMid+1,col-1,target)
+		if(target<=matrix[rStart+1][cMid-1]):
+			return rStart+1,binarySearch(matrix,rStart+1,0,cMid-1,target)
+		else:
+			return rStart+1,binarySearch(matrix,rStart+1,cMid+1,col-1,target)
+		return -1,-1
+		
+
+Two Pointers Technique:
+
+	1. we take two pointers pointing to the array, one representing the first element and other 
+representing the last element.
+	2. we add values kept at the both pointers.
+	3. If their sum is smaller than X we shift the left pointer to the right.
+	4. If their sum is larger than X we shift the right pointer to the left.
+	5. We keep moving the pointers until we get the sum as X.
+	
+	
+Fixed Size Sliding Window:
+
+	start from one end and slide to the other end of the array by subracting the first element at the starting block of the 
+window and add the last element at the ending block of the window therby maintaining the same window size.
+
+example scenario:
+	arr = [1,4,2,10,2,3,1,0,20]
+	k=4
+	
+def maxSum(arr,k):
+	n = len(arr)
+	if(n<k):
+		return -1
+	window_sum = sum(arr[:k])
+	max_sum = window_sum
+	for i in range(n-k):
+		window_sum = window_sum - arr[i] + arr[i+k]
+		max_sum = max(window_sum,max_sum)
+	return max_sum
+
+
+Dynamic Sized Sliding Window:
+	
+	Problem StateMent: Given an array of positive integers, find the subarray of integers that add up to a given number.
+	
+When to use?
+
+	1. when input size is unlimited, so memory can blow up if we are not careful of what we keep in the memory.
+	2. Do not use recursion when call stack could be overflowing.
+	3. Do not precalculate and store all possible variations.
+	4. think through all data structures that can be utilized.
+
+Approach:
+	1. start calculating window sum starting with the first element.
+	2. expand or shrink the window by one element at a time.
+	3. store the values in a variable and check for the stored value equals the given number.
+	
+def sumArray(arr,desiredSum):
+	sumVal = 0
+	sumStartIndex = 0
+	solutions = []
+	for i in range(len(arr)):
+		sumVal+=arr[i]
+		while(sumVal>desiredSum):
+			sumVal-=arr[sumStartIndex]
+			sumStartIndex+=1
+		if(sumVal==desiredSum):
+			solutions.append(arr[sumStartIndex:i+1] if i+1<len(arr) else arr[sumStartIndex:])
+	return solutions
+
+
+
+----------------------------------------------------------------------------------------------------------------
+
+https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/
+https://neetcode.io/
+
+
+BackTracking:
+
+		A backtracking algorithm is a problem solving algorithm that uses brute force approach for finding the desired output.
+		
+		The Brute force approach tries out all the possible solutions and chooses the desired/best solutions.
+	
+		The term backtracking suggests that if the current solution is not feasible, then backtrack and try other solutions. 
+Thus,recursion is used in this approach.
+
+	A backtracking algorithm uses the depth first search method. when the algorithm begins to explore the solutions, the 
+abounding function is applied so that the algorithm can determine whether the proposed solution satisfies the constraints.
+if it does, it will keep looking. if it does not, the branch is removed and the algorithm returns to the previous level.
+
+State Space Tree:
+	A state space tree is a tree that represents all of the possible states of the problem, from the root as an initial state
+to the leaf as the terminal state.
+
+Types of Backtracking Algorithm
+	There are three types of problems in backtracking –  
+
+		Decision Problem – In this, we search for a feasible solution.
+		Optimization Problem – In this, we search for the best solution.
+		Enumeration Problem – In this, we find all feasible solutions.
+
+
+BackTrack(X):
+	if(x is not a solution):
+		return false
+	if(x is a new solution):
+		add to a list of solutions
+	backtrack(expand X)
+	
+Example Problem:
+		You need to arrange the three letters x, y, and z so that z cannot be next to x.
+		
+		According to backtracking, we will construct a state space tree and look for all possible solutions, compare them with
+the given constraint. You must only keep solutions that meet the following constraint:
+
+							x                   y                  z
+						  /   \                / \                / \
+						 y     z              x   z              x   y
+					    /	    \            /     \            /     \
+					   z         y          z       x          y       x 
+					   
+		
+	
+Divide and Conquer Algorithm:
+
+		Divide and Conquer Algorithm solves the subproblems independently and dynamic programming solves
+the subproblems interdependantly.
+
+		Divide and Conquer Algorithm solves problems by top down approach using recursion. DP solves the 
+subproblems by bottom up approach iteratively.
+
+
+Greedy Algorithm:
+
+	The greedy approach is used to answer problems involving optimization. It is a strategy that focuses on obtaining the 
+maximum or minimum result. We can better understand the term problem with a few terms. The simplest and most straightforward 
+method is the Greedy method. It is not an algorithm but a technique. The decision is made on the basis of current information 
+only, regardless of future impact. This method determines whether or not an optimal solution is possible. The meet specified 
+criteria is a subset that contains only the best and most beneficial solutions. In the event of a feasible solution, if more 
+than one solution satisfies the condition, then those solutions will be accepted as feasible, whereas the best solution will 
+be the only one among all of them.
+
+	Greedy technique generally revolves around problems with this two property:
+		1. Greedy Choice Property - we solve the smallest sub problem with this approach
+		2. Optimal Substructure - we repetitively apply this techniques to the other substructures to get desired result.
+
+
+Dynamic Programming:
+
+Dynamic programming is a powerful optimization algorithm that can be used to solve a wide variety of problems. 
+One of its most important features is memoization, which allows it to quickly solve problems that require large amounts
+of data. In dynamic programming, the goal is to minimize the worst-case time to solve a problem. The simplest way to achieve 
+this is to keep track of the data that needs to be processed and only process the data as it becomes available.
+However, this approach can be expensive and inefficient, so it’s often better to use memoization instead.
+
+	DP generally revolves around problems with this two property:
+		1. Overlapping subproblems - recursive inputs for the subproblems
+		2. Optimal Substructure - we repetitively store the 
+		
+Dynamic programming
+
+The idea behind dynamic programming is quite simple. In general, to solve a given problem, we need to solve different parts
+of the problem (subproblems), then combine the solutions of the subproblems to reach an overall solution. Often when using
+a more naive method, many of the subproblems are generated and solved many times. The dynamic programming approach seeks 
+to solve each subproblem only once, thus reducing the number of computations: once the solution to a given subproblem 
+has been computed, it is stored or "memo-ized": the next time the same solution is needed, it is simply looked up. This approach
+is especially useful when the number of repeating subproblems grows exponentially as a function of the size of the input.
+
+
+	DP is similar to MDP(Markov Decision Process).
+
+Difference
+Greedy choice property
+We can make whatever choice seems best at the moment and then solve the subproblems that arise later. The choice made by a 
+greedy algorithm may depend on choices made so far but not on future choices or all the solutions to the subproblem. It 
+iteratively makes one greedy choice after another, reducing each given problem into a smaller one. In other words, a greedy 
+algorithm never reconsiders its choices.
+
+This is the main difference from dynamic programming, which is exhaustive and is guaranteed to find the solution. 
+After every stage, dynamic programming makes decisions based on all the decisions made in the previous stage, and may reconsider
+the previous stage's algorithmic path to solution.
+
+For example, let's say that you have to get from point A to point B as fast as possible, in a given city, during rush hour. 
+A dynamic programming algorithm will look into the entire traffic report, looking into all possible combinations of roads 
+you might take, and will only then tell you which way is the fastest. Of course, you might have to wait for a while until 
+the algorithm finishes, and only then can you start driving. The path you will take will be the fastest one (assuming that 
+nothing changed in the external environment).
+
+On the other hand, a greedy algorithm will start you driving immediately and will pick the road that looks the fastest 
+at every intersection. As you can imagine, this strategy might not lead to the fastest arrival time, since you might take some
+"easy" streets and then find yourself hopelessly stuck in a traffic jam.
+				
+DP PlayList:
+	45 Questions:
+	https://www.youtube.com/watch?v=73r3KWiEvyk&list=PLot-Xpze53lcvx_tjrr_m2lgD2NsRHlNO&index=2
+	https://aman.ai/primers/ai/evaluation-metrics/
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+Next 12 Months:
+Binary Search & Two Pointers.
+Sorting & Sliding Window.
+Matrix & Recursion.
+BackTracking & Branch and Bound.
+Greedy               |   3 months.
+Dynamic Programming  |	 3 months.
+Last 6 months:
+Binary Tree Problems.
+Graph Traversal Problems.
+Union Find.
+Heaps and Priority Queue.
+
+
+74 - Charu
+378 - Ramki
+2024 - Charu
+1208 - Ramki
+888 - Charu
+350 - Ramki
+911 - Charu
+162 - Ramki
+268 - Charu
+1346 - Ramki
+852 - Ramki
+
+
+Minimum number of operations to make string palindrome:
+
+	def make_palindrome(str):
+		no_of_operations = 0
+		for i in range(len(str)//2):
+			no_of_operations += abs(ord(str[len(str)-i-1]) - ord(str[i]))
+		print(no_of_operations)
+	
+Check if a string is Palindrome or not:
+	
+	def isPalindrome(str):
+		rev = str[::-1]
+		if(str==rev):
+			return True
+		return False
+
+

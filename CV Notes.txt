@@ -1,0 +1,1269 @@
+
+For your information, the typical axis order for an image tensor in Tensorflow is as follows:
+
+shape=(N, H, W, C)
+N — batch size (number of images per batch)
+H — height of the image
+W — width of the image
+
+the shape for image tensor in Pytorch is slightly different from Tensorflow tensor. It is based on the following torch.Size
+instead:
+
+torch.Size([N, C, H, W])
+N — batch size (number of images per batch)
+C — number of channels (usually uses 3 channels for RGB)
+H — height of the image
+W — width of the image
+
+	convert images to tensors in both Pytorch and Tensorflow frameworks
+	change the dimension order of Pytorch tensor using torch.permute
+	change the dimension order of Tensorflow tensor using tf.transpose
+	convert tensors from Pytorch to Tensorflow and vice versa
+
+Unlike Tensorflow which uses the term expand dimension to add a new dimension, Pytorch is based on squeeze and unsqueeze. 
+Squeezing means that you will reduce the dimension by truncating it while unsqueeze will add a new dimension to the 
+corresponding tensor.
+
+Pytorch & TensorFlow Image Functions:
+
+	https://towardsdatascience.com/convert-images-to-tensors-in-pytorch-and-tensorflow-f0ab01383a03
+	
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+Convolution Operations:
+
+https://towardsdatascience.com/a-comprehensive-introduction-to-different-types-of-convolutions-in-deep-learning-669281e58215	
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+What is Feature Map/Activation Map?
+
+A feature map, or activation map, is the output activations for a given filter (a1 in your case) and the definition is the same 
+regardless of what layer you are on.
+
+Feature map and activation map mean exactly the same thing. It is called an activation map because it is a mapping that
+corresponds to the activation of different parts of the image, and also a feature map because it is also a mapping of where a 
+certain kind of feature is found in the image. A high activation means a certain feature was found.
+
+A "rectified feature map" is just a feature map that was created using Relu. You could possibly see the term "feature map" 
+used for the result of the dot products (z1) because this is also really a map of where certain features are in the image, 
+but that is not common to see.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Pooling Operation in CNN:
+
+	In Convolutional neural network, pooling is used to reduce the spatial size of the convolved feature. 
+There are mainly two types of pooling such as max pooling and average pooling. In max pooling, a window moves over the input 
+matrix and makes the matrix with maximum values of those windows.
+
+In average pooling, it is similar to max pooling but uses average instead of maximum value. The window moves according to the 
+stride value. If the stride value is 2 then the window moves by 2 columns to right in the matrix after each operation. In short,
+the pooling technique helps to decrease the computational power required to analyze the data.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Convolution Filters:
+	
+	In Convolutional neural network, the kernel is nothing but a filter that is used to extract the features from the images.
+The kernel is a matrix that moves over the input data, performs the dot product with the sub-region of input data, and gets the 
+output as the matrix of dot products. Kernel moves on the input data by the stride value. If the stride value is 2, then kernel
+moves by 2 columns of pixels in the input matrix. In short, the kernel is used to extract high-level features like edges from 
+the image.
+
+1*1 Convolution Filter/Kernel:
+
+Suppose that I have a conv layer which outputs an (N,F,H,W) shaped tensor where:
+
+	N is the batch size
+	F is the number of convolutional filters
+	H,W are the spatial dimensions
+	Suppose the input is fed into a conv layer with F1 1x1 filters, zero padding and stride 1. Then the output of this 1x1 conv 
+	layer will have shape (N,F1,H,W).
+
+So 1x1 conv filters can be used to change the dimensionality in the filter space. If F1>F then we are increasing 
+dimensionality, if F1<F we are decreasing dimensionality, in the filter dimension.
+
+Indeed, in the Google Inception article Going Deeper with Convolutions, they state (bold is mine, not by original authors):
+
+One big problem with the above modules, at least in this naive form, is that even a modest number of 5x5 convolutions can 
+be prohibitively expensive on top of a convolutional layer with a large number of filters.
+
+This leads to the second idea of the proposed architecture: judiciously applying dimension reductions and
+projections wherever the computational requirements would increase too much otherwise. This is based on the success of 
+embeddings: even low dimensional embeddings might contain a lot of information about a relatively large image patch...1x1 
+convolutions are used to compute reductions before the expensive 3x3 and 5x5 convolutions. Besides being used as reductions,
+they also include the use of rectified linear activation which makes them dual-purpose.
+
+So in the Inception architecture, we use the 1x1 convolutional filters to reduce dimensionality in the filter dimension.
+As I explained above, these 1x1 conv layers can be used in general to change the filter space dimensionality (either increase 
+or decrease) and in the Inception architecture we see how effective these 1x1 filters can be for dimensionality reduction,
+explicitly in the filter dimension space, not the spatial dimension space.
+
+Perhaps there are other interpretations of 1x1 conv filters, but I prefer this explanation, especially in the context of the 
+Google Inception architecture.
+
+
+3*3 & 5*5 convolution filters:
+
+	If you still have some doubt, hope this one helps.
+
+If you stack two 3x3 conv layers, it eventually gets a receptive field of 5 (same as one 5x5 conv layer) with respect to the 
+input. However, the advantage of using a smaller conv layer like 3x3 is it needs less parameter (you can do the parameter 
+calculation of two 3x3 layers and one 5x5 layer --> like 2*(33) = 18 and 1(5*5) = 25 assuming 1 channel).
+Also, two conv layer gets more non-linearity in between than one 5x5 layer, so it has got more discriminative power. 
+For the receptive field part, we can understand it by looking at 1-D Case:
+		
+		a   b   c   d   e
+							1st 3*3 conv layer.
+		   e    f    g
+							2nd 3*3 conv layer.
+			    h
+
+	here we can see 1st conv layer e,f,g all have effective receptive field with respect to input as 3. here e is obtained from
+looking over a,b,c and f is obtained from looking over b,c,d and g is obtained from looking over c,d,e. which means they can
+look at 3 pixels at a time. however in 2nd convolution neuron h still looks at 3 neuron but those 3 looks at or covers 5 pixels
+of the input. so 'h' has a effective receptive field of 5 with respect to input. so, as we stack more convolutions the effective
+receptive field is increasing. 
+
+
+Convolution - elementwise multiplication and addition of filter at each position with the input.
+
+We can compute the spatial size of the output volume as a function of the input volume size (W), the receptive field size of the
+Conv Layer neurons (F), the stride with which they are applied (S), and the amount of zero padding used (P) on the border.
+You can convince yourself that the correct formula for calculating how many neurons “fit” is given by (W−F+2P)/S+1. For example
+for a 7x7 input and a 3x3 filter with stride 1 and pad 0 we would get a 5x5 output. With stride 2 we would get a 3x3 output
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+1*1 convolutions:
+
+	 the 1X1 Convolution layer was used for ‘Cross Channel Down sampling’ or Cross Channel Pooling.
+In other words, 1X1 Conv was used to reduce the number of channels while introducing non-linearity.In 1X1 Convolution simply
+means the filter is of size 1X1 (Yes — that means a single number as opposed to matrix like, say 3X3 filter). This 1X1 filter 
+will convolve over the ENTIRE input image pixel by pixel.
+
+	Staying with our example input of 64X64X3, if we choose a 1X1 filter (which would be 1X1X3), then the output will have the
+same Height and Weight as input but only one channel — 64X64X1.Now consider inputs with large number of channels — 192 for 
+example. If we want to reduce the depth and but keep the Height X Width of the feature maps (Receptive field) the same,
+then we can choose 1X1 filters (remember Number of filters = Output Channels) to achieve this effect. This effect of cross 
+channel down-sampling is called ‘Dimensionality reduction
+
+	Let us look at an example to understand how reducing dimension will reduce computational load. Suppose we need to convolve 
+28 X 28 X 192 input feature maps with 5 X 5 X 32 filters. This will result in 120.422 Million operations.
+		
+		(28*28*32)*(5*5*192) = 120.422 Million operations.
+		
+	Let us do some math with the same input feature maps but with 1X1 Conv layer before the 5 X 5 conv layer.
+	
+		No of operations for 1*1 convolution layers = (28*28*16)*(1*1*192) = 2.4 Million Operations.
+		
+		No of operations for 5*5 convolution layers = (28*28*32)*(5*5*16) = 10 Million Operations.
+		
+	By adding 1X1 Conv layer before the 5X5 Conv, while keeping the height and width of the feature map, we have reduced the 
+number of operations by a factor of 10. This will reduce the computational needs and in turn will end up being more efficient.	
+-----------------------------------------------------------------------------------------------------------------------------------
+Dilated Convolution:
+	A recent development (e.g. see paper by Fisher Yu and Vladlen Koltun) is to introduce one more hyperparameter to the CONV 
+layer called the dilation. So far we’ve only discussed CONV filters that are contiguous. However, it’s possible to have filters
+that have spaces between each cell, called dilation. As an example, in one dimension a filter w of size 3 would compute over 
+input x the following: w[0]*x[0] + w[1]*x[1] + w[2]*x[2]. This is dilation of 0. For dilation 1 the filter would instead compute 
+w[0]*x[0] + w[1]*x[2] + w[2]*x[4]; In other words there is a gap of 1 between the applications. This can be very useful in some 
+settings to use in conjunction with 0-dilated filters because it allows you to merge spatial information across the inputs much 
+more agressively with fewer layers. For example, if you stack two 3x3 CONV layers on top of each other then you can convince 
+yourself that the neurons on the 2nd layer are a function of a 5x5 patch of the input (we would say that the effective receptive
+field of these neurons is 5x5). If we use dilated convolutions then this effective receptive field would grow much quicker.
+	
+	
+Getting rid of pooling. Many people dislike the pooling operation and think that we can get away without it. For example, 
+Striving for Simplicity: The All Convolutional Net proposes to discard the pooling layer in favor of architecture that only 
+consists of repeated CONV layers. To reduce the size of the representation they suggest using larger stride in CONV layer once 
+in a while. Discarding pooling layers has also been found to be important in training good generative models, such as variational
+autoencoders (VAEs) or generative adversarial networks (GANs). It seems likely that future architectures will feature very few 
+to no pooling layers.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Difference between 'SAME' and 'VALID' padding of tensorflow/Pytorch?
+
+If you like ascii art:
+
+"VALID" = without padding:
+
+   inputs:         1  2  3  4  5  6  7  8  9  10 11 (12 13)
+                  |________________|                dropped
+                                 |_________________|
+"SAME" = with zero padding:
+
+               pad|                                      |pad
+   inputs:      0 |1  2  3  4  5  6  7  8  9  10 11 12 13|0  0
+               |________________|
+                              |_________________|
+                                             |________________|
+In this example:
+
+Input width = 13
+Filter width = 6
+Stride = 5
+Notes:
+
+"VALID" only ever drops the right-most columns (or bottom-most rows).
+"SAME" tries to pad evenly left and right, but if the amount of columns to be added is odd, it will add the extra column to the right, as is the case in this example (the same logic applies vertically: there may be an extra row of zeros at the bottom).
+Edit:
+
+About the name:
+
+With "SAME" padding, if you use a stride of 1, the layer's outputs will have the same spatial dimensions as its inputs.
+With "VALID" padding, there's no "made-up" padding inputs. The layer only uses valid input data
+
+
+torch.nn.functional.conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1) → Tensor
+
+input – input tensor of shape (minibatch,in_channels,iH,iW)
+
+weight – filters of shape (out_channels, in_channels/groups,kH,kW)
+
+bias – optional bias tensor of shape (out_channels). Default: None
+
+stride – the stride of the convolving kernel. Can be a single number or a tuple (sH, sW). Default: 1
+
+padding – implicit paddings on both sides of the input. Can be a string {‘valid’, ‘same’}, 
+single number or a tuple (padH, padW). Default: 0 padding='valid' is the same as no padding. 
+padding='same' pads the input so the output has the same shape as the input. However, this mode doesn’t support 
+any stride values other than 1.
+
+WARNING
+
+For padding='same', if the weight is even-length and dilation is odd in any dimension, a full pad() operation may be
+needed internally. Lowering performance.
+
+dilation – the spacing between kernel elements. Can be a single number or a tuple (dH, dW). Default: 1
+
+groups – split input into groups, in_channels should be divisible by the number of groups. Default: 1
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Image Classification - given an image, we expect the computer to output a discrete label, which is the main object in the image.
+In image classification we assume that there is only one (and not multiple) object in the image.
+
+Classification with Localization - In localization along with the discrete label, we also expect the compute to localize where
+exactly the object is present in the image. This localization is typically implemented using a bounding box which can be 
+identified by some numerical parameters with respect to the image boundary.Even in this case, the assumption is to have only one
+object per image.
+
+Object Detection - Object Detection extends localization to the next level where now the image is not constrained to have only one
+object, but can contain multiple objects. The task is to classify and localize all the objects in the image. Here again the 
+localization is done using the concept of bounding box.
+
+Semantic Segmentation - The goal of semantic image segmentation is to label each pixel of an image with a corresponding class of
+what is being represented.Because we’re predicting for every pixel in the image, this task is commonly referred to as dense 
+prediction.
+
+Note that unlike the previous tasks, the expected output in semantic segmentation are not just labels and bounding box parameters.
+The output itself is a high resolution image (typically of the same size as input image) in which each pixel is classified to a 
+particular class. Thus it is a pixel level image classification.
+
+Instance segmentation - Instance segmentation is one step ahead of semantic segmentation wherein along with pixel level 
+classification, we expect the computer to classify each instance of a class separately. For example in the image above there are 3
+people, technically 3 instances of the class “Person”. All the 3 are classified separately (in a different color). But semantic 
+segmentation does not differentiate between the instances of a particular class.
+
+---------------------------------------------------------------------------------------------------------------------------------
+ResNet Architecture:
+
+https://towardsdatascience.com/an-overview-of-resnet-and-its-variants-5281e2f56035
+
+	Since AlexNet, the state-of-the-art CNN architecture is going deeper and deeper. While AlexNet had only 5 convolutional layers, 
+the VGG network [3] and GoogleNet (also codenamed Inception_v1) [4] had 19 and 22 layers respectively.
+
+	However, increasing network depth does not work by simply stacking layers together. Deep networks are hard to train because
+of the notorious vanishing gradient problem — as the gradient is back-propagated to earlier layers, repeated multiplication may 
+make the gradient infinitively small.As a result, as the network goes deeper, its performance gets saturated or even starts 
+degrading rapidly.
+	
+	The core idea of ResNet is introducing a so-called “identity shortcut connection” that skips one or more layers, as shown
+in the following figure:
+
+			  x	|----------|
+		   weight layer	   |
+			F(x)| relu	   |
+		   weight layer	   |
+			    |		   |
+		F(x)+x (+)---------|
+				| relu
+		  
+		  residual block
+
+
+The authors argue that stacking layers shouldn’t degrade the network performance, because we could simply stack identity
+mappings (layer that doesn’t do anything) upon the current network, and the resulting architecture would perform the same. This 
+indicates that the deeper model should not produce a training error higher than its shallower counterparts. They hypothesize 
+that letting the stacked layers fit a residual mapping is easier than letting them directly fit the desired underlaying mapping. 
+And the residual block above explicitly allows it to do precisely that.
+
+Similar Architectures:
+
+	ResNeXt
+		Xie et al. [8] proposed a variant of ResNet that is codenamed ResNeXt with the following building block:
+		
+		|  256-d in --													| 256-d in--------------------------|
+	256, 1*1, 64	  |								------------------------------------------------        |
+		|			  |								|					|							|       |
+	64, 3*3,  64	  |						   256, 1*1, 4			256, 1*1, 4		total	   256, 1*1, 4  |
+		|			  |								|					|		   32 paths			|		|
+	64, 1*1,  256	  |							4,  3*3, 4			 4,3*3,4	   .........	4, 3*3, 4	|
+		|			  |								|					|							|		|
+	   (+)			  |							4, 1*1, 256			4, 1*1, 256					4, 1*1, 256 |
+	    |			  |								|					|							|		|
+		| 256-d out----								|------------------(+)--------------------------|		|
+																		|									|
+																	   (+)----------------------------------|
+																		|	256-d out.
+																		
+This may look familiar to you as it is very similar to the Inception module of [4], they both follow the split-transform-merge
+paradigm, except in this variant, the outputs of different paths are merged by adding them together, while in this model they 
+are depth-concatenated. Another difference is that in [4], each path is different (1x1, 3x3 and 5x5 convolution) from each other,
+while in this architecture, all paths share the same topology.
+		
+		
+The authors introduced a hyper-parameter called cardinality — the number of independent paths, to provide a new way of adjusting
+the model capacity. Experiments show that accuracy can be gained more efficiently by increasing the cardinality than by going 
+deeper or wider. The authors state that compared to Inception, this novel architecture is easier to adapt to new datasets/tasks,
+as it has a simple paradigm and only one hyper-parameter to be adjusted, while Inception has many hyper-parameters (like the 
+kernel size of the convolutional layer of each path) to tune.
+
+This novel building block has three equivalent form as follows:
+
+	
+---------------------------------------------------------------------------------------------------------------------------------
+
+i) Convolution Operation: 
+
+	There are two inputs to a convolutional operation
+
+	i) A 3D volume (input image) of size (nin x nin x channels) (channels eg:- rgb no of channels)
+
+	ii) A set of ‘k’ filters (also called as kernels or feature extractors) each one of size (f x f x channels), where f is
+	typically 3 or 5.
+	
+The output of a convolutional operation is also a 3D volume (also called as output image or feature map) of size 
+(nout x nout x k).
+
+	nout = | (nin + 2p - k)/s | + 1
+	
+	nin - number of input features
+	nout - number of output features
+	k - convolution kernel size (kernel - )
+	p - convolution padding size (padding - )
+	s - convolution stride size (stride - )
+	
+	
+	In the above GIF, we have an input volume of size 7x7x3. Two filters each of size 3x3x3. Padding =0 and Strides = 2.
+Hence the output volume is 3x3x2. 
+
+	4*4 image convoluted with 3*3 kernel = 2*2 output.
+	
+	The convolution operation calculates the sum of the element-wise multiplication between the input matrix and kernel matrix.
+Since we have no padding and the stride of 1, we can do this only 4 times. Hence, the output matrix is 2x2.
+
+	One important point of such convolution operation is that the positional connectivity exists between the input values and 
+the output values.
+
+For example, the top left values in the input matrix affect the top left value of the output matrix.More concretely, the 3x3 
+kernel is used to connect the 9 values in the input matrix to 1 value in the output matrix. A convolution operation forms a 
+many-to-one relationship.
+
+One important term used frequently is called as the Receptive filed. This is nothing but the region in the input volume that a
+particular feature extractor (filter) is looking at. In the above GIF, the 3x3 blue region in the input volume that the filter 
+covers at any given instance is the receptive field. This is also sometimes called as the context.
+
+To put in very simple terms, receptive field (context) is the area of the input image that the filter covers at any given point
+of time.
+
+ii) Max pooling operation:
+	In simple words, the function of pooling is to reduce the size of the feature map so that we have fewer parameters in the
+network.
+
+	Basically from every 2x2 block of the input feature map, we select the maximum pixel value and thus obtain a pooled feature
+map. Note that the size of the filter and strides are two important hyper-parameters in the max pooling operation.
+
+The idea is to retain only the important features (max valued pixels) from each region and throw away the information which is 
+not important. By important, I mean that information which best describes the context of the image.
+
+A very important point to note here is that both convolution operation and specially the pooling operation reduce the size of the
+image. This is called as down sampling. In the above example, the size of the image before pooling is 4x4 and after pooling is 
+2x2. In fact down sampling basically means converting a high resolution image to a low resolution image.
+
+Thus before pooling, the information which was present in a 4x4 image, after pooling, (almost) the same information is now 
+present in a 2x2 image.
+
+Now when we apply the convolution operation again, the filters in the next layer will be able to see larger context, i.e. as we
+go deeper into the network, the size of the image reduces however the receptive field increases.
+
+Notice that in a typical convolutional network, the height and width of the image gradually reduces (down sampling, because of
+pooling) which helps the filters in the deeper layers to focus on a larger receptive field (context). However the number of 
+channels/depth (number of filters used) gradually increase which helps to extract more complex features from the image.
+
+Intuitively we can make the following conclusion of the pooling operation. By down sampling, the model better understands “WHAT” 
+is present in the image, but it loses the information of “WHERE” it is present.
+
+iii) Need for up sampling
+
+As stated previously, the output of semantic segmentation is not just a class label or some bounding box parameters. In-fact 
+the output is a complete high resolution image in which all the pixels are classified.
+
+Thus if we use a regular convolutional network with pooling layers and dense layers, we will lose the “WHERE” information and 
+only retain the “WHAT” information which is not what we want. In case of segmentation we need both “WHAT” as well as “WHERE”
+information.
+
+Hence there is a need to up sample the image, i.e. convert a low resolution image to a high resolution image to recover the 
+“WHERE” information.
+
+In the literature, there are many techniques to up sample an image. Some of them are bi-linear interpolation, cubic interpolation,
+nearest neighbor interpolation, unpooling, transposed convolution, etc. However in most state of the art networks, transposed 
+convolution is the preferred choice for up sampling an image.
+
+iv) Transposed Convolution:
+
+Predefined Manual Interpolation Methods: 
+	Nearest neighbor interpolation
+	Bi-linear interpolation
+	Bi-cubic interpolation
+	
+	Transposed convolution (sometimes also called as deconvolution or fractionally strided convolution) is a technique to perform
+up sampling of an image with learnable parameters.
+
+If we want our network to learn how to up-sample optimally, we can use the transposed convolution. It does not use a 
+predefined interpolation method. It has learnable parameters.
+
+It is useful to understand the transposed convolution concept as it is used in important papers and projects such as:
+
+	1. the generator in DCGAN takes randomly sampled values to produce a full-size image.
+    
+	2. the semantic segmentation uses convolutional layers to extract features in the encoder and then restores the original 
+image size in the decoder so that it can classify every pixel in the original image.
+
+We want to associate 1 value in a matrix to 9 values in another matrix. It’s a one-to-many relationship. This is like going 
+backward of convolution operation, and it is the core idea of transposed convolution.
+
+For example, we up-sample a 2x2 matrix to a 4x4 matrix. The operation maintains the 1-to-9 relationship.
+
+Convolution Matrix:
+
+We can express a convolution operation using a matrix. It is nothing but a kernel matrix rearranged so that we can use a matrix multiplication to
+conduct convolution operations.
+
+We rearrange the 3x3 kernel into a 4x16 matrix as below:
+
+      1 4 1 0 1 4 3 0 3 3 1 0 0 0 0 0
+	  0 1 4 1 0 1 4 3 0 3 3 1 0 0 0 0
+	  0 0 0 0 1 4 1 0 1 4 3 0 3 3 1 0
+	  0 0 0 0 0 1 4 1 0 1 4 3 0 3 3 1
+	  
+This is the convolution matrix. Each row defines one convolution operation. If you do not see it, the below diagram may help. Each row of the 
+convolution matrix is just a rearranged kernel matrix with zero padding in different places.
+
+	1 4 1 0 1 4 3 0 3 3 1 0 0 0 0 0 ~  1 4 1
+									   1 4 3
+									   3 3 1
+
+To use it, we flatten the input matrix (4x4) into a column vector (16x1).
+
+	4 5 8 7    			4
+	1 8 8 8    ~        5
+	3 6 6 4             8
+	6 5 7 8             7
+					    1
+						8
+						8
+						8
+						3
+						6
+						6
+						4
+						6
+						5
+						7
+						8
+						
+We can matrix-multiply the 4x16 convolution matrix with the 16x1 input matrix (16 dimensional column vector).
+
+				122 
+				148
+				126
+				134
+				
+The output 4x1 matrix can be reshaped into a 2x2 matrix which gives us the same result as before.	
+				122    148
+				126    134
+In short, a convolution matrix is nothing but an rearranged kernel weights, and a convolution operation can be expressed using the convolution matrix.
+
+The point is that with the convolution matrix, you can go from 16 (4x4) to 4 (2x2) because the convolution matrix is 4x16. Then, if you have a 16x4 
+matrix, you can go from 4 (2x2) to 16 (4x4).
+
+Transposed Convolution Matrix:
+	We want to go from 4 (2x2) to 16 (4x4). So, we use a 16x4 matrix. But there is one more thing here. We want to maintain the 1 to 9 relationship.
+	
+	Suppose we transpose the convolution matrix C (4x16) to C.T (16x4). We can matrix-multiply C.T (16x4) with a column vector (4x1) to generate an 
+output matrix (16x1). The transposed matrix connects 1 value to 9 values in the output.
+
+		1 0 0 0										2
+		4 1 0 0 									9
+		1 4 0 0										6
+		0 1 0 0										1
+		1 0 1 0						2				6
+		4 1 4 1     				1				29
+		3 4 1 4                *    4    ==>>     	30 
+		0 3 0 1						4				7
+		3 0 1 0					  Inputs			10
+		3 3 4 1										29
+		1 3 3 4										33
+		0 1 0 3										13
+		0 0 3 0										12
+		0 0 3 3										24
+		0 0 1 3										16
+		0 0 0 1										4
+	Transposed Convolution Matrix		
+	
+The output can be reshaped into 4x4.
+
+		 2  9  6  1
+		 6 29 30  7
+		10 29 33 13
+		12 24 16  4
+		
+We have just up-sampled a smaller matrix (2x2) into a larger one (4x4). The transposed convolution maintains the 1 to 9 relationship because of the
+way it lays out the weights.
+
+NB: the actual weight values in the matrix does not have to come from the original convolution matrix. What’s important is that the weight layout is
+transposed from that of the convolution matrix.
+
+However, on a high level, transposed convolution is exactly the opposite process of a normal convolution i.e., 
+the input volume is a low resolution image and the output volume is a high resolution image.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+torch.nn.ConvTranspose2D:
+
+torch.nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, groups=1,
+bias=True, dilation=1, padding_mode='zeros', device=None, dtype=None)
+
+
+Applies a 2D transposed convolution operator over an input image composed of several input planes.
+
+	stride - controls the stride for the cross-correlation.
+
+	padding  - controls the amount of implicit zero padding on both sides for dilation * (kernel_size - 1) - padding number of points. See note below for details.
+
+	output_padding  - controls the additional size added to one side of the output shape. See note below for details.
+
+	dilation -  controls the spacing between the kernel points; also known as the à trous algorithm. It is harder to describe, but the link here has a nice visualization of what dilation does.
+
+	groups -  controls the connections between inputs and outputs. in_channels and out_channels must both be divisible by groups. For example,
+
+	At groups=1, all inputs are convolved to all outputs.
+
+	At groups=2, the operation becomes equivalent to having two conv layers side by side, each seeing half the input channels and producing half the output channels, and both subsequently concatenated.
+
+	At groups= in_channels, each input channel is convolved with its own set of filters (of size \frac{\text{out\_channels}}{\text{in\_channels}} 
+	in_channels
+	out_channels
+	 ).
+
+The parameters kernel_size, stride, padding, output_padding can either be:
+
+	a single int – in which case the same value is used for the height and width dimensions
+
+	a tuple of two ints – in which case, the first int is used for the height dimension, and the second int for the width dimension
+
+
+	in_channels (int) – Number of channels in the input image
+
+	out_channels (int) – Number of channels produced by the convolution
+
+	kernel_size (int or tuple) – Size of the convolving kernel
+
+	stride (int or tuple, optional) – Stride of the convolution. Default: 1
+
+	padding (int or tuple, optional) – dilation * (kernel_size - 1) - padding zero-padding will be added to both sides of each dimension in the input. Default: 0
+
+	output_padding (int or tuple, optional) – Additional size added to one side of each dimension in the output shape. Default: 0
+
+	groups (int, optional) – Number of blocked connections from input channels to output channels. Default: 1
+
+	bias (bool, optional) – If True, adds a learnable bias to the output. Default: True
+
+	dilation (int or tuple, optional) – Spacing between kernel elements. Default: 1
+	
+Input:  (N,Cin,Hin,Win) or (Cin,Hin,Win)
+Output: (N,Cout,Hout,Wout) or (Cout,Hout,Wout)
+
+Hout = (Hin-1)*stride[0] - 2 *padding[0] + dilation[0]*(kernel_size[0]-1) + output_padding[0] + 1
+Wout = (Win-1)*stride[1] - 2 *padding[1] + dilation[1]*(kernel_size[1]-1) + output_padding[1] + 1
+
+Variables:
+
+	Weight = the learnable weights of the module of shape (in_channels,out_channels/groups,kernel_size[0],kernel_size[1])
+	Bias = the learnable bias of the module of shape (out_channels). If bias is True, then the values of these weights are 
+sampled from U(-sqrt(k),sqrt(k)) where k = groups/Cout*(Mult{0 to 1} kernel_size[i]).
+	
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+UNET Architecture and Training:
+	The architecture contains two paths. First path is the contraction path (also called as the encoder) which is used to capture the context in the
+image. The encoder is just a traditional stack of convolutional and max pooling layers. The second path is the symmetric expanding path (also called 
+as the decoder) which is used to enable precise localization using transposed convolutions. Thus it is an end-to-end fully convolutional network (FCN),
+i.e. it only contains Convolutional layers and does not contain any Dense layer because of which it can accept image of any size.
+
+In the original paper, the size of the input image is 572x572x3, however, we will use input image of size 128x128x3. Hence the size at various 
+locations will differ from that in the original paper but the core components remain the same. Below, is the detailed explanation of the architecture:
+
+		
+		
+		Contraction Path 																	Expansion Path
+		    ENCODER																			   DECODER			16@1*1 Filter
+																												1@Conv Layer
+																								c9 128*128*16 ------------> Final Output 128*128*1
+	Input Image																						| 2@Conv Layers
+	128*128*3  																						| 16@3*3 filters
+	    |																							| padding = 'same'
+		|  2@ Conv Layers.																		u9=u9+c1 128*128*32
+		|  16@ 3*3 Filters.																			| Add Skip
+		|  padding = 'same' 																		| Connections
+	c1 128*128*16																				u9 128*128*16 
+		|  Filter 2*2																				| UpSample
+		|  Strides 2																				|
+		|  Max Pool																				c8 64*64*32
+	p1 64*64*16																					    | 2@Conv Layers
+		|  2@ Conv Layers																			| 64@3*3 Filters
+		|  32 @ 3*3 filters																			| padding='same'
+		|  padding = 'same'																		u8 = u8+c2 64*64*64
+	c2 64*64*32									U-Net												| Add Skip
+		|  Max Pool							  Architecture											| Connection
+		|  Filter 2*2																			u8 64*64*32
+		|  Strides 2																				| Upsample
+	p2 32*32*32																						| 
+		|  2@Conv Layers																		c7 32*32*64
+		|  64@3*3 filters																			| 2@Conv layers
+		|  padding = 'same'																			| 64@3*3 Filters
+	c3 32*32*64																						| padding='same'
+		|  Max Pool																				u7=u7+c3 32*32*128
+		|  Filter 2*2																				|
+		|  Strides 2																				|Add Skip
+	p3 16*16*64																						| Connection
+		|  2@Conv Layers																		u7 32*32*64	 
+		|  128@3*3 filters																			| UpSample
+		|  padding = 'same'																			|
+	c4 16*16*128																				c6 16*16*128
+		|  Max Pool																					|  2@Conv Layers
+		|  Filter 2*2																				|  128@3*3 Filters
+		|  stride 1																					|  padding='same'
+	p4 8*8*128																				    u6= u6+c4 16*16*256
+		|  2@Conv Layers																			|
+		|  256@3*3 Filters																			| Add Skip
+		|  padding='same'																			| Connection
+	c5 8*8*256																						u6
+		|										Upsample										16*16*128
+		|-------------------------------------------------------------------------------------------|
+		
+		
+	For UpSampling, Transposed Convolutional Layers are used. The parameters for each transposed convolution are such that, the height and width of the
+image are doubled while the depth of the image (no of channels) are halved.
+
+Points to Note:
+	1. 2@Conv Layers means that two consecutive convolutional layers are applied.
+	2. c1,c2......c9 are the output tensors of Convolutional layers.
+	3. p1,p2,p3,p4 are the output tensors of Max Pooling Layers.
+	4. u6, u7, u8 and u9 are the output tensors of up-sampling (transposed convolutional) layers
+	5. The left hand side is the contraction path (Encoder) where we apply regular convolutions and max pooling layers.
+	6. In the Encoder, the size of the image gradually reduces while the depth gradually increases. Starting from 128x128x3 to 8x8x256
+	7. This basically means the network learns the “WHAT” information in the image, however it has lost the “WHERE” information
+	8. The right hand side is the expansion path (Decoder) where we apply transposed convolutions along with regular convolutions
+	9. In the decoder, the size of the image gradually increases and the depth gradually decreases. Starting from 8x8x256 to 128x128x1
+	10. Intuitively, the Decoder recovers the “WHERE” information (precise localization) by gradually applying up-sampling
+	11. To get better precise locations, at every step of the decoder we use skip connections by concatenating the output of the transposed convolution layers with the feature maps from the Encoder at the same level:
+		u6 = u6 + c4
+		u7 = u7 + c3
+		u8 = u8 + c2
+		u9 = u9 + c1
+		After every concatenation we again apply two consecutive regular convolutions so that 
+		the model can learn to assemble a more precise output.
+	12. This is what gives the architecture a symmetric U-shape, hence the name UNET
+	13. On a high level, we have the following relationship:
+		Input (128x128x1) => Encoder =>(8x8x256) => Decoder =>Ouput (128x128x1)
+		
+--------------------------------------------------------------------------------------------------------------------------------		
+Vision Transformer:
+
+https://github.com/lucidrains/vit-pytorch
+
+https://github.com/jeonsworld/ViT-pytorch
+
+https://github.com/asyml/vision-transformer-pytorch
+
+
+https://www.linkedin.com/pulse/implementation-deep-reinforcement-learning-algorithms-pranay-kumar/
+
+
+InceptionNet:
+https://www.analyticsvidhya.com/blog/2018/10/understanding-inception-network-from-scratch/
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Variational AutoEncoders:
+
+Vector Quantization:
+
+	http://www.mqasem.net/vectorquantization/vq.html
+	
+	A vector quantizer maps k-dimensional vectors in the vector space R^k into finite set of vectors Y={yi;i=1,2,....,N}. Each
+vector yi is called as the code vector or codeword. and the set of all the codewords is called a codebook. Associated with the 
+codeword yi, is a nearest neighbor region called Voronoi region. it is defined by:
+
+	Vi = {x Eq R^k ||x - yi||<=||x-yj|| for all j not eqls to i}
+	
+	The set of voronoi region partition the entire space R^k such that:
+	
+	 Summ{1 to N} Vi = R^k
+	 
+	 Inters{1 to N} Vi = null set. for all i not eqls j
+	 
+	Associated with each cluster of vectors is a representative codeword. Each codeword resides in its own Voronoi region. These
+regions are seperated with imaginary lines in fig1 for illustration. Given an input vector, the codeword that is chosen to 
+represent it is the one in the same Voronoi region.
+
+	The represented codeword is determined to be the closest in Euclidean Distance from the input vector. The Euclidean distance
+is defined by:
+		
+		d(x,yi) = sqrt(Summ{j= 1 to K}(xj - yij)^2)
+		 
+		 where xj is the jth component of the input vector, and yij is the jth component of the codeword yj.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+VAE Paper:
+	chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://arxiv.org/pdf/1312.6114.pdf
+	
+VQ-VAE Paper:
+	chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://arxiv.org/pdf/1711.00937.pdf
+	
+Amortized Variational Inference:
+	https://gordonjo.github.io/post/amortized_vi/
+	
+Estimated Moving Average Concept:
+	https://medium.datadriveninvestor.com/exponentially-weighted-average-for-deep-neural-networks-39873b8230e9
+
+Refer this article for complete overview(Specifically Variational Inference and VAE Architecture):
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8774760/#__ffn_sectitle
+
+https://jaan.io/what-is-variational-autoencoder-vae-tutorial/
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+Spatial Transformers:
+
+https://pyimagesearch.com/2022/05/23/spatial-transformer-networks-using-tensorflow/
+https://github.com/daviddao/spatial-transformer-tensorflow
+
+----------------------------------------------------------------------------------------------------------------------------------
+WaveNet:
+https://github.com/vincentherrmann/pytorch-wavenet
+
+Google Cloud WaveNet Text To Speech:
+https://cloud.google.com/text-to-speech
+-----------------------------------------------------------------------------------------------------------------------------------
+Savitztky-Golay Filter(Savgol Filter)(This is used in VQ-VAE):
+	
+	The Savitzky-Golay smoothing and differentiation filter can be used to reduce high frequency noise in a signal due to its
+smoothing properties and reduce low frequency signal using differentiation. These properties are the reason the “savgol” filter
+is one of the most popular signal processing tools in spectroscopy and chemometrics. Additionally, weighted least-squares can 
+provide more control over the design of the savgol filter.
+
+scipy.signal.savgol_filter
+
+	Apply a Savitzky-Golay filter to an array.
+
+This is a 1-D filter. If x has dimension greater than 1, axis determines the axis along which the filter is applied.
+
+Parameters:
+
+xarray_like
+The data to be filtered. If x is not a single or double precision floating point array, it will be converted to type numpy.
+float64 before filtering.
+
+window_length int
+The length of the filter window (i.e., the number of coefficients). If mode is ‘interp’, window_length must be less than or equal
+to the size of x.
+
+polyorder int
+The order of the polynomial used to fit the samples. polyorder must be less than window_length.
+
+deriv int, optional
+The order of the derivative to compute. This must be a nonnegative integer. The default is 0, which means to filter the data 
+without differentiating.
+
+delta float, optional
+The spacing of the samples to which the filter will be applied. This is only used if deriv > 0. Default is 1.0.
+
+axis int, optional
+The axis of the array x along which the filter is to be applied. Default is -1.
+
+mode str, optional
+	Must be ‘mirror’, ‘constant’, ‘nearest’, ‘wrap’ or ‘interp’. This determines the type of extension to use for the padded 
+signal to which the filter is applied. When mode is ‘constant’, the padding value is given by cval. See the Notes for more 
+details on ‘mirror’, ‘constant’, ‘wrap’, and ‘nearest’. When the ‘interp’ mode is selected (the default), no extension is used.
+Instead, a degree polyorder polynomial is fit to the last window_length values of the edges, and this polynomial is used to 
+evaluate the last window_length // 2 output values.
+
+cval scalar, optional
+	Value to fill past the edges of the input if mode is ‘constant’. Default is 0.0.
+
+Returns
+	y [ndarray same shape as x] - The filtered data.
+
+Notes:
+
+	Details on the mode options:
+
+	‘mirror’: Repeats the values at the edges in reverse order. The value closest to the edge is not included.
+
+	‘nearest’: The extension contains the nearest input value.
+
+	‘constant’: The extension contains the value given by the cval argument.
+
+	‘wrap’: The extension contains the values from the other end of the array.
+
+For example, if the input is [1, 2, 3, 4, 5, 6, 7, 8], and window_length is 7, the following shows the extended data for the 
+various mode options (assuming cval is 0):
+
+mode       |   Ext   |         Input          |   Ext
+-----------+---------+------------------------+---------
+'mirror'   | 4  3  2 | 1  2  3  4  5  6  7  8 | 7  6  5
+'nearest'  | 1  1  1 | 1  2  3  4  5  6  7  8 | 8  8  8
+'constant' | 0  0  0 | 1  2  3  4  5  6  7  8 | 0  0  0
+'wrap'     | 6  7  8 | 1  2  3  4  5  6  7  8 | 1  2  3
+
+-------------------------------------------------------------------------------------------------------------------------------
+Wassertien GAN:
+
+Problem With Existing GAN's:
+	
+
+In mathematics, set A is a subset of a set B if all elements of A are also elements of B; B is then a superset of A. It is 
+possible for A and B to be equal;if they are unequal, then A is a proper subset of B. The relationship of one set being a subset
+of another is called inclusion (or sometimes containment). A is a subset of B may also be expressed as B includes (or contains)
+A or A is included (or contained) in B.
+
+In mathematics, the support of a real-valued function f is the subset of the domain containing the elements 
+which are not mapped to zero. If the domain of f is a topological space, the support of f is instead defined as
+the smallest closed set containing all points not mapped to zero. This concept is used very widely in mathematical analysis.
+
+Suppose that f:X-->R is a real-valued function whose domain is an arbitrary set  X. The set-theoretic support of f is a real-valued
+written supp(f),is the set of points in X where f is non-zero:
+
+supp(f)= x in X,: f(x) not equals to 0.
+
+Important Point:
+
+In probability theory, the support of a probability distribution can be loosely thought of as the closure of the set of possible
+values of a random variable having that distribution.
+
+Closure of a Set:
+
+Let (X,τ) be a topological space and A be a subset of X, then the closure of A is denoted by A- or cl(A) is the intersection of
+all closed sets containing A or all closed super sets of A; i.e. the smallest closed set containing A.
+
+Example:
+Let X={a,b,c,d} with topology τ={ϕ,{a},{b,c},{a,b,c},X} and A={b,d} be a subset of X.
+
+Open sets are ϕ,{a},{b,c},{a,b,c},X
+Closed sets are X,{b,c,d},{a,d},{d},ϕ
+Closed sets containing A are X,{b,c,d}
+Now A¯={b,c,d}∩X={b,c,d}
+
+
+Dense Subset of a Topological Space
+
+Let (X,τ) be a topological space and A be a subset of X, then A is said to be a dense subset of X (i.e. dense in X), if A¯=X
+
+Example:
+
+Consider the set of rational numbers Q in R (with usual topology), then the only closed set containing Q in R.
+This shows that Q=R. Hence Q is dense in R.
+
+Read more: https://www.emathzone.com/tutorials/general-topology/closure-of-a-set.html#ixzz7fUttVSJg
+
+Consider the following idealised GAN algorithm, each iteration consisting of the following steps:
+
+	1. we train the discriminator D via logistic regression between our generative model qθ vs true data p, until convergence
+	2. we extract from D an estimate of the logarithmic likelihood ratio s(y)=logqθ(y)p(y)
+	3. we update θ by taking a stochastic gradient step with objective function Ey∼qθs(y)
+
+If qθ and p are well-conditioned distributions in a low-dimensional space, this algorithm performs gradient descent on an 
+approximation to the KL divergence, so it should converge.
+
+So why don't they?
+
+Crucially, the convergence of this algorithm relies on a few assumptions never really made explicit that don't always hold:
+
+	1. that the log-likelihood-ratio logqθ(y)p(y) is finite, or
+	2. that the Jensen-Shannon divergence JS[qθ|p] is a well-behaved function of θ and
+	3. that the Bayes-optimal solution to the logistic regression problem is unique: there is a single optimal discriminator that
+does a much better job than any other classifier.
+
+In the paper we argued that in real-world situations neither of these holds, mainly because qθ and p are concentrated 
+distributions whose support may not overlap. In image modelling, distribution of natural images p is often assumed to be
+concentrated on or around a lower-dimensional manifold. Similarly, qθ is often degenerate by construction. The odds that the 
+two distributions share support in high-dimensional space, especially early in training, are very small.
+
+If qθ and p have non-overlapping support, then
+
+	1. the log-likelihood-ratio and therefore KL divergence is infinite and not well defined
+	2. the Jensen-Shannon divergence is saturated so its maximum value: To see why, consider the mutual information
+interpretation of JS divergence. If the two distributions qθ and p have no overlap, they can be separated perfectly,
+so mutual information is maximal. If this is the case, JS is locally constant in θ.
+	3. the discriminator is extremely prone to overfitting: there may be a large set of near-optimal discriminators whose loss
+is very close to the Bayes optimum. Thus, for a fixed qθ and p, training the discriminator D might lead to a different near-optimal
+solution each time depending on initialisation. And, each of these near-optimal solutions might provide very different gradients
+(or no useful gradients at all) to the generator.
+
+WGAN-GP:
+
+
+Proposition1. Let Pr and Pg be twodistributions in X,a compact metric space.Then,there is a 1-Lipschitz function f∗ which is the optimal
+solution of max ∥f∥L≤1Ey∼Pr [f(y)]−Ex∼Pg [f(x)]. Let π be the optimal coupling between Pr and Pg,defined as the minimizer of: 
+W(Pr,Pg)= infπ∈Π(Pr,Pg)E(x,y)∼π[∥x−y∥] whereΠ(Pr,Pg) is the set of joint distributions π(x,y) whose marginals are Pr and Pg,
+respectively. Then,if f∗ is differentiable ‡,π(x=y)=0§,and xt= tx+(1−t)y with 0≤t≤1,it holds that
+P(x,y)∼π h ∇f∗(xt)=y−xt ∥y−xt∥ i =1. 
+
+Corollary1.f_Delta has gradient norm1 almost everywhere under Pr and Pg.
+
+Implementingak-Lipshitzconstraintviaweightclippingbiasesthecritictowardsmuchsimpler functions.AsstatedpreviouslyinCorollary1,
+theoptimalWGANcritichasunitgradientnorm almosteverywhereunderPrandPg;underaweight-clippingconstraint,
+weobservethatourneural networkarchitectureswhichtrytoattaintheirmaximumgradientnormkenduplearningextremely simplefunctions.
+
+Definition of a marginal distribution = If X and Y are discrete random variables and f (x,y) is the value of
+their joint probability distribution at (x,y), the functions given by:
+g(x) = Σy f (x,y) and h(y) = Σx f (x,y) are the marginal distributions of X and Y , respectively (Σ = summation notation).
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Pix2Pix - Conditional GAN:
+
+https://github.com/phillipi/pix2pix
+https://www.tensorflow.org/tutorials/generative/pix2pix
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Variational Bayes and Mean Field Approximation:
+
+	In the mean-field approximation (a common type of variational Bayes), we assume that the unknown variables can be partitioned so that each partition is
+independent of the others. Using KL divergence, we can derive mutually dependent equations (one for each partition) that define 
+the shape of Q. The resultant Q function then usually takes on the form of well-known distributions that we can easily analyze. 
+The leads to an easy-to-compute iterative algorithm (similar to the EM algorithm) where we use all other previously calculated 
+partitions to derive the current one in an iterative fashion.
+
+To summarize, variational Bayes has these ideas:
+
+The Bayesian inference problem of finding a posterior on the unknown variables (parameters and latent variables) is hard and 
+usually can't be solved analytically.
+
+Variational Bayes solves this problem by finding a distribution Q that approximates the true posterior P.
+
+It uses KL-divergence as a measure of how well our approximation fits the true posterior.
+
+The mean-field approximation partitions the unknown variables and assumes each partition is independent
+(a simplifying assumption).
+
+With some (long) derivations, we can find an algorithm that iteratively computes the Q distributions for a given partition by
+using the previous values of all the other partitions.
+
+Kullback-Leibler divergence (aka information gain):
+
+	This is a non-symmetric measure of the difference between two probability distributions P and Q. It is defined for discrete
+and continuous probability distributions as such:
+
+	DKL(P||Q)DKL(P||Q)=∑iP(i)logP(i)Q(i)=∫∞−∞p(x)logp(x)q(x)dx(3)
+
+	where p and q denote the densities of P and Q.
+
+There are several ways to intuitively understand KL-divergence, but let's use information entropy because I think it's a bit more
+intuitive.
+
+KL Divergence as Information Gain
+
+To quickly summarize, entropy is the average amount of information or "surprise" for a probability distribution
+
+	An intuitive way to think about entropy is the (theoretical) minimum number of bits you need to encode an event (or symbol)
+drawn from your probability distribution
+
+For example, for a fair eight-sided die, each outcome is equi-probable, so we would need ∑81−18log2(18)=3 bits to encode the 
+roll on average. On the other hand, if we have a weighted eight-sided die where "8" came up 40 times more often than the other
+numbers, we would theoretically need about 1 bit to encode the roll on average (to get close, we would assign "8" to a single 
+bit 0, and others to something like 10, 110, 111 ... using a prefix code).
+
+In this way of viewing entropy, we're using the assumption that our symbols are drawn from probability distribution P to get as
+close as we can to the theoretical minimum code length. Of course, we rarely have an ideal encoding. What would our average 
+message length (i.e. entropy) be if we used the ideal symbols from another distribution such as Q? In that case, it would just 
+be H(P,Q):=EP[IQ(X)]=EP[−log(Q(X))], which is also called the cross entropy of P and Q. Of course, it would be larger than the 
+ideal encoding, thus we would increase the average message length. In other words, we need more information (or bits) to 
+transmit a message from the P distribution using Q's code.
+
+	Thus, KL divergence can be viewed as this average extra-message length we need when we wrongly assume the probability 
+distribution, using Q instead of P:
+
+	DKL(P||Q) = H(P,Q)−H(P) = −∑(i=1,n){1nP(i)log(Q(i)}+∑(i=1,n){1nP(i)log(P(i))}
+
+		 = ∑i=(1,n){P(i)logP(i)Q(i)}
+	
+	You can probably already see how this is a useful objective to try to minimize. If we have some theoretic minimal 
+distribution P, we want to try to find an approximation Q that tries to get as close as possible by minimizing the KL divergence.
+
+From KL divergence to Optimization:
+
+	Remember what we're trying to accomplish: we have some intractable Bayesian inference problem P(θ|X) we're trying to compute,
+where θ are the unobserved variables (parameters or latent variables) and X are our observed data. We could try to compute it 
+directly using Bayes theorem (continuous version, where p is the density of distribution P):
+
+p(θ|X)=p(X,θ)p(X)=p(X|θ)p(θ)∫∞−∞p(X|θ)p(θ)dθ=likelihood⋅priormarginal likelihood(7)
+
+However, this is generally difficult to compute because of the marginal likelihood (sometimes called the evidence). But what if
+we didn't have to directly compute the marginal likelihood and instead only needed the likelihood (and prior)?
+
+This idea leads us to the two commonly used methods to solve Bayesian inference problems: MCMC and variational inference.
+You can check out my previous post on MCMC but in general it's quite slow since it involves repeated sampling but your 
+approximation can get arbitrarily close to the actual distribution (given enough time).
+
+Variational inference on the other hand is a strict approximation that is much faster because it is an optimizing problem.
+It also can quantify the lower bound on the marginal likelihood, which can help with model selection.
+
+Now going back to our problem, we want to find an approximate distribution Q that minimizes the (reverse) KL divergence.
+Starting from reverse KL divergence, let's do some manipulation to get to an equation that's easy to interpret 
+(using continuous version here), where our approximate density is q(θ) and our theoretic one is p(θ|X):
+
+DKL(Q||P)=∫∞−∞q(θ)logq(θ)p(θ|X)dθ=∫∞−∞q(θ)logq(θ)p(θ,X)dθ+∫∞−∞q(θ)logp(X)dθ
+	     =∫∞−∞q(θ)logq(θ)p(θ,X)dθ+logp(X)(8)
+
+Where we're using Bayes theorem on the second line and the RHS integral simplifies because it's simply integrating over the
+support of q(θ) (logp(X) is not a function of θ so it factors out). Rearranging we get:
+
+	logp(X)=DKL(Q||P)−∫∞−∞q(θ)logq(θ)p(θ,X)dθ=DKL(Q||P)+L(Q)(9)
+
+where L is called the (negative) variational free energy 2, NOT the likelihood (I don't like the choice of symbols either but
+that's how it's shown in most texts). Recall that the evidence on the LHS is constant (for a given model), thus if we maximize
+the variational free energy L, we minimize (reverse) KL divergence as required.
+
+This is the crux of variational inference: we don't need to explicitly compute the posterior (or the marginal likelihood), 
+we can solve an optimization problem by finding the right distribution Q that best fits our variational free energy. Notice that
+we don't need to compute the marginal likelihood either, this is a big win because the likelihood and prior are usually easily 
+specified with the marginal likelihood intractable. Note that we need to find a function, not just a point, that maximizes L,
+which means we need to use variational calculus (see my previous post on the subject), hence the name "variational Bayes".
+
+Variational Calculus:
+
+Function of Functions:The mapping is called a functional, which we generally write with square brackets  F[y]
+
+Let's pause for a second and summarize:
+
+A function y(x) takes as input a number x and returns a number.
+
+A functional F[y] takes as input a function y(x) and returns a number.
+
+eg:
+	Define F[y]=y(3).
+
+	F[y=x]=3
+
+	F[y=x2]=(3)2=9
+
+	F[y=ln3(x)]=ln3(3)=1
+	
+Functional Over Integrals:
+
+ As with regular calculus, whose premier application is finding minima and maxima, we also want to be able to find the extrema of
+functionals. It turns out we can define something analogous to a derivative unsurprisingly called a functional derivative
+
+Euler-Lagrange Equation for calculating the functional derivative.
+
+For a given function y(x) with a real argument x, the functional:
+
+	F[y]=∫L(x,y(x),y′(x))dx
+
+has functional derivative given by:
+
+	δF/δy(x)=∂L/∂y−(d/dx)*(∂L/∂y′)
+
+Extrema of Functionals:
+
+	the real application is when we want to minimize or maximize a functional. In a similar way to how we find a point that is 
+an extremum of a function, we can also find a function that is an extremum a functional.
+
+It turns out that it's pretty much what you would expect: if we set the functional derivative to zero, we'll find a stationary point of the functional where we possibly have a local minimum or maximum (i.e. a necessary condition for extrema,
+sometimes we might find a saddle point though). In other words, this is a place where the "slope" is zero.
+
+Variational Inference with Normalizing Flows:
+	
+	Most applications of variational inference employ simple families of posterior approximations in order to allow for efficient
+inference, focusing on mean-field or other simple structured approximations.
+Mean Field Approx:	
+
+	https://bjlkeng.github.io/posts/variational-bayes-and-the-mean-field-approximation/
+	
+	
+	In physics and probability theory, Mean-field theory (MFT) or Self-consistent field theory studies the behavior of 
+high-dimensional random (stochastic) models by studying a simpler model that approximates the original by averaging over degrees
+of freedom 
+
+Variational Inference with Normalizing Flows:
+
+	The previous approaches of variational Inferences employ simple probability distributions and focused on mean field or other
+simple approximations. this restriction has a hit on quality of inferences that's why approximation through the normalizing flow
+can achieve a complex structure by passing the simple distribution through sequence of invertible transformations.
+
+
+VAE with IAF:
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://arxiv.org/pdf/1606.04934.pdf
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+INFO-GAN:
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://arxiv.org/pdf/1606.03657.pdf
+https://github.com/openai/InfoGAN
+
+
+After Info-GAN learn Beta-VAE:
+
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://openreview.net/pdf?id=Sy2fzU9gl
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+Optimization Theory:
+
+	SGD:
+	https://blog.paperspace.com/intro-to-optimization-in-deep-learning-gradient-descent/
+	RMSProp,Adam:
+	https://blog.paperspace.com/intro-to-optimization-momentum-rmsprop-adam/
+	
+Momentum:
+	Momentum uses exponential moving average by taking into account of the previous gradients to guide the search. 
+it has a coefficient called Coefficient of Momentum.It also builds speed, and quickens convergence, but you may want to use
+simulated annealing in case you overshoot the minima.In practice, the coefficient of momentum is initialized at 0.5, and 
+gradually annealed to 0.9 over multiple epochs. 	
+		
+RMS Prop:
+	RMS Prop also uses the exponential moving average and divides the gradient with the average of square of gradients.
+RMSProp also tries to dampen the oscillations, but in a different way than momentum. RMS prop also takes away the need to adjust
+learning rate,and does it automatically. More so, RMSProp choses a different learning rate for each parameter.
+
+In RMS prop, each update is done according to the equations described below. This update is done separately for each parameter.
+
+In the first equation, we compute an exponential average of the square of the gradient. Since we do it separately for each 
+parameter, gradient Gt here corresponds to the projection, or component of the gradient along the direction represented by the
+parameter we are updating.
+
+To do that, we multiply the exponential average computed till the last update with a hyperparameter, represented by the greek 
+symbol nu. We then multiply the square of the current gradient with (1 - nu). We then add them together to get the exponential 
+average till the current time step.
+
+The reason why we use exponential average is because as we saw, in the momentum example, it helps us weigh the more recent 
+gradient updates more than the less recent ones. In fact, the name "exponential" comes from the fact that the weightage of 
+previous terms falls exponentially (the most recent term is weighted as p, the next one as squared of p, then cube of p, 
+and so on.)
+
+Notice our diagram denoting pathological curvature, the components of the gradients along w1 are much larger than the ones along 
+w2. Since we are squaring and adding them, they don't cancel out, and the exponential average is large for w2 updates.
+
+Then in the second equation, we decided our step size. We move in the direction of the gradient, but our step size is affected 
+by the exponential average. We chose an initial learning rate eta, and then divide it by the average. In our case, since the 
+average of w1 is much much larger than w2, the learning step for w1 is much lesser than that of w2. Hence, this will help us 
+avoid bouncing between the ridges, and move towards the minima.
+
+The third equation is just the update step. The hyperparameter p is generally chosen to be 0.9, but you might have to tune it.
+ The epsilon is equation 2, is to ensure that we do not end up dividing by zero, and is generally chosen to be 1e-10.
+
+It's also to be noted that RMSProp implicitly performs simulated annealing. Suppose if we are heading towards the minima, and we
+want to slow down so as to not to overshoot the minima. RMSProp automatically will decrease the size of the gradient steps 
+towards minima when the steps are too large (Large steps make us prone to overshooting).
+
+Adam:
+
+Adam
+So far, we've seen RMSProp and Momentum take contrasting approaches. While momentum accelerates our search in direction of
+ minima, RMSProp impedes our search in direction of oscillations.
+
+Adam or Adaptive Moment Optimization algorithms combines the heuristics of both Momentum and RMSProp. Here are the update 
+equations.
+
+Here, we compute the exponential average of the gradient as well as the squares of the gradient for each parameters 
+(Eq 1, and Eq 2). To decide our learning step, we multiply our learning rate by average of the gradient (as was the case with 
+momentum) and divide it by the root mean square of the exponential average of square of gradients (as was the case with 
+momentum) in equation 3. Then, we add the update.
+
+The hyperparameter beta1 is generally kept around 0.9 while beta_2 is kept at 0.99. Epsilon is chosen to be 1e-10 generally.
+
+
+Conclusion:
+In this post, we have seen 3 methods to build upon gradient descent to combat the problem of pathological curvature, and 
+speed up search at the same time. These methods are often called "Adaptive Methods" since the learning step is adapted 
+according to the topology of the contour.
+
+Out of the above three, you may find momentum to be the most prevalent, despite Adam looking the most promising on paper.
+Empirical results have shown the all these algorithms can converge to different optimal local minima given the same loss.
+However, SGD with momentum seems to find more flatter minima than Adam, 
+while adaptive methods tend to converge quickly towards sharper minima. Flatter minima generalize better than sharper ones.
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Diffusion Models:
+
+https://aman.ai/primers/ai/diffusion-models/
+
+Diffusion models are inspired by non-equilibrium thermodynamics. They define a Markov chain of diffusion steps to slowly add
+random noise to data and then learn to reverse the diffusion process to construct desired data samples from the noise.
+Unlike VAE or flow models, diffusion models are learned with a fixed procedure and the latent variable has high dimensionality 
+(same as the original data).
+
+Forward Diffusion Process:
+
+	Given a data point sampled from a real data distribution x0~q(x), let us define a forward diffusion process in which we add 
+small amount of Gaussian noise to the sample in T steps, producing a sequence of noisy samples x1,x2,..xT.The step sizes are 
+controlled by a variance schedule {Beta(t) belongs to (0,1)}.
+
+		q(Xt|Xt-1) = N(xt;sqrt(1-Beta_t)*x_t-1,Beta_t,Identity)
+		
+		q(X1:t|x0) = Prod(1 to T){q(xt|xt-1)}
+		
+	The data sample x0 gradually loses its distinguishable features as the step t becomes larger. Eventually when , T->Infinity
+is equivalent to an isotropic Gaussian distribution.
+
+
+	
+		
+		
+
+		
+	Zero mean, is that well the mean is zero :-) .. isotropic means that the variance is the same in each direction. 
+The definition according to a quick google is "(of a property or phenomenon) not varying in magnitude according to the direction
+of measurement.". If we write \mathbf{I} which would indicate the identity matrix times a scalar alpha we get just this.
+
+Such an assumption is relevant if ones belief about the parameters are exactly this, that the mean is zero, and that we believe
+that the multivariate random variable changes equally in each dimension.
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+MegaPortraits:
+
+https://samsunglabs.github.io/MegaPortraits/
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Important Blog:
+
+https://lilianweng.github.io/ - To be read.
+
+https://aman.ai/primers/ai/diffusion-models/

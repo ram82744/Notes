@@ -1,4 +1,52 @@
+Why CNN is preferred over MLP (ANN) for image classification?
 
+MLPs (Multilayer Perceptron) use one perceptron for each input (e.g. pixel in an image) and the amount of weights rapidly becomes
+unmanageable for large images. It includes too many parameters because it is fully connected. Each node is connected to every other node
+in next and the previous layer, forming a very dense web — resulting in redundancy and inefficiency. As a result, difficulties arise 
+whilst training and overfitting can occur which makes it lose the ability to generalize.
+
+Another common problem is that MLPs react differently to an input (images) and its shifted version — they are not translation invariant.
+For example, if a picture of a cat appears in the top left of the image in one picture and the bottom right of another picture, the MLP 
+will try to correct itself and assume that a cat will always appear in this section of the image.
+
+Hence, MLPs are not the best idea to use for image processing. One of the main problems is that spatial information is lost when the image
+is flattened(matrix to vector) into an MLP.We thus need a way to leverage the spatial correlation of the image features (pixels) in such
+a way that we can see the cat in our picture no matter where it may appear. Solution? — CNN !
+
+CNN’s leverage the fact that nearby pixels are more strongly related than distant ones.
+We analyze the influence of nearby pixels by using something called a filter /Kernel and we move this across the image from top left to
+bottom right. For each point on the image, a value is calculated based on the filter using a convolution operation.
+A filter could be related to anything, for pictures of humans, one filter could be associated with seeing noses, and our nose filter would 
+give us an indication of how strongly a nose seems to appear in our image, and how many times and in what locations they occur.
+This reduces the number of weights that the neural network must learn compared to an MLP, and also means that when the location of these
+features changes it does not throw the neural network off.
+
+
+Internal Covariance Shift:
+
+	 Training Deep Neural Networks is complicated by the fact that the distribution of each layer's inputs changes during training.
+as the parameters of the previous layers change. This slows down the training by lowering the learning rates and careful parameter
+initialization(ie. weights and bias initialization). This is internal covariance shift and we address the problem by normalizing 
+layer inputs. it also acts as a regularizer in some cases eliminating the need for DropOut.
+
+	The input to the each layer are affected by the parameters of all the preceding layers. so that small changes to the network 
+parameters amplify as the networks grow deeper. The change in the distribution of layers input presents a problem because the 
+layers need to continuously adapt to the new distribution. This is internal covariance shift. This is handled via domain coadaptation.
+However, the notion of covariance shift can be extended beyond the learning system as a whole to apply to its parts such as sub-network
+or a layer.
+
+	L = F2(F1(u,Theta1),Theta2)
+
+	F1,F2 are arbitrary transformations, and the parameters Theta1,Theta2 are to be learned so as to minimize the loss l.
+
+
+Batch Normalization reduces ICS by fixing the means and variance of the layer inputs. Batch Normalization also has a beneficial effect
+on the gradient flow through the network by reducing the dependence of gradients on the scale of parameters or of their initial values.
+This allows us to use much higher learning rates without the risk of divergence. Furtermore, batch normalization regularizes the model
+and reduces the need for Dropout. Finally, Batch Normalization makes it possible to use saturating non-linearities by preventing the 
+network from getting stuck in the saturated modes.
+
+------------------------------------------------------------------------------------------------------------------------------------
 For your information, the typical axis order for an image tensor in Tensorflow is as follows:
 
 shape=(N, H, W, C)
@@ -29,6 +77,26 @@ Pytorch & TensorFlow Image Functions:
 	https://towardsdatascience.com/convert-images-to-tensors-in-pytorch-and-tensorflow-f0ab01383a03
 	
 	
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+Python OpenCv:
+	
+	cv2.cvtColor() method is used to convert an image from one color space to another. There are more than 150 color-space
+conversion methods available in OpenCV.
+
+	Syntax: cv2.cvtColor(src, code[, dst[, dstCn]])
+	
+Parameters:
+	src: It is the image whose color space is to be changed.
+	code: It is the color space conversion code.
+	dst: It is the output image of the same size and depth as src image. It is an optional parameter.
+	dstCn: It is the number of channels in the destination image. If the parameter is 0 then the number of
+the channels is derived automatically from src and code. It is an optional parameter.
+
+Return Value: It returns an image.
+
+
+
 -----------------------------------------------------------------------------------------------------------------------------------
 Convolution Operations:
 
@@ -101,7 +169,6 @@ explicitly in the filter dimension space, not the spatial dimension space.
 Perhaps there are other interpretations of 1x1 conv filters, but I prefer this explanation, especially in the context of the 
 Google Inception architecture.
 
-
 3*3 & 5*5 convolution filters:
 
 	If you still have some doubt, hope this one helps.
@@ -131,6 +198,121 @@ We can compute the spatial size of the output volume as a function of the input 
 Conv Layer neurons (F), the stride with which they are applied (S), and the amount of zero padding used (P) on the border.
 You can convince yourself that the correct formula for calculating how many neurons “fit” is given by (W−F+2P)/S+1. For example
 for a 7x7 input and a 3x3 filter with stride 1 and pad 0 we would get a 5x5 output. With stride 2 we would get a 3x3 output
+
+
+Global Average Pooling:
+
+In this paper, we propose another strategy called global average pooling to replace the traditional fully connected layers in CNN. 
+The idea is to generate one feature map for each corresponding category of the classification task in the last mlpconv layer. 
+Instead of adding fully connected layers on top of the feature maps, we take the average of each feature map, and the resulting vector
+is fed directly into the softmax layer. One advantage of global average pooling over the fully connected layers is that it is more native
+to the convolution structure by enforcing correspondences between feature maps and categories. Thus the feature maps can be easily 
+interpreted as categories confidence maps. Another advantage is that there is no parameter to optimize in the global average pooling 
+thus overfitting is avoided at this layer. Futhermore, global average pooling sums out the spatial information, thus it is more robust
+to spatial translations of the input.
+
+The global average pooling means that you have a 3D 8,8,10 tensor and compute the average over the 8,8 slices, you end up with a 3D tensor
+of shape 1,1,10 that you reshape into a 1D vector of shape 10. And then you add a softmax operator without any operation in between. 
+The tensor before the average pooling is supposed to have as many channels as your model has classification categories.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Normalization:
+
+	Let us establish some notations, that will make the rest of the content,
+easy to follow. We assume that the activations at any layer would be of the dimensions NxCxHxW (and, of course, in the real 
+number space), where, N = Batch Size, C = Number of Channels (filters) in that layer, H = Height of each activation map, 
+W = Width ofeach activation map.
+
+							x in R^(N*C*H*W)
+
+Generally, normalization of activations require shifting and scaling the activations by mean and standard deviation respectively.
+Batch Normalization, Instance Normalization and Layer Normalization differ in the manner these statistics are calculated.
+
+
+Batch Normalization
+
+	In “Batch Normalization”, mean and variance are calculated for each individual channel across all samples and both spatial
+dimensions.
+
+	Batch normalization is a method that normalizes activations in a network across the mini-batch of definite size. For each 
+feature, batch normalization computes the mean and variance of that feature in the mini-batch. It then subtracts the mean and 
+divides the feature by its mini-batch standard deviation.
+
+	But wait, what if increasing the magnitude of the weights made the network perform better?
+
+	To solve this issue, we can add γ and β as scale and shift learn-able parameters respectively.
+	
+Problems associated with Batch Normalization :
+
+Variable Batch Size → If batch size is of 1, then variance would be 0 which doesn’t allow batch norm to work. Furthermore, 
+if we have small mini-batch size then it becomes too noisy and training might affect.
+There would also be a problem in distributed training. As, if you are computing in different machines then you have to 
+take same batch size because otherwise γ and β will be different for different systems.
+
+Recurrent Neural Network → In an RNN, the recurrent activations of each time-step will have a different story to tell
+(i.e. statistics). This means that we have to fit a separate batch norm layer for each time-step. This makes the model more 
+complicated and space consuming because it forces us to store the statistics for each time-step during training.
+
+Instance(or Contrast) Normalization
+
+	In “Instance Normalization”, mean and variance are calculated for each individual channel for each individual sample across
+both spatial dimensions.
+
+	Layer normalization and instance normalization is very similar to each other but the difference between them is that 
+instance normalization normalizes across each channel in each training example instead of normalizing across input features in 
+an training example. Unlike batch normalization, the instance normalization layer is applied at test time as well(due to 
+non-dependency of mini-batch).
+
+Here, x in R^(T ×C×W×H) be an input tensor containing a batch of T images. Let xtijk denote its tijk-th element, 
+where k and j span spatial dimensions(Height and Width of the image), i is the feature channel (color channel if the input 
+is an RGB image), and t is the index of the image in the batch.
+
+This technique is originally devised for style transfer, the problem instance normalization tries to address is that the network
+should be agnostic to the contrast of the original image.
+
+
+Layer Normalization:
+
+	In “Layer Normalization”, mean and variance are calculated for each individual sample across all channels and both spatial 
+dimensions.
+
+	Layer normalization normalizes input across the features instead of normalizing input features across the batch dimension 
+in batch normalization.
+
+	A mini-batch consists of multiple examples with the same number of features. Mini-batches are matrices(or tensors) where one 
+axis corresponds to the batch and the other axis(or axes) correspond to the feature dimensions.
+
+
+
+Weight Normalization:
+
+	Wait, why don’t we normalize weights of a layer instead of normalizing the activations directly. Well, Weight Normalization
+does exactly that.
+
+Weight normalization reparameterizes the weights (ω) as :
+
+		w = (q/||v||)*v
+		
+It separates the weight vector from its direction, this has a similar effect as in batch normalization with variance. The only 
+difference is in variation instead of direction.
+
+As for the mean, authors of this paper cleverly combine mean-only batch normalization and weight normalization to get the desired
+output even in small mini-batches. It means that they subtract out the mean of the minibatch but do not divide by the variance.
+Finally, they use weight normalization instead of dividing by variance.
+
+Note: Mean is less noisy as compared to variance(which above makes mean a good choice over variance) due to the law of large 
+numbers.
+
+Group Normalization:
+
+	As the name suggests, Group Normalization normalizes over group of channels for each training examples. We can say that, 
+Group Norm is in between Instance Norm and Layer Norm.
+
+∵ When we put all the channels into a single group, group normalization becomes Layer normalization. And, when we put each 
+channel into different groups it becomes Instance normalization.
+
+
+
 
 
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -163,6 +345,7 @@ channel down-sampling is called ‘Dimensionality reduction
 number of operations by a factor of 10. This will reduce the computational needs and in turn will end up being more efficient.	
 -----------------------------------------------------------------------------------------------------------------------------------
 Dilated Convolution:
+
 	A recent development (e.g. see paper by Fisher Yu and Vladlen Koltun) is to introduce one more hyperparameter to the CONV 
 layer called the dilation. So far we’ve only discussed CONV filters that are contiguous. However, it’s possible to have filters
 that have spaces between each cell, called dilation. As an example, in one dimension a filter w of size 3 would compute over 
@@ -174,12 +357,625 @@ yourself that the neurons on the 2nd layer are a function of a 5x5 patch of the 
 field of these neurons is 5x5). If we use dilated convolutions then this effective receptive field would grow much quicker.
 	
 	
-Getting rid of pooling. Many people dislike the pooling operation and think that we can get away without it. For example, 
+	Getting rid of pooling. Many people dislike the pooling operation and think that we can get away without it. For example, 
 Striving for Simplicity: The All Convolutional Net proposes to discard the pooling layer in favor of architecture that only 
 consists of repeated CONV layers. To reduce the size of the representation they suggest using larger stride in CONV layer once 
 in a while. Discarding pooling layers has also been found to be important in training good generative models, such as variational
 autoencoders (VAEs) or generative adversarial networks (GANs). It seems likely that future architectures will feature very few 
 to no pooling layers.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Causal Convolutions:
+
+	Causal comes from causality, which means if we have a canonical 'direction' we are reading our data, 
+then data that is ahead of the current position cannot factor into the calculation. This is most obvious in time series, so only
+previous timesteps factor into the current and not something 'future' relative to the current.
+
+	As the convolutional filter slides over the data, it looks into the future as well as the past. Causal convolution ensures
+that the output at time t derives only from inputs from time t - 1.
+
+	Another useful trick is dilated convolutional networks. Dilation means that the filter only accesses every nth element(as 
+specified).
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+MobileNets are based on Depthwise Seperable Convolution Architecture.
+
+DepthWise and DepthWise Seperable Convolution:
+
+
+Standard convolution layer of a neural network involve input*output*width*height parameters, where width and height are width and height 
+of filter. For an input channel of 10 and output of 20 with 7*7 filter this will have 2800 parameters. Having so much parameters increases
+the chance of over-fitting. To avoid such scenarios, people have many a times looked around for different convolutions. Depth-wise 
+convolution and depth-wise separable convolution fall into those categories.
+
+
+Depth-wise convolution
+
+In this convolution, we apply a 2-d depth filter at each depth level of input tensor. Lets understand this through an example. 
+Suppose our input tensor is 3* 8 *8 (input_channels*width* height). Filter is 3*3*3. In a standard convolution we would directly convolve
+in depth dimension as well
+
+In depth-wise convolution, we use each filter channel only at one input channel. In the example, we have 3 channel filter and 3 channel 
+image. What we do is — break the filter and image into three different channels and then convolve the corresponding image with corresponding
+channel and then stack them back.
+
+To produce same effect with normal convolution, what we need to do is- select a channel, make all the elements zero in the filter except 
+that channel and then convolve. We will need three different filters — one for each channel.
+Although parameters are remaining same, this convolution gives you three output channels with only one 3-channel filter while, you would 
+require three 3-channel filters if you would use normal convolution.
+
+Depth-wise Separable Convolution:
+
+This convolution originated from the idea that depth and spatial dimension of a filter can be separated- thus the name separable.
+
+The idea applied here is to separate depth dimension from horizontal (width*height) which gives us depth-wise separable convolution where 
+we perform depth-wise convolution and after that we use a 1*1 filter to cover the depth dimension
+
+One thing to notice is, how much parameters are reduced by this convolution to output same no. of channels. To produce one channels we need
+3*3*3 parameters to perform depth-wise convolution and 1*3 parameters to perform further convolution in depth dimension. But If we need 3
+output channels, we only need 3 1*3 depth filter giving us total of 36 ( = 27 +9) parameters while for same no. of output channels in normal
+convolution, we need 3 3*3*3 filters giving us total of 81 parameters. Having too many parameters forces function to memorize rather than 
+learn and thus over-fitting. Depth-wise separable convolution saves us from that.
+
+
+A depthwise-separable convolution is the combination of both depthwise followed by a pointwise convolutions.
+
+Main advantages of depthwise-separable convolutions
+
+They have lesser number of parameters to adjust as compared to the standard CNN’s, which reduces overfitting
+They are computationally cheaper because of fewer computations which makes them a great option to run on low-end hardware.
+
+
+DF is the spatial width and height of a square input feature map1, M is the number of input channels(input depth), DG is the spatial width 
+and height of a square output feature map and N is the number of output channel(output depth).
+
+Depthwise separable convolutions cost: 
+
+	Dk*DK*M*DF*DF + M*N*DF*DF
+	
+By expressing convolution as a two step process of filtering and combining we get a reduction in computation of:
+
+ =  (DK*DK*M*DF*DF)+ (M*N*DF*DF)/ (DK*DK*M*N*DF*DF) 
+	
+ =   1/N + 1/D{k}^2
+ 
+MobileNet uses 3 × 3 depthwise separable convolutions which uses between 8 to 9 times less computation than standard convolutions at only
+a small reduction in accuracy
+
+
+	"""
+	Normal Convolution and depthwise-separable convolutions 
+	should output a vector with the same dimensions
+	input shape = 3, 28, 38 (RGB image of 28x 28)
+	output shape = 10, 28, 28 (10 output channels with same width and height)
+	"""
+	import torch
+	import torch.nn as nn
+
+	input = torch.rand(3, 28, 28)
+
+	### Conv2d (normal)
+	
+	conv_layer= nn.Conv2d(in_channels=3, out_channels=10, kernel_size=3, padding=1)
+	conv_layer_n_params = sum(p.numel() for p in conv_layer.parameters() if p.requires_grad)
+	conv_out = conv_layer(input)
+	print(f"Conv layer param numbers: {conv_layer_n_params}")
+	print(conv_out.shape)
+
+	### Depthwise convolution
+	
+	# by adding 'groups' param, you perform depthwise conv
+	depthwise_layer= nn.Conv2d(in_channels=3, out_channels=3, kernel_size=3, padding=1, groups=3)
+	depthwise_layer_n_params = sum(p.numel() for p in depthwise_layer.parameters() if p.requires_grad)
+	depthwise_out = depthwise_layer(input)
+	print(f"DepthwiseConv layer param numbers: {depthwise_layer_n_params}")
+	print(depthwise_out.shape)
+
+	### Pointwise Convolution (using depthwise output) <-- This is called DEPTHWISE-SEPARABLE CONVOLUTION
+	
+	pointwise_layer = nn.Conv2d(in_channels=3, out_channels=10, kernel_size=1)
+	pointwise_layer_n_params = sum(p.numel() for p in pointwise_layer.parameters() if p.requires_grad)
+	pointwise_out = pointwise_layer(depthwise_out)
+	print(f"PointwiseConv layer param numbers: {pointwise_layer_n_params}")
+	print(pointwise_out.shape)
+
+	print(f"Conv params: {conv_layer_n_params} / Depthwise-separable params: {depthwise_layer_n_params + pointwise_layer_n_params}")
+
+	Conv Params: 280
+	
+	torch.size([10,28,28])
+	
+	Depthwise-seperable params: 30
+	
+	torch.size([3,28,28])
+	
+	pointwise layer seperable params: 40
+	
+	torch.size([10,28,28])
+	
+	Conv params: 280 / Depthwise Seperable Params: 70
+	
+Architecture Points to Note:
+
+The MobileNet structure is built on depthwise separable convolutions as mentioned in the previous section except for the first layer which
+is a full convolution.
+
+All layers are followed by a batchnorm and ReLU nonlinearity with the exception of the final fully connected layer which has no 
+nonlinearity and feeds into a softmax layer for classification.	
+	
+Down sampling is handled with strided convolution in the depthwise convolutions as well as in the first layer. A final average pooling
+reduces the spatial resolution to 1 before the fully connected layer. Counting depthwise and pointwise convolutions as separate layers,
+MobileNet has 28 layers.	
+	
+		3*3 Conv															3*3 DepthWise Conv
+		   |																		|
+		  BN																Batch Normalization
+		   |																		|
+		 ReLU										   							   ReLU
+																					|
+	Standard Convolution Operation												1*1 Conv
+																					|
+																			Batch Normalization
+																					|
+																				   ReLU
+													  
+																	Depth Wise Seperable Convolution Operation
+												
+However,contrary to training large models we use less regularization and data augmentation techniques because small models have less trouble
+with overfitting.When training MobileNets we do not use side heads or label smoothing and additionally reduce the amount image of distortions
+by limiting the size of small crops that are used in large Inception training.	
+	
+Width Multiplier - Thinner Models:	
+	
+In order to construct these smaller and less computationally expensive models we introduce a very simple parameter α called width multiplier.
+The role of the width multiplier α is to thin a network uniformly at each layer.
+	
+The computational cost of a depthwise separable convolution with width multiplier α is:
+	
+	DK*DK*αM*DF*DF+αM*αN*DF*DF 
+
+	where α = (0,1] with typical settings of 1, 0.75, 0.5 and 0.25. 
+
+α=1 is the baseline MobileNet and α<1 are reduced MobileNets. Width multiplier has the effect of reducing computational cost and the number 
+of parameters quadratically by roughly α^2. Width multiplier can be applied to any model structure to define a new smaller model with a 
+reasonable accuracy, latency and size tradeoff. It is used to define a new reduced structure that needs to be trained from scratch.
+
+Resolution Multiplier - Reduced Representation:
+
+The second hyper-parameter to reduce the computational cost of a neural network is a resolution multiplier ρ. We apply this to the input
+image and the internal representation of every layer is subsequently reduced by the same multiplier. In practice we implicitly
+set ρ by setting the input resolution. We can now express the computational cost for the core layers of our network as depthwise separable 
+convolutions with width multiplier α and resolution multiplier ρ:
+
+	DK*DK*αM*ρDF*ρDF+αM*αN*ρDF*ρDF
+	
+where ρ is (0,1] which is typically set implicitly so that the input resolution of the network is 224,192,160 or 128. ρ=1 is the baseline 
+MobileNet and ρ<1 are reduced computation MobileNets.
+
+
+MobileNetV2:
+
+In MobileNetV2, a better module is introduced with inverted residual structure. Non-linearities in narrow layers are removed this time.
+With MobileNetV2 as backbone for feature extraction, state-of-the-art performances are also achieved for object detection and semantic
+segmentation.
+
+
+MobileNetV3:
+
+MobileNetV1 introduced the depth-wise convolution to reduce the number of parameters. The second version added an expansion 
+layer in the block to get a system of expansion-filtering-compression using the three layers. This system — coined as Inverted 
+Residual Block — further helped in improving the performance.
+
+The latest version adds squeeze and excitation layers in the initial building block taken from V2, 
+which goes for further treatment (NAS and NetAdapt).
+
+SENETS:
+
+		Squeeze-and-Excitation Networks (SENets) introduce a building block for CNNs that improves channel interdependencies 
+		at almost no computational cost.
+
+		Let’s add parameters to each channel of a convolutional block so that the network can adaptively adjust the weighting
+		of each feature map.
+
+		CNNs use their convolutional filters to extract hierarchal information from images. Lower layers find trivial pieces of context
+		like edges or high frequencies, while upper layers can detect faces,
+		text or other complex geometrical shapes. They extract whatever is necessary to solve a task efficiently.
+
+
+		All of this works by fusing the spatial and channel information of an image. The different filters will first find spatial
+		features in each input channel before adding the information across all available output channels.
+
+		All you need to understand for now is that the network weights each of its channels equally when creating the output
+		feature maps. SENets are all about changing this by adding a content aware mechanism to weight each channel adaptively.
+		this could mean adding a single parameter to each channel and giving it a linear scalar how relevant each one is.
+
+		First, they get a global understanding of each channel by squeezing the feature maps to a single numeric value. This results in 
+		a vector of size n, where n is equal to the number of convolutional channels. Afterwards, it is fed through a two-layer neural 
+		network, which outputs a vector of the same size.These n values can now be used as weights on the original features maps, 
+		scaling each channel based on its importance.
+
+		1. The function is given an input convolutional block and the current number of channels it has
+		2. We squeeze each channel to a single numeric value using average pooling
+		3. A fully connected layer followed by a ReLU function adds the necessary nonlinearity. It’s output channel complexity is also
+		reduced by a certain ratio.
+		4. A second fully connected layer followed by a Sigmoid activation gives each channel a smooth gating function.
+		5. At last, we weight each feature map of the convolutional block based on the result of our side network.
+
+
+		def se_block(in_block, ch, ratio=16):
+			x = GlobalAveragePooling2D()(in_block)
+			x = Dense(ch//ratio, activation='relu')(x)
+			x = Dense(ch, activation='sigmoid')(x)
+			return multiply()([in_block, x])
+	
+	
+The addition of squeeze and excitation module helps by giving un-equal weights to different channels from the input when 
+creating the output feature maps as supposed to equal weight that a normal CNN gives. Squeeze and excitation is generally added
+separately to the resnet/inception blocks. However, in this model, it is applied in parallel to the resnet layers. The Squeeze 
+and excitation layers are as follows(small arrows at the bottom of the figure above):
+
+Pool -> Dense -> ReLU -> Dense -> h-swish -> scale back.	
+
+Neural Architecture Search for light models
+
+Neural Architecture Search (NAS)[3] in laymen’s terms is the process of trying to make a model (generally an RNN also called 
+controller) output a thread of modules that can be put together to form a model that gives the best accuracy possible by 
+searching among all the possible combinations.
+
+This is similar to the standard process on which Reinforcement Learning works. There is a reward function according to which the
+controller is updated. This is done in pursuit of a state where the reward is maximum from the current state.
+In NAS terms, the model moves from the current state to a state where the reward accuracy increases.
+
+NAS is used to get the structure of an efficient sub-module that can be stacked together repeatedly to get the whole model.
+However, here it is used in addition to the NetAdapt algorithm(discussed later)
+which will be used to decide the number of filters for every layer. So, the NAS will be used for optimising each block.
+
+NAS is used to get the structure of an efficient sub-module that can be stacked together repeatedly to get the whole model. 
+However, here it is used in addition to the NetAdapt algorithm(discussed later) 
+which will be used to decide the number of filters for every layer. So, the NAS will be used for optimising each block.
+
+We work on a new reward function: ACC(m) × [LAT(m)/TAR]^w, which considers both accuracy and latency (total inference time) for 
+the model. ACC is accuracy, LAT is latency, TAR is target latency, and m is the model that resulted from the search. 
+Here w is a constant.
+
+Network Improvements:
+
+Network Improvements have been made in two ways:
+
+Layer removal:
+	
+	 This is mainly done in the first few layers and the last layers. Following are the tweaks that the paper does:
+		
+In the last block, the 1x1 expansion layer taken from the Inverted Residual Unit from MobileNetV2 is moved past the pooling 
+layer.This means the 1x1 layer works on feature maps of size 1x1 instead of 7x7 making it efficient in terms of computation and 
+latency.
+
+We know that the expansion layer takes a lot of computation. But now that it is moved behind a pooling layer, we don’t need to
+do the compression done by projection layer from the last layer from the previous block. Thus we can remove that projection 
+layer and the filtering layer from the previous bottleneck layer(block). Both these changes are illustrated in this figure.
+
+An experimental change is to use 16 filters in the initial 3x3 layer instead of 32, which is the default mobile models.
+These changes add up to save nine milliseconds of inference time.
+
+Summary: Expansion layer is moved after the avg pooling layer and the filter layer and projection layer are removed from the
+last stage
+
+swish non-linearity:
+
+	swish non-linearity is defined as:
+
+			swishx = x* sigmoid(x)
+			
+	It has been proved experimentally to improve accuracy. However, as the sigmoid function is computationally expensive and 
+we care a lot about computational expenses in this model, so the authors modify it with what is called hard swish or h-swish:
+
+			h-swish[x] = x* ReLU6(x+3)/6
+			
+	Clearly, h-swish is not much different from swish as far as the curve is concerned even though it is less computationally
+expensive.
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+SqueezeNet:
+
+1. Architectural Design Strategies
+	Strategy 1. Replace 3×3 filters with 1×1 filters
+
+	Given a budget of a certain number of convolution filters, we can choose to make the majority of these filters 1×1, since a 1×1 filter has 9× fewer parameters than a 3×3 filter.
+Strategy 
+
+	2. Decrease the number of input channels to 3×3 filters
+
+	Consider a convolution layer that is comprised entirely of 3×3 filters. The total quantity of parameters in this layer is:
+(number of input channels) × (number of filters) × (3×3)
+
+	We can decrease the number of input channels to 3×3 filters using squeeze layers, mentioned in the next section.
+
+	Strategy 3. Downsample late in the network so that convolution layers have large activation maps
+
+	The intuition is that large activation maps (due to delayed downsampling) can lead to higher classification accuracy.
+
+Summary
+	Strategies 1 and 2 are about judiciously decreasing the quantity of parameters in a CNN while attempting to preserve accuracy.
+	Strategy 3 is about maximizing accuracy on a limited budget of parameters.
+
+
+A Fire module is comprised of: a squeeze convolution layer (which has only 1×1 filters), feeding into an expand layer that has a
+mix of 1×1 and 3×3 convolution filters.
+
+There are three tunable dimensions (hyperparameters) in a Fire module: s1×1, e1×1, and e3×3.
+
+	s1×1: The number of 1×1 in squeeze layer.
+	e1×1 and e3×3: The number of 1×1 and 3×3 in expand layer.
+
+	When we use Fire modules we set s1×1 to be less than (e1×1 + e3×3), so the squeeze layer helps to limit the number of input
+channels to the 3×3 filters, as per Strategy 2 in previous section.
+
+
+
+		Input											Input												Input
+		  |	96 											  |  96												  |  96
+		maxpool/2									  maxpool/2											  maxpool/2
+		  |									   			  |  												  |  96------
+		fire2											fire2												fire2     conv 1*1
+		  |	 128								----------|  128									----------|  128-----
+		fire3									|		fire3										|		fire3
+		  |	 128   								----------|	 128									----------|	 128-----
+		fire4											fire4												fire4		conv 1*1
+		  |	 256										  |  256											  |  256-----	
+	   maxpool/2									  maxpool/2											  maxpool/2	
+	      |									   -----------|										   -----------|
+		fire5								   |		fire5									   |		fire5
+		  |	 256							   -----------|  256								   -----------|  256------
+		fire6											fire6												fire6		conv 1*1
+		  |	 384							   -----------|  384								   -----------|  384------
+		fire7								   |		fire7									   |		fire7
+		  |	 384							   -----------|  384								   -----------|  384------
+	    fire8											fire8												fire8		conv 1*1
+		  |	 512										  |  512											  |  512------
+	  maxpool/2										  maxpool/2											 maxpool/2
+	      |									  ------------|										  ------------|
+	    fire9								  |			fire9									  |			fire9
+		  |	 512							  ------------|  512								  ------------|  512
+		conv10											conv10												conv10
+		  |	 1000										  |  1000											  |  1000
+	 global avgpool									global avgpool										global avgpool
+	      |												  | 												  | 
+	   softmax										   softmax												softmax
+		  |												  |													  |
+	    output											output												output
+		
+		
+			SqueezeNet (Left), SqueezeNet with simple bypass (Middle), SqueezeNet with complex bypass (Right)
+		
+		
+		
+SqueezeNet (Left): begins with a standalone convolution layer (conv1), followed by 8 Fire modules (fire2–9), ending with a final conv
+layer (conv10). The number of filters per fire module is gradually increased from the beginning to the end of the network.
+Max-pooling with a stride of 2 is performed after layers conv1, fire4, fire8, and conv10.		
+		
+		
+	Complex and simple bypass connections both yielded an accuracy improvement over the vanilla SqueezeNet architecture.
+Interestingly, the simple bypass enabled a higher accuracy accuracy improvement than complex bypass.
+Adding the simple bypass connections yielded an increase of 2.9 percentage-points in top-1 accuracy and 2.2 percentage-points in top-5 
+accuracy without increasing model size.	
+		
+------------------------------------------------------------------------------------------------------------------------------------		
+Object Detection Techniques:
+
+Single shot multibox detector(SSD):
+	
+	core of ssd is predicting category scores and box offsets for a fixed set of default bounding boxes using small convolutional 
+filters applied to feature maps.
+
+	to acheive high detection accuracy we produce predictions of different scales from feature maps of different scales and explicitly
+seperate predictions by aspect ratio.
+
+	in ssd, in a convolutional fashion, a small set of default boxes of different aspect ratios at each location in several feature maps
+with different scales (8*8 and 4*4) are evaluated. for each default boxes, we predict both the shape offsets and confidence for all the
+object categories. at training time, we match these default boxes to the ground truth boxes. eg: we have matched two default boxes with
+the cat and one with the dog which are treated as positive and the rest as negatives. 
+
+	the model loss is a weighted sum of both between the localization loss(L1 loss) and the confidence loss (eg: Softmax).
+	
+multi scale feature maps for detection:
+	we add convolutional feature layers to the end of the truncated base network. these layers decrease in size progressively and allows
+for prediction of detections at different scales 
+
+
+Convolutional predictors for detection:
+
+	Each added feature layer can produce a fixed set of detection predictions using a set of convolutional filters. These are indicated on 
+top of the SSD network architecture in Fig. 2. For a feature layer of size m × n with p channels, the basic element for predicting 
+parameters of a potential detection is a 3 × 3 × p small kernel that produces either a score for a category, or a shape offset relative to
+the  default box coordinates. At each of the m × n locations where the kernel is applied, it produces an output value. The bounding box 
+offset output values are measured relative to a default box position relative to each feature map location (cf the architecture of YOLO 
+that uses an intermediate fully connected layer instead of a convolutional filter for this step).
+
+Default Boxes and Aspect Ratios:
+
+	we associate a set of default bounding boxes(K) with each feature map for multiple feature map at the top of the network. the default 
+boxes tile the feature map in a convolutional manner, position of each box relative to its corresponding cell is fixed. at each feature
+map, we predict the offsets relative to the default box shapes in the feature map. for each box out of k at a given location, we compute
+c class scores and 4 offsets relative to the original default box shapes in the cell. this results in total of (c+4)K filters applied 
+around each location in the feature map. yeilding (c+4)kmn outputs for a m*n feature map. Allowing different default box shapes in several
+feature maps lets us efficiently discretize the space of possible output box shapes.
+
+Training:
+
+	key difference: ground truth information needs to be assigned to the specific outputs in the fixed set of detector outputs. 
+Once this assignment is determined the loss function and the backpropogation are applied end to end. training also involves the
+choosing of set of default boxes and scales for detection as well as the hard negative mining and the data augumentation strategies.
+
+Matching Strategy:	
+	
+	During training, we need to determine which default boxes correspond to the ground truth detection and train the network accordingly,
+for each ground truth box, we select from default boxes that vary over location, aspect ratio, and scale. we begin by matching each ground
+truth box to the default box with best jaccard overlap(as in MultiBox). unlike multibox, we then match the default box with the ground truth
+boxes with jaccard overlap higher than the threshold 0.5. this simplifies the learning problem allowing the network to predict high scores
+for multiple overlapping default boxes rather than requiring it to pick the only one with the maximum overlap.
+
+Training Objective:
+
+	the ssd training objective is derived from the multibox objective but extended to handle the multiple object categories. Let xij^p 
+be {1,0} an indicator for matching the ith default box to the jth ground truth box of category p. In the matching strategy above, we 
+can have a Summ{xij^p>=1}. the overall objective loss function is a  weighted sum of the localization loss (loc) and the confidence loss
+(conf)
+
+		L(x,c,l,g) = 1/N*(Lconf(x,c) + alpha*Lloc(x,l,g))
+		
+		c = class score.
+		l = predicted box parameters
+		g = ground truth box parameters.
+	
+	where N =  number of matched default box parameters. if N=0 we set the losses to 0. the localization loss is a smooth L1 loss between
+the predicted box and the ground truth boxes. Similar to faster rcnn, we regress to offset for the center of the default bounding boxes 
+and for its width and height. 
+
+		Lloc(x,l,g) = i in Pos to N Summ{ m in (cx,cy,w,h) Summ{xij^k*smoothL1(li^m - gj^m)}}
+		
+	gj^cx = (gj^cx-di^cx)/di^w 
+	
+	gj^cy = (gj^cy - di^cy)/di^h
+	
+	gj^w = log(gj^w/di^w) 
+	
+	gj^h = log(gj^h/di^h)
+	
+	the confidence loss is the softmax loss over multiple class confidences(c).
+	
+	Lconf(x,c) = - i in Pos to N Summ {xij^plog(cj^p)} - j in Neg Summ{log(ci^0)}
+	
+	where ci^p = exp(ci^p)/Summ{exp(ci^p)}
+	
+	weight term alpha is set to 1 by cross validation.
+	
+	
+Choosing scales and aspect ratios for the default boxes:
+
+	
+	to handle different object scales some methods suggest processing the image at different sizes and then combining the results afterwards.
+however, by utilizing the feature maps from several different layers in a single network for prediction we can mimic the same effect while
+also sharing the parameters across all the object scales. Using feature maps from the lower layers can improve semantic segmentation because
+the lower layer captures the more fine details of the input objects. similarly, adding global context pooled from the feature map can help
+smooth the segmentation results. 
+
+	we use both the lower and upper feature maps for the detection. figure 1 shows two feature maps (8*8 and 4*4) which are used in the 
+framework. In practice, we can use many more with small computational overhead.feature maps from different levels within a network are 
+known to have different receptive field sizes. fortunately, within the SSD network, the default boxes do not necessarily correspond to 
+the actual receptive fields of the each layer. we design the tiling of default boxes. 
+
+	we design the tiling of each default boxes so that specific feature maps learn to be responsive to particular scales of the object.
+suppose we want to use m feature maps for the prediction. the scale of the default boxes for each feature map is computed as:
+
+		sk = s_min + ((s_max - s_min)/m-1)*(k-1)    k in (1,m)
+
+	where smin is 0.2 and s_max is 0.9, meaning the lowest layer has a scale of 0.2 and the highest layer has a scale of 0.9, and all 
+layers in between are regularly spaced.
+
+
+	We impose different aspect ratios for the default boxes, and denote them as ar in {1, 2, 3,1/2,1/3}. We can compute the width
+(wa_k = sk√ar) and height (ha_k = sk/√ar) for each default box. For the aspect ratio of 1, we also add a default box whose scale is
+s0k =√sksk+1, resulting in 6 default boxes per feature map location. We set the center of each default box to (i+0.5/|fk|,j+0.5/|fk|), 
+where |fk| is the size of the k-th square feature map, i, j in [0, |fk|).
+
+	In practice, one can also design a distribution of default boxes to best fit a specific dataset. How to design the optimal tiling
+is an open question as well.
+
+	By combining predictions for all default boxes with different scales and aspect ratios from all locations of many feature maps,
+we have a diverse set of predictions, covering various input object sizes and shapes. For example, the dog is matched to a
+default box in the 4 × 4 feature map, but not to any default boxes in the 8 × 8 feature map. This is because those boxes have different
+scales and do not match the dog box, and therefore are considered as negatives during training.
+	
+
+Hard Negative Mining:
+
+	after the matching step, most of the default boxes are negatives, especially when the number of possible default boxes is large. 
+This introduces a significant imbalance between the positive and negative training examples. Instead of using all the negative examples,
+we sort them using the highest confidence loss for each default box and pick the top ones so that the ratio between the negatives and
+positives is at most 3:1. We found that this leads to faster optimization and a more stable training.
+
+Data Augumentation:
+	
+	To make the model more robust to various input object sizes and shapes, each training image is randomly sampled by one 
+of the following options:
+	
+	
+	Use the entire original input image.
+	Sample a patch so that the minimum jaccard overlap with the objects is 0.1, 0.3,0.5, 0.7, or 0.9.
+	Randomly sample a patch.
+
+	The size of each sampled patch is [0.1, 1] of the original image size, and the aspect ratio is between 1 and 2. We keep the
+overlapped part of the ground truth box if the center of it is in the sampled patch. After the aforementioned sampling step, each 
+sampled patch is resized to fixed size and is horizontally flipped with probability of 0.5, in addition to
+applying some photo-metric distortions.
+
+	
+	
+	
+Training Objective:
+	
+	
+	The single shot multibox detector [13] is one of the best detectors in terms of speed and accuracy comprising two main steps, 
+feature map extraction and convolutional filter applications, to detect objects.
+
+	The SSD architecture builds on the VGG-16 network [16], and this choice was made based on the strong performance in high-quality image 
+classification tasks and the popularity of the network in problems where transfer learning is involved. Instead of the original VGG fully
+connected layers, a set of auxiliary convolutional layers change the model, thus enabling to extract features at multiple scales and 
+progressively decrease the size of the input to each subsequent layer.
+
+	The bounding box generation considers the application of matching pre-computed, fixed-size bounding boxes called priors with the 
+original distribution of ground truth boxes. These priors are selected to keep the intersection over union (IoU) ratio equal to or greater
+than 0.5.
+
+	The overall loss function defined in Eq. (1) is a linear combination of the confidence loss, which measures how confident the network
+is of the computed bounding box using categorical cross-entropy and location loss, which measures how far away the networks predicted 
+bounding boxes are from the ground truth ones using L2 norm.
+
+							L(x,c,l,g)=1/N*(Lconf(x,c)+αLloc(x,l,g))		
+							
+	where N is the number of matched default boxes and Lconf and Lloc are the confidence and location loss, respectively.
+		
+		
+You only look once(YOLO):		
+		
+	You only look once [14] is a state-of-the-art object detection algorithm which targets real-time applications, and unlike some of the
+competitors, it is not a traditional classifier purposed as an object detector.
+
+	YOLO works by dividing the input image into a grid of S×S cells, where each of these cells is responsible for five bounding boxes 
+predictions that describe the rectangle around the object. It also outputs a confidence score, which is a measure of the certainty that an 
+object was enclosed. Therefore the score does not have any relation with the kind of object present in the box, only with the box’s shape.
+
+	For each predicted bounding box, a class it’s also predicted working just like a regular classifier giving resulting in a probability 
+distribution over all the possible classes. The confidence score for the bounding box and the class prediction combines into one final
+score that specifies the probability for each box includes a specific type of object. Given these design choices, most of the boxes will
+have low confidence scores, so only the boxes whose final score is beyond a threshold are kept.
+
+The equation below states the loss function minimized by the training step in the YOLO algorithm.
+
+	
+	λcoord∑{i=0 to s2}∑{j=0 to B1} (l-obj-ij)[(xi−x̂i)2+(yi−ŷi)2] + λcoord∑{i=0 to s2}∑{j=0 to B1}(l-obj-ij)[(√wi−√ŵi)2+(√hi−√ĥi)2]
++∑{i=0 to s2}∑{j=0 to B1}*(l-obj-ij)(Ci−Ĉi)^2 + λcoord∑{i=0 to s2}∑{j=0 to B1}*(l-obj-ij)(Ci−Ĉi)2 + ∑{i=0 to s2}∑{c∈classes}(pi(c)−p̂i(c))2	
+		
+		
+where 1-obj-i indicates if an object appears in cell i and 1-obj-ij denotes the jth bounding box predictor in cell i responsible for that 
+prediction; x, y, w, h, and C denote the coordinates that represent the center of the box relative to the bounds of the grid cell. The 
+width and height predictions are relative to the whole image. Finally, C denotes the confidence prediction, that is, the IoU between 
+the predicted box and any ground truth box.
+		
+		
+Word Error Rate(WER):		
+	(D+I+S)/N
+  
+  where D = number of Deletions.
+		I = number of Insertions.
+		S = number of Substitutions.
+		N = number of words.
+		
 
 -----------------------------------------------------------------------------------------------------------------------------------
 Difference between 'SAME' and 'VALID' padding of tensorflow/Pytorch?
@@ -769,6 +1565,10 @@ https://github.com/vincentherrmann/pytorch-wavenet
 
 Google Cloud WaveNet Text To Speech:
 https://cloud.google.com/text-to-speech
+
+EfficientNet Pytorch Implementation:
+https://github.com/rwightman/efficientdet-pytorch/blob/master/effdet/efficientdet.py
+
 -----------------------------------------------------------------------------------------------------------------------------------
 Savitztky-Golay Filter(Savgol Filter)(This is used in VQ-VAE):
 	
@@ -879,7 +1679,6 @@ Closed sets are X,{b,c,d},{a,d},{d},ϕ
 Closed sets containing A are X,{b,c,d}
 Now A¯={b,c,d}∩X={b,c,d}
 
-
 Dense Subset of a Topological Space
 
 Let (X,τ) be a topological space and A be a subset of X, then A is said to be a dense subset of X (i.e. dense in X), if A¯=X
@@ -944,6 +1743,77 @@ Definition of a marginal distribution = If X and Y are discrete random variables
 their joint probability distribution at (x,y), the functions given by:
 g(x) = Σy f (x,y) and h(y) = Σx f (x,y) are the marginal distributions of X and Y , respectively (Σ = summation notation).
 
+-----------------------------------------------------------------------------------------------------------------------------------------
+ConvNext:
+
+	Translation invariance requires, that the output of a mapping / network does not change when the input is translated.
+	
+	Translational Invariance makes the CNN invariant to translation. Invariance to translation means that if we translate the
+inputs the CNN will still be able to detect the class to which the input belongs. Translational Invariance is a result of the
+pooling operation. In a traditional CNN architecture, there are three stages. In the first stage, the layer performs convolution
+operation on the input to give linear activations. In the second stage, the resultant activations are passed through a non-linear 
+activation function such as sigmoid, tanh or relu. In the third stage, we perform the pooling operation to modify the output 
+further. In pooling operation, we replace the output of the convnet at a certain location with a summary statistic of the nearby
+outputs such a maximum in case of Max Pooling. As we replace the output with the max in case of max-pooling, hence even if we
+change the input slightly, it won’t affect the values of most of the pooled outputs. Translational Invariance is a useful 
+property where the exact location of the object is not required. For e.g if you are building a model to detect faces all you 
+need to detect is whether eyes are present or not, it’s exact position is not necessary. While in segmentation tasks, the exact
+position is required.The use of pooling can be viewed as adding a strong prior that the function the layer learns must be 
+invariant to translation. When the prior is correct, it can greatly improve the statistical efficiency of the network.
+	
+	Translational Equivariance or just equivariance is a very important property of the convolutional neural networks where the 
+position of the object in the image should not be fixed in order for it to be detected by the CNN. This simply means that if
+the input changes, the output also changes. To be precise, a function f(x) is said to be equivariant to a function g if 
+f(g(x)) = g(f(x)). If we have a function g which shifts each pixel of the image, one pixel to the right i.e I’(x,y) = I(x-1,y).
+If we apply the transformation g on the image and then apply convolution, the result will be the same as if we applied 
+convolution to I’ and then applied translation g to the output. When processing images, this simply means that if we move the
+input 1 pixel to the right then it’s representations will also move 1 pixel to the right.
+
+	The property of translational equivariance is achieved in CNN’s by the concept of weight sharing. As the same weights are 
+shared across the images, hence if an object occurs in any image it will be detected irrespective of its position in the image.
+This property is very useful for applications such as image classification, object detection, etc where there may be multiple 
+occurrences of the object or the object might be in motion.
+
+	Convolutional Neural Networks are not naturally equivariant to some other transformations such as changes in the scale
+or rotation of the image. Other mechanisms are required to handle such transformations.
+	
+	Inductive bias - generalization from specific data sample to general conclusion and deductive bias- gen
+	
+	Invariance and equivariance bias can be used to encode the structure of the relational data. This kind of inductive bias
+notifies the behaviour of a model under various transformations. Equivariant models have been successfully used for various 
+deep learning on data with various structures —from translation equivariant image to geometric settings and discrete objects
+such as sets and graphs.
+	
+	Firstly, they have sparse connections instead of fully connected connections which lead to reduced parameters and make CNN’s
+efficient for processing high dimensional data. Secondly, weight sharing takes place where the same weights are shared across
+the entire image, causing reduced memory requirements as well as translational equivariance.
+	
+	Thirdly, CNN’s use a very important concept of subsampling or pooling in which the most prominent pixels are propagated to
+the next layer dropping the rest. This provides a fixed size output matrix which is typically required for classification and 
+invariance to translation, rotation.
+
+	for natural language processing (NLP) took a very different path. Recurrent neural networks were replaced by Transformers
+as the dominant backbone architecture. And despite the vast differences in the domains of language and vision, the two streams
+surprisingly converged in the year 2020 with the introduction of Vision Transformers (ViT).
+
+	An important property of ConvNets is translation equivariance, which is a desirable property for tasks like object
+detection. They are also inherently efficient due to the shared nature of computations in the sliding-windows approach
+
+	One of the main reasons why Transformers like ViT became dominant is their scalability. With the help of larger models and 
+dataset sizes, Transformers can outperform standard ResNets by a significant margin. Without the ConvNet inductive biases, a
+vanilla ViT model faces many challenges in being adopted as a generic vision backbone. ViT’s global attention design has a 
+quadratic complexity with respect to the input size. This might be acceptable for ImageNet classification, but quickly becomes
+unmanageable with higher-resolution inputs.
+
+	To overcome these shortcomings, hierarchical Transformers employ a hybrid approach. For instance, Swin Transformer 
+reintroduced the “sliding window” approach was reintroduced to Transformers. This enabled Swin Transformer to become the first
+Transformer model that was adopted as a generic vision backbone and achieved state-of-the-art performance across a range of 
+computer vision tasks beyond image classification.
+
+	The only reason ConvNets are losing traction is that Transformers surpass them in many vision tasks due to their superior 
+scaling behavior with multi-head self-attention being the key component.
+
+https://medium.com/augmented-startups/convnext-the-return-of-convolution-networks-e70cbe8dabcc
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1220,6 +2090,7 @@ while adaptive methods tend to converge quickly towards sharper minima. Flatter 
 Diffusion Models:
 
 https://aman.ai/primers/ai/diffusion-models/
+https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac
 
 Diffusion models are inspired by non-equilibrium thermodynamics. They define a Markov chain of diffusion steps to slowly add
 random noise to data and then learn to reverse the diffusion process to construct desired data samples from the noise.
@@ -1238,12 +2109,6 @@ controlled by a variance schedule {Beta(t) belongs to (0,1)}.
 		
 	The data sample x0 gradually loses its distinguishable features as the step t becomes larger. Eventually when , T->Infinity
 is equivalent to an isotropic Gaussian distribution.
-
-
-	
-		
-		
-
 		
 	Zero mean, is that well the mean is zero :-) .. isotropic means that the variance is the same in each direction. 
 The definition according to a quick google is "(of a property or phenomenon) not varying in magnitude according to the direction
@@ -1252,13 +2117,1839 @@ of measurement.". If we write \mathbf{I} which would indicate the identity matri
 Such an assumption is relevant if ones belief about the parameters are exactly this, that the mean is zero, and that we believe
 that the multivariate random variable changes equally in each dimension.
 
+----------------------------------------------------------------------------------------------------------------------------------
+Recurrent Neural Networks(RNN):
+	
+	Humans don’t start their thinking from scratch every second. As you read this essay, you understand each word based on your
+understanding of previous words. You don’t throw everything away and start thinking from scratch again. Your thoughts have 
+persistence.
 
+Traditional neural networks can’t do this, and it seems like a major shortcoming. For example, imagine you want to classify
+what kind of event is happening at every point in a movie. It’s unclear how a traditional neural network could use its reasoning
+about previous events in the film to inform later ones.
+
+Recurrent neural networks address this issue. They are networks with loops in them, allowing information to persist.
+																
+								Xt----> A ----> Ht
+
+where In the above diagram, a chunk of neural network, A, looks at some input xt and outputs a value ht. A loop allows 
+information to be passed from one step of the network to the next.
+
+These loops make recurrent neural networks seem kind of mysterious. However, if you think a bit more, it turns out that they 
+aren’t all that different than a normal neural network. A recurrent neural network can be thought of as multiple copies of the 
+same network, each passing a message to a successor. Consider what happens if we unroll the loop: 
+
+This chain-like nature reveals that recurrent neural networks are intimately related to sequences and lists. They’re the natural
+architecture of neural network to use for such data.
+
+And they certainly are used! In the last few years, there have been incredible success applying RNNs to a variety of problems:
+speech recognition, language modeling, translation, image captioning…
+
+
+Essential to these successes is the use of “LSTMs,” a very special kind of recurrent neural network which works, for many tasks,
+much much better than the standard version. Almost all exciting results based on recurrent neural networks are achieved with 
+them.
+
+The Problem of Long-Term Dependencies:
+
+	Sometimes, we only need to look at recent information to perform the present task. For example, consider a language model 
+trying to predict the next word based on the previous ones. If we are trying to predict the last word in “the clouds are in the
+sky,” we don’t need any further context – it’s pretty obvious the next word is going to be sky. In such cases, where the gap 
+between the relevant information and the place that it’s needed is small, RNNs can learn to use the past information.
+	
+	But there are also cases where we need more context. Consider trying to predict the last word in the text “I grew up in 
+France… I speak fluent French.” Recent information suggests that the next word is probably the name of a language, but if we 
+want to narrow down which language, we need the context of France, from further back. It’s entirely possible for the gap between
+the relevant information and the point where it is needed to become very large.
+
+Unfortunately, as that gap grows, RNNs become unable to learn to connect the information.
+
+LSTM Networks:
+	
+	Long Short Term Memory networks – usually just called “LSTMs” – are a special kind of RNN, capable of learning long-term
+dependencies
+
+	LSTMs are explicitly designed to avoid the long-term dependency problem. Remembering information for long periods of time 
+is practically their default behavior, not something they struggle to learn!
+
+All recurrent neural networks have the form of a chain of repeating modules of neural network. In standard RNNs, this repeating
+module will have a very simple structure, such as a single tanh layer.
+
+			H_t-1   H_t		   H_t+1
+			|		 |			|
+			A -->  tanh(A) ---> A
+			|		|			|
+			X_t-1	X_t		   X_t+1
+			
+	LSTMs also have this chain like structure, but the repeating module has a different structure. Instead of having a single 
+neural network layer, there are four, interacting in a very special way.
+														
+														H_t
+														 |
+		C_t-1	---->----(X)------------(+)--------------|-----> C_t
+						  ^				 ^				tanh
+						  |				 |				 |
+						  |              |		   |--->(X)
+						 Sigm	 |----->(X)	      Sigm   |
+						  |		Sigm	tanh       |	 |-----> H_t
+						  |      |       |         |		 
+		H_t-1	---->-------------------------------    
+						|
+						|
+						X_t
+						
+	In the above diagram, each line carries an entire vector, from the output of one node to the inputs of others. The pink 
+circles represent pointwise operations, like vector addition, while the yellow boxes are learned neural network layers. Lines
+merging denote concatenation, while a line forking denote its content being copied and the copies going to different locations.
+
+	
+The Core Idea Behind LSTMs:	
+	
+	The key to LSTMs is the cell state, the horizontal line running through the top of the diagram.
+
+The cell state is kind of like a conveyor belt. It runs straight down the entire chain, with only some minor linear 
+interactions.It’s very easy for information to just flow along it unchanged.
+	
+	The LSTM does have the ability to remove or add information to the cell state, carefully regulated by structures called
+gates.
+
+Gates are a way to optionally let information through. They are composed out of a sigmoid neural net layer and a pointwise 
+multiplication operation.
+
+The sigmoid layer outputs numbers between zero and one, describing how much of each component should be let through. A value of
+zero means “let nothing through,” while a value of one means “let everything through!”
+
+An LSTM has three of these gates, to protect and control the cell state.
+	
+Step-by-Step LSTM Walk Through:
+
+	1. Forget Gate:
+		
+		The first step in our LSTM is to decide what information we’re going to throw away from the cell state. This decision is
+made by a sigmoid layer called the “forget gate layer.” It looks at ht−1 and xt, and outputs a number between 0 and 1 for each
+number in the cell state Ct−1. A 1 represents “completely keep this” while a 0 represents “completely get rid of this.”
+
+			
+		 F_t|
+			|
+		   Sigm			F_t = Sigmoid(W_f*[h_t-1,x_t]+b_f)
+			|
+	h_t-1----
+			|
+			X_t
+			
+	Let’s go back to our example of a language model trying to predict the next word based on all the previous ones. In such a 
+problem, the cell state might include the gender of the present subject, so that the correct pronouns can be used. When we see 
+a new subject, we want to forget the gender of the old subject.
+
+	2. Input Gate:
+	
+		The next step is to decide what new information we’re going to store in the cell state. This has two parts. First, a 
+sigmoid layer called the “input gate layer” decides which values we’ll update. Next, a tanh layer creates a vector of new 
+candidate values, C~t, that could be added to the state. In the next step, we’ll combine these two to create an update to the
+state.
+
+
+		In the example of our language model, we’d want to add the gender of the new subject to the cell state, to replace the
+old one we’re forgetting.
+							   
+							   (X)
+					 i_t|------>| ~C_t
+						|		| 					i_t = Sigmoid(W_i*[h_t-1,x_t]+b_i)
+					   Sigm	   tanh				   ~C_t = tanh(W_c*[h_t-1,x_t]+b_c)
+						|		|
+		h_t-1-------------------
+				|
+				|
+			   X_t	
+
+
+It’s now time to update the old cell state, Ct−1, into the new cell state Ct. The previous steps already decided what to do, 
+we just need to actually do it.
+
+We multiply the old state by ft, forgetting the things we decided to forget earlier. Then we add it C_t. This is the new 
+candidate values, scaled by how much we decided to update each state value.
+
+
+		C_t-1 ---------------------------------------------->C_t
+					|				 |
+				 F_t|			--->(X)
+								|	 |				C_t = f_t*C_t-1 + i_t*~C_t
+							   i_t	~C_t
+							   
+							   
+	3. Output Gate:
+	
+		Finally, we need to decide what we’re going to output. This output will be based on our cell state, but will be a
+filtered version. First, we run a sigmoid layer which decides what parts of the cell state we’re going to output. Then, we put
+the cell state through tanh (to push the values to be between −1 and 1) and multiply it by the output of the sigmoid gate, so 
+that we only output the parts we decided to.
+
+For the language model example, since it just saw a subject, it might want to output information relevant to a verb, in case 
+that’s what is coming next. For example, it might output whether the subject is singular or plural, so that we know what form a
+verb should be conjugated into if that’s what follows next.
+							   
+In the case of the language model, this is where we’d actually drop the information about the old subject’s gender and add the
+new information, as we decided in the previous steps.
+															 H_t
+			-------------------------------------------------=|----->C_t
+														 |	  |
+														tanh  |					
+													o_t	 |	  |					O_t = Sigm(W_o*[h_t-1,x_t]+b_0)
+												 ------>(X)   |					H_t = O_t*tanh(C_t)		
+												|		 |    |
+											   Sigm		 |	  |
+												|		 |	  |
+			h_t-1 -------------------------------		 ---------->H_t
+						|
+						|
+						X_t
+	
+
+Parameter Estimation for LSTM:
+	
+Since the input to all FC networks is a concatenated vector of current input and hidden state vector(ht-1 + Xt). The input layer
+of all the FC networks has (m+n) neurons	
+
+To calculate number of parameters. Each FC network has a parameter weight matrix of [(m+n),n] and a bias values of ’n’. So total
+parameters at each FC network (m*n + sqr(n) + n) and for four FC networks it will be 4*(m*n + sqr(n) + n).	
+
+Each FC network has a parameter weight matrix of [(m+n),n] and a bias values of ’n’. So total parameters at each FC network 
+(m*n + sqr(n) + n) and for four FC networks it will be 4*(m*n + sqr(n) + n).
+
+		FC = [(m+n)*n] -> weight + n -> bias
+		
+		4FC = 4[[(m+n)*n]+n]
+		
+		LSTM = 4mn + 4n^2 + 4*n
+		
+Among the arguments for the LSTM layer in tf-keras, “units” is the only mandatory argument to be passed. If you have followed 
+the article till now, the value for dimension ’n’ is the value of argument “units”. So units are the output dimension of the 
+Fully connected layer in Figures 5 and 7, it is also the dimension of the cell state vector(Ct) and the hidden state(ht) vector.
+
+tf.keras.layers.LSTM(units, activation='tanh', recurrent_activation='sigmoid',use_bias=True,kernel_initializer='glorot_uniform',
+recurrent_initializer='orthogonal', bias_initializer='zeros', unit_forget_bias=True, kernel_regularizer=None,
+recurrent_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None,
+recurrent_constraint=None, bias_constraint=None,dropout=0.0, recurrent_dropout=0.0, implementation=2, return_sequences=False,
+return_state=False, go_backwards=False, stateful=False, time_major=False,unroll=False, **kwargs
+)	
+	
+
+Coreference Resolution:
+
+	Coreference resolution is the task of finding all expressions that refer to the same entity in a text. It is an important
+step for a lot of higher level NLP tasks that involve natural language understanding such as document summarization, question
+answering, and information extraction.
+
+
+In RNN we have current input(Xi) and hidden state input(ht-1) as inputs and hidden state and output as outputs. Whereas in LSTM
+in addition to this we have a cell state which acts as a highway path, which does not pass through any FC network. And hence 
+allows for a free flow of gradients through the sequential network, helps overcome the problem of forgetting longer contexts,
+and helps with coreference resolution over long spans.
+
+What is the cell state(Ct)?
+
+	Cell state carries cumulative information of the sequence data from one time step to the next time step till the end of
+the sequence.
+
+The obvious question that comes to mind is why do we need a cell state when we have a hidden state? And what is the difference
+between the hidden state and cell state?
+
+We have partially answered this question when we said that the hidden state feature vector will pass through the Neural network
+and gets to interact with weight matrices on the way. This causes vanishing or exploding gradient issues. Whereas the cell state
+acts as a highway without touching any fully connected layers on the way, it is literally similar to the residual block in a 
+resnet architecture.
+
+Cell state is a feature vector, which takes updates from input at every time step, and gives out the hidden state output at
+every time step. This hidden state branches out as output of the current time step and hidden state to the next time step.
+
+For example, If we are reading an article about a world war, our cell state will be enriched with features that could sound like
+cruelty, misery, bravery, etc, and features like love brotherhood, peace will be low.
+
+Cell state is impacted/updated at every time step based on the current input. For example in any context, if the input word is
+“love”, the features corresponding to love will increase proportionately in the cell state.
+
+Each input word is a feature vector with a combination of features. This input vector combination is operated on the cell state
+to reflect or update the cell state.
+
+Intuitive Understanding:
+
+We have seen the architecture of LSTM by dividing it into three parts i.e forget block, input block, and output block. We will
+also use this division to understand the intuition behind the working of LSTM.
+
+Since the figures are drawn in the initial part of the blog, for this section I will refer to them while explaining the 
+intuition behind the each part of the LSTM.
+Before going into, three-divisions we will look into the role of individual parts of LSTM intuitively:
+
+Fully Connected Networks:
+
+Converts (m+n) dimension input, which is a concatenated form of current input vector and previous hidden state output, to a
+vector of ’n’ dimensions
+
+Sigmoid:
+
+’n’ dimensional vector goes into the sigmoid output is also ’n’ dimensional, but the values will be either zero or one.
+
+Tanh:
+
+’n’ dimensional vector is passed to ‘tanh’, output vector is of the same dimension but the values are squished between -1, 1.
+
+Multiplication and Addition:
+
+If sigmoid output vector with the 0’s and 1’s, multiplied with cell state, all the activations at feature column where there is
+zero will make the cell state feature value zero, and if it has one, the cell state value will remain unchanged.
+
+At the forget gate we multiply the output of the FC layer to the cell state because we have to forget part of the cell state
+vector. At the Input gate, we add the output of the fully connected layer to the cell state, because we have to add the current
+input features to the cell state, at same time making sure that we are not adding the old the forgotten feature.
+
+The below figure shows an example of elementwise adding and multiplication of vectors. The addition will enrich the resultant
+vector, whereas multiplication will lead to nullifying or forgetting the corresponding feature whose value is zero.
+
+We find concatenated input of current input and hidden state vectors(ht-1 + Xt) passing through FC network and sigmoid, which is multiplied with either cell state or some other vector. This path can be seen in three different places in the LSTM. In all these places it is either selecting/forgetting the vector to which it's output is multiplied.
+
+Forget block:
+
+Concatenated input of hidden state and current input vector(ht-1 + Xt) pass through a FC network and sigmoid. The output of this will be 0’s and 1’s, when this is multiplied with cell state, those features which are multiplied with 0’s will be forgotten and those multiplied with one will not be forgotten. This is how to Forget gate updates the cell state, by making few features zero and leaving other feature activations as it is.
+
+How does Forget gate generate vector with 0s and 1s that ensures the right features are forgotten. Yes, the Fully Connected layer at the forget gate will learn to produce this vector.
+
+Input block:
+
+As we have seen it has two parallel branches. Both branches have the same input which is concatenated hidden state and 
+input vector(ht-1 + Xt).
+
+One branch(branch-2, Fig below) has ‘tanh’ function after the FC network, which squashes the output values between -1,1. 
+If the feature values are negative corresponding activations will be reduced from the cell state, if they are positive 
+corresponding feature gets improved in the cell state. For this to happen, the vector has to be added to the cell state.
+This addition will increase or reduce feature activations in the cell state based on the current input feature vector.
+
+One small catch here is that the input update will happen for all feature columns of the cell state, even for the ones which 
+are supposed to be forgotten by the forget gate. To overcome this, LSTM uses the forget block to selectively use the input 
+features of the input gate vector. This is achieved using the other parallel branch(branch-1, FIg below) whose sigmoid output 
+0’s and 1’s are multiplied with input update vector of tanh output of -1’s and 1’s and does the selective update.
+
+Glad you have wondered how does it know, again the dumb or intelligent answer depends on how you see it, is the Fully connected
+layers at these two parallel branches. It is a good idea to dig deep and know what the authors were thinking while implementing
+such a clever idea. Please refer to the LSTM original paper https://www.bioinf.jku.at/publications/older/2604.pdf
+
+Output block:
+
+Now the cell state is updated with what to be forgotten(forget gate) and it also has taken the updates(input gate) from the 
+current time step input, from the two steps above.
+
+At the output block(Fig.5), from the updated cell state, takes selectively(using input, hidden state passing through forget
+block) what is needed for the output hidden state of the current LSTM block.
+
+First, the cell state passes through a ‘tanh’ function reducing all feature values between -1 and 1, then using forget block
+output of 0’s is, selected/forget from this reduced cell state vector, features need to be in the hidden state out of the LSTM
+block.
+
+
+
+	
+LSTM Variants:
+
+
+   One variation is to use coupled forget and input gates. Instead of separately deciding what to forget and what we should add 
+new information to, we make those decisions together. We only forget when we’re going to input something in its place. We only
+input new values to the state when we forget something older.
+
+
+	C_t = F_t*C_t-1 + (1-F_t)*~C_t
+	
+	
+GRU(Gated Recurrent Unit):
+
+	A slightly more dramatic variation on the LSTM is the Gated Recurrent Unit, or GRU, introduced by Cho, et al. (2014). It 
+combines the forget and input gates into a single “update gate.” It also merges the cell state and hidden state, and makes some
+other changes. The resulting model is simpler than standard LSTM models, and has been growing increasingly popular.
+
+	Z_t = Sigm(W_z*[H_t-1,x_t])
+	R_t = Sigm(W_r*[H_t-1,x_t])
+	~H_t = tanh(W*[r_t*H_t-1,x_t])
+	H_t = (1-Z_t)*H_t-1 + Z_t*~H_t
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+Normalization has become important for deep neural networks that compensate for the unbounded nature of certain activation functions such
+as ReLU, ELU, etc. With these activation functions, the output layers are not constrained within a bounded range (such as [-1,1] for tanh),
+rather they can grow as high as the training allows it. To limit the unbounded activation from increasing the output layer values, 
+normalization is used just before the activation function.
+
+There are two common normalization techniques used in deep neural networks and are often misunderstood by beginners.
+
+Local Response Normalization
+
+Apart from the reason mentioned above, the reason for using LRN was to encourage lateral inhibition. It is a concept in 
+Neurobiology that refers to the capacity of a neuron to reduce the activity of its neighbors
+
+
+In DNNs, the purpose of this lateral inhibition is to carry out local contrast enhancement so that locally maximum pixel values 
+are used as excitation for the next layers.
+
+LRN is a non-trainable layer that square-normalizes the pixel values in a feature map within a local neighborhood. 
+There are two types of LRN based on the neighborhood defined and can be seen in the figure below.
+
+Inter-Channel LRN: This is originally what the AlexNet paper used. The neighborhood defined is across the channel. 
+For each (x,y) position, the normalization is carried out in the depth dimension and is given by the following formula
+
+	b(x,y) =  a(x,y)/(k + alpha * Summ(min(N-1,i+n/2) to max(0,i-n/2)) a(x,y)^2)^(beta).
+	
+	where i indicates the output of filter i, a(x,y), b(x,y) the pixel values at (x,y) position before and after normalization respectively, 
+and N is the total number of channels. The constants (k,α,β,n) are hyper-parameters. k is used to avoid any singularities 
+(division by zero), α is used as a normalization constant, while β is a contrasting constant. The constant n is used to define
+the neighborhood length i.e. how many consecutive pixel values need to be considered while carrying out the normalization.
+
+	The case of (k,α, β, n)=(0,1,1,N) is the standard normalization).
+	
+	where i indicates the output of filter i, a(x,y), b(x,y) the pixel values at (x,y) position before and after normalization
+respectively, and N is the total number of channels.
+
+	The constants (k,α,β,n) are hyper-parameters. k is used to avoid any singularities (division by zero),
+α is used as a normalization constant, while β is a contrasting constant.
+
+	 The constant n is used to define the neighborhood length i.e. how many consecutive pixel values need to be considered 
+while carrying out the normalization. The case of (k,α, β, n)=(0,1,1,N) is the standard normalization).
+
+	 Different colors denote different channels and hence N=4. Lets take the hyper-parameters to be (k,α, β, n)=(0,1,1,2).
+The value of n=2 means that while calculating the normalized value at position (i,x,y), we consider the values at the same position for
+the previous and next filter i.e (i-1, x, y) and (i+1, x, y). For (i,x,y)=(0,0,0) we have value(i,x,y)=1, value(i-1,x,y) doesn’t exist 
+and value(i+1,x,y)=1. Hence normalized_value(i,x,y) = 1/(¹²+¹²) = 0.5 and can be seen in the lower part of the figure above.
+	 
+Intra-Channel LRN:
+	 In Intra-channel LRN, the neighborhood is extended within the same channel only.
+	 
+	 where (W,H) are the width and height of the feature map (for example in the figure above (W,H) = (8,8)). The only difference between 
+Inter and Intra Channel LRN is the neighborhood for normalization. In Intra-channel LRN, a 2D neighborhood is defined (as opposed to the
+1D neighborhood in Inter-Channel) around the pixel under-consideration.
+	 
+	 As an example, the figure below shows the Intra-Channel normalization on a 5x5 feature map with n=2 (i.e. 2D neighborhood of size
+(n+1)x(n+1) centered at (x,y)).
+	
+
+Batch Normalization:
+
+	Batch Normalization (BN) is a trainable layer normally used for addressing the issues of Internal Covariate Shift (ICF).
+ICF arises due to the changing distribution of the hidden neurons/activation.
+	 
+	ICF arises due to the changing distribution of the hidden neurons/activation.
+
+Consider the following example of binary classification where we need to classify roses and no-roses.
+
+	Say we have trained a neural network, and now we select two significantly different looking batches from the dataset for inference 
+(as shown above). If we do a forward pass with these two batches and plot the feature space of a hidden layer (deep in the network) we
+will see a significant shift in the distribution as seen on the right-hand side of the figure above. This is called the Covariate shift
+of the input neurons. What impact does this have during training? During training, if we select batches that belong to different 
+distributions then it slows down the training since for a given batch it tries to learn a certain distribution, which is different for
+the next batch. Hence it keeps on bouncing back and forth between distributions until it converges. This Covariate Shift can be 
+mitigated by making sure that the members within a batch do not belong to the same/similar distribution.
+
+	 This can be done by randomly selecting images for batches. Similar Covariate Shift exists for hidden neurons. Even if the batches 
+are randomly selected, the hidden neuron can end up having a certain distribution which slows down the training. This Covariate shift 
+for hidden layers is called Internal Covariate Shift. The problem is that we can’t directly control the distribution of the hidden 
+neurons, as we did for input neurons, because it keeps on changing as training updates the training parameters. Batch Normalization 
+helps mitigate this issue.
+
+In batch normalization, the output of hidden neurons is processed in the following manner before being fed to the activation function.
+
+
+Normalize the entire batch B to be zero mean and unit variance	 
+
+1. Calculate the mean of the entire mini-batch output: u_B
+2. Calculate the variance of the entire mini-batch output: sigma_B
+3. Normalize the mini-batch by subtracting the mean and dividing with variance
+
+2. Introduce two trainable parameters (Gamma: scale_variable and Beta: shift_variable) to scale and shift the normalized
+mini-batch output
+
+3. Feed this scaled and shifted normalized mini-batch to the activation function.
+
+The BN algorithm can be seen in the figure below.
+
+
+The normalization is carried out for each pixel across all the activations in a batch
+
+Let us assume we have a mini-batch of size 3. A hidden layer produces an activation of size (C,H,W) = (4,4,4). Since the batch size is 3,
+we will have 3 of such activations. Now for each pixel in the activation (i.e. for each 4x4x4=64 pixel), we will normalize it by finding
+the mean and variance of this pixel position in all the activations.
+
+Once the mean and variance are found, we will subtract the mean from each of the activations and divide it with the variance. 
+
+The subtraction and division are carried out point-wise.
+
+The reason for step 2 i.e. scaling and shifting is to let the training decide whether we even need the normalization or not. 
+There are some cases when not having normalization may yield better results. So instead of selecting beforehand whether to include 
+a normalization layer or not, BN lets the training decide it. When Gamma = sigma_B and Beta = u_B, no normalization is carried out,
+and original activations are restored.
+
+Comparision:
+
+LRN has multiple directions to perform normalization across (Inter or Intra Channel), on the other hand, 
+BN has only one way of being carried out (for each pixel position across all the activations).
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Type I and Type II errors:  
+
+Type I error, also known as a “false positive”: the error of rejecting a null hypothesis when it is actually true. 
+In other words, this is the error of accepting an alternative hypothesis (the real hypothesis of interest) when the results can be
+ attributed to chance. Plainly speaking, it occurs when we are observing a difference when in truth there is none (or more specifically 
+ - no statistically significant difference). So the probability of making a type I error in a test with rejection region R 
+is P(R | Ho is true). 
+
+Type II error, also known as a "false negative": the error of not rejecting a null hypothesis when the alternative hypothesis
+is the true state of nature. In other words, this is the error of failing to accept an alternative hypothesis when you don't have
+adequate power. Plainly speaking, it occurs when we are failing to observe a difference when in truth there is one. So the probability 
+of making a type II error in a test with rejection region R is 1-P(R | Ha is true). the power of the test can be P(R | Ha is true).	
+
+
+The probability of making a Type I error is the significance level, or alpha (α), 
+while the probability of making a Type II error is beta (β). These risks can be minimized through careful planning
+in your study design.
+
+You decide to get tested for COVID-19 based on mild symptoms. There are two errors that could potentially occur:
+Type I error (false positive): the test result says you have coronavirus, but you actually don’t.
+Type II error (false negative): the test result says you don’t have coronavirus, but you actually do.
+
+Hypothesis testing starts with the assumption of no difference between groups of the population—this is the null hypothesis.
+It’s always paired with an alternative hypothesis, which is your research prediction of an actual difference between groups or
+a true relationship between variables.
+
+You test whether a new drug intervention can alleviate symptoms of an autoimmune disease.
+
+In this case:
+
+The null hypothesis (H0) is that the new drug has no effect on symptoms of the disease.
+The alternative hypothesis (H1) is that the drug is effective for alleviating symptoms of the disease.
+
+Then, you decide whether the null hypothesis can be rejected based on your data and the results of a statistical test. 
+Since these decisions are based on probabilities, there is always a risk of making the wrong conclusion.
+
+Examples:
+
+A Type I error happens when you get false positive results: you conclude that the drug intervention improved symptoms when it
+actually didn’t.These improvements could have arisen from other random factors or measurement errors.
+
+A Type I error means rejecting the null hypothesis when it’s actually true. 
+It means concluding that results are statistically significant when, in reality, they came about purely by chance or because of
+unrelated factors.
+
+The risk of committing this error is the significance level (alpha or α) you choose. That’s a value that you set at the beginning 
+of your study to assess the statistical probability of obtaining your results (p value).
+
+The significance level is usually set at 0.05 or 5%. This means that your results only have a 5% chance of occurring, 
+or less, if the null hypothesis is actually true.
+
+If the p value of your test is lower than the significance level, it means your results are statistically significant 
+and consistent with the alternative hypothesis. If your p value is higher than the significance level, then your results are 
+considered statistically non-significant.
+
+To reduce the Type I error probability, you can simply set a lower significance level.
+
+A Type II error happens when you get false negative results: you conclude that the drug intervention didn’t improve symptoms
+when it actually did. Your study may have missed key indicators of improvements or attributed any improvements to other factors instead.
+
+A Type II error means not rejecting the null hypothesis when it’s actually false. This is not quite the same as “accepting” 
+the null hypothesis, because hypothesis testing can only tell you whether to reject the null hypothesis.
+
+Instead, a Type II error means failing to conclude there was an effect when there actually was. In reality, your study may not 
+have had enough statistical power to detect an effect of a certain size.
+
+Power is the extent to which a test can correctly detect a real effect when there is one. A power level of 80% or higher is usually
+considered acceptable.
+
+Statistical power is determined by:
+
+Size of the effect: Larger effects are more easily detected.
+Measurement error: Systematic and random errors in recorded data reduce power.
+Sample size: Larger samples reduce sampling error and increase power.
+Significance level: Increasing the significance level increases power.
+
+The risk of a Type II error is inversely related to the statistical power of a study. The higher the statistical power, the lower
+the probability of making a Type II error.
+
+Although type I and type II errors can never be avoided entirely, the investigator can reduce their likelihood by increasing the
+sample size (the larger the sample, the lesser is the likelihood that it will differ substantially from the population).
+
+
+Increasing the statistical power of your test directly decreases the risk of making a Type II error. to reduce risk of type 2 error
+you increase the sample size or the significance level.
+
+----------------------------------------------------------------------------------------------------------------------------------
+Object Detection:
+
+The object detection models like R-CNN, YOLO are evaluated using the metrics called Average Precision 
+(AP) and mean Average Precision (mAP). The mAP compares the ground-truth bounding box to the detected box and returns a score.
+The higher the score, the more accurate the model is in its detections.
+
+To train an object detect model we need 2 inputs:
+	1. An Image.
+	2. Ground truth bounding boxes for each object in the image.
+	
+The model predicts the bounding boxes of the detected objects. It is expected that the predicted box will not match exactly
+the ground-truth box.It is difficult to subjectively evaluate the model predictions. For example, someone may conclude that there
+is a 50% match while someone else notices that there is a 60% match.
+
+A better alternative is to use a quantitative measure to score how the ground-truth and predicted boxes match. 
+This measure is the intersection over union (IoU). The IoU helps to know if a region has an object or not.
+
+It is the ratio between the area of intersection to the area of union between ground truth and predicted bounding boxes.
+
+The value lies between 0 and 1. If the two bounding boxes overlap completely, then the prediction is perfect and hence the IoU is 1.
+Else on the other hand, if two bounding boxes don’t overlap, the IoU is 0.
+
+
+		IOU = (area of overlap)/area_of_union. ie. Intersection Area/Union Area.
+		
+		If IoU score is 0.9, coordinates of 2 boxes are so close and there is 90% overlap between two boxes.
+		If IoU score is 0.5, coordinates of 2 boxes are closer but the 2 boxes are still not aligned well thus 50% overlap.
+		
+IOU takes two parameters Ground truth bounding box and Predicted Bounding Box.
+		
+The bounding box passed to the function is a list of 4 elements which are:
+
+	1.The x-axis of the top-left corner.
+	2.The y-axis of the top-left corner.
+	3.Width.
+	4.Height.		
+
+
+To objectively judge whether the model predicted the box location correctly or not, a threshold is used. If the model predicts a box with
+an IoU score greater than or equal to the threshold, then there is a high overlap between the predicted box and one of the ground-truth
+boxes.This means the model was able to detect an object successfully. The detected region is classified as Positive (i.e. contains an 
+object).
+
+On the other hand, when the IoU score is smaller than the threshold, then the model made a bad prediction as the predicted box does not
+overlap with the ground-truth box. This means the detected region is classified as Negative (i.e. does not contain an object).
+
+					Positive --> IoU>=Threshold.
+	class(IoU) = { 
+					Negative --> IoU<Threshold.
+					
+the IoU score measures how close is the predicted box to the ground-truth box. It ranges from 0.0 to 1.0 where 1.0 is the optimal result.				
+					
+Three metrics, in addition to classification accuracy, that are commonly required for a neural network model
+on a binary classification problem are:
+
+Precision
+Recall
+F1 Score
+
+AP is calculated with the help of other metrics like IoU, precision and recall (confusion matrix).
+		
+IoU is useful as threshold value i.e., prediction is said to be positive if the IoU between predicted bounding box and the ground 
+truth bounding box is greater than this threshold value. With this will be able to calculate the TP, FP and FN. In this case study 
+IoU is 0.5.
+
+Next terms as follows…
+
+
+True Positive (TP) — Correct detection made by the model.
+
+False Positive (FP) — Incorrect detection made by the model.
+
+False Negative (FN) — A Ground-truth missed (not detected) by the object detector model.
+
+True Negative (TN) — This is background region not detected by the model as there are no annotations for this region.
+
+Now we need to plot the ‘precision-recall curve’ by considering various precision and recall values at different 
+IoU threshold values. This curve helps us to select the best IoU threshold with maximum precision & recall.
+	
+
+Average Precision (AP) is the area under PR curve. AP summarizes the PR curve to one scalar value. 
+
+
+ROC curves should be used when there are roughly equal numbers of observations for each class. Precision-Recall curves should be 
+used when there is a moderate to large class imbalance.
+
+
+Precision also called positive predicted value is the fraction of relevent instances among the retrieved instances.
+The precision reflects how reliable the model is in classifying samples as Positive. 
+
+recall also called as sensitivity is the fraction of relevant instances that were retrieved.
+
+eg: computer program for recognizing dogs (relevant element). upon processing a picture which contains ten cats and twelve dogs
+the program identifies eight dogs. of the eight elements identified 5 are actual dogs(true positive) and three are actually cats
+(false positives). Seven dogs were actually missed(False negatives) and seven cats are correctly excluded(true negatives).
+
+false negatives - [
+true negatives - ]
+true positives - (
+false positives - )
+[()] 
+
+precision - how many relevant elements among the retrieved instances. perfect precision - no false positive.
+correct detections out of all the detections.
+recall - how many relevant elements that are retrieved. 
+perfect recall - no false negative.
+correct detections out of all the actual truth value.
+
+When a model has high recall but low precision, then the model classifies most of the positive samples correctly but it has many
+false positives (i.e. classifies many Negative samples as Positive). When a model has high precision but low recall, 
+then the model is accurate when it classifies a sample as Positive but it may classify only some of the positive samples.
+
+The program precision is then 5/8(true positives/selected elements) and its recall is 5/12 (true positives/relevant elements)
+
+precision = TruePositives / (TruePositives + FalsePositives)   (/()
+= 5 dogs correctly detected / (5 dogs correctly detected + 3 cats mistaken as dogs) = 5/8
+= 0.625
+
+recall = TruePositives / (TruePositives + FalseNegatives)   (/[(
+= 5 dogs correctly detected / (5 dogs correctly detected + 7 dogs were actually missed).
+= 0.417
+
+Note that as the recall increases, the precision decreases. The reason is that when the number of positive samples increases 
+(high recall), the accuracy of classifying each sample correctly decreases (low precision). This is expected, as the model is more likely
+to fail when there are many samples.
+The precision-recall curve makes it easy to decide the point where both the precision and recall are high.
+
+
+F1 measure = (2*Precision*Recall)/(Precision + Recall)
+= (2*0.625*0.417)/(0.625+0.417)
+= 0.5002
+
+This is the harmonic mean of the two fractions. This is sometimes called the F-Score or the F1-Score 
+and might be the most common metric used on imbalanced classification problems.
+  
+sensitivity or recall or true positive rate (TPR) = TruePositive/TruePositive + FalseNegative
+= 1 - FNR.
+
+specificity, selectivity or True negative rate(TNR) = TrueNegative/TrueNegative + FalsePositive
+= 1 - FPR.
+
+F-Measure provides a way to combine both precision and recall into a single measure that captures both properties.
+The f1 metric measures the balance between precision and recall. When the value of f1 is high, this means both the precision
+and recall are high. A lower f1 score means a greater imbalance between precision and recall.
+
+Alone, neither precision or recall tells the whole story. We can have excellent precision with terrible recall, or alternately,
+terrible precision with excellent recall. F-measure provides a way to express both concerns with a single score.
+
+
+The decision of whether to use precision or recall depends on the type of problem being solved. If the goal is to detect all the
+positive samples (without caring whether negative samples would be misclassified as positive), then use recall. Use precision if the
+problem is sensitive to classifying a sample as Positive in general, i.e. including Negative samples that were falsely classified as
+Positive.
+
+Imagine that you are given an image and asked to detect all the cars within it. Which metric do you use? Because the goal is to detect
+all the cars, use recall. This may misclassify some objects as cars, but it eventually will work towards detecting all the target
+objects.
+
+Now say you're given a mammography image, and you are asked to detect whether there is cancer or not. Which metric do you use?
+Because it is sensitive to incorrectly identifying an image as cancerous, we must be sure when classifying an image as Positive
+(i.e. has cancer). Thus, precision is the preferred metric.
+
+
+Sensitivity (true positive rate) is the probability of a positive test result, 
+conditioned on the individual truly being positive.
+
+A test which reliably detects the presence of a condition, resulting in a high number of
+true positives and low number of false negatives, will have a high sensitivity.
+
+
+Specificity (true negative rate) is the probability of a negative test result,
+conditioned on the individual truly being negative
+
+A test which reliably excludes individuals who do not have the condition,
+resulting in a high number of true negatives and low number of false positives, will have a high specificity. 
+
+sensitivity helps in correctly identifying the true examples out from the total samples.
+
+	sensitivity = number of true positives / (number of true positives + number of false negatives).
+				= probability of a test being positive given that the patient has the disease.
+
+specificity helps in correctly eliminating the false/incorrect examples out from the total samples.
+
+	specificity = number of true negatives / (number of true negative + number of false positives).  ]/)]
+				= probability of a test being negative given that the patient is well.
+	
+This curve helps us to select the best IoU threshold with maximum precision & recall.
+
+average precision: is the area under PR Curve. AP summarizes the pr curve to one scalar value. 
+
+The average precision (AP) is a way to summarize the precision-recall curve into a single value representing the average of all precisions.
+The AP is calculated according to the next equation. Using a loop that goes through all precisions/recalls, the difference between the
+current and next recalls is calculated and then multiplied by the current precision. In other words, the AP is the weighted sum of 
+precisions at each threshold where the weight is the increase in recall.
+
+It is important to append the recalls and precisions lists by 0 and 1, respectively. 
+
+This is all about the average precision. Here is a summary of the steps to calculate the AP:
+
+Generate the prediction scores using the model.
+Convert the prediction scores to class labels.
+Calculate the confusion matrix.
+Calculate the precision and recall metrics.
+Create the precision-recall curve.
+Measure the average precision.
+
+In precise, AP is calculated with the precision and recall by the following formula:
+
+	AP@alpha = Integ(0 to 1) p(r)dr.
+
+	AP = Summ{k=0 to k=n-1} [Recalls(k) - Recalls(k+1)]*Precisions(k)
+	
+		Recalls(n) = 0
+		Precisions(n) = 1
+		n = Number of Thresholds.
+		
+By looking at above formula- we can say AP is the weighted sum of precisions at each threshold where the weight
+is the increase in recall.
+
+mean Average Precision(mAP) is now calculated by taking the average of AP across all the classes in given images.
+
+		mAP = 1/n * (Summ k=0 to n) APk.
+		
+	APk = average precision of class K.
+	n = the number of classes.
+	
+	
+Faster-RCNN:
+
+		1.the input image is first fed into a convolutional network which extracts features and generates a feature map. 
+this feature map is fed into a region proposal network(RPN). 
+		2. anchors are generated for the input image. the anchors are like fixed size bounding boxes which will try to cover objects of
+different size and aspect ratio. these anchors span over the entire image to cover all of the objects present in it.
+		3. In Faster RCNN, RPN is used to generate object proposals also called region proposals. RPN is also a CNN. 
+the output of initial layers of CNN goes into two branches. 1st branch gives classification which gives two probabilities (0 - object not
+present. 1 - object present). 2nd branch - bounding box regressor adjusts boundaries of bounding boxes to fit the objects inside it.
+		4. these object proposals generated by RPN are then projected onto the feature map of the last convolutional layer.
+		5. RoI pooling is used to extract feature vectors corresponding to each object proposal.
+		6. These feature vectors are given as input to a fully convolutional layer, whose output then goes into two branches. one branch
+for multi class classification and other for the bounding box regression. this bounding box regressor is different from the bounding 
+box regressor in RPN.
+		7. the multiclass classification branch uses a number of convolutional layers and a softmax layer to classify the corresponding
+object proposal into any of the object categories(classes). background of the image is considered as one of categories. 
+		8. the bounding box regressor branch further refines the boundaries of the bounding boxes to fit the boundaries of the object
+present inside them.
+		
+		For generating the object proposals, Fast RCNN uses selective search. Faster RCNN uses RPN.
+		
+RPN checks which of the anchors really contain objects and modifies their boundaries to fit the object inside them. 
+Now an object may be present in more than one overlapping anchors. Non-maximum suppression (NMS) is used to keep only the best fitting 
+anchor and reject the rest. These selected anchors (object proposals) are used to extract the fix length feature vectors from feature map
+using RoI pooling.
+
+
+Anchors and Region Proposal Network
+
+So the most logical thing to do is to do it in following two steps.
+
+1. Extract the regions in an image that contain an object.
+2. Then use CNN on each of those regions to identify the object inside them, just like we do for basic classification task.
+
+
+firstly, the anchor sizes are chosen such that objects of different shapes and sizes would fit approximately in one of those anchor and 
+secondly, we are going to use bounding box regressor twice in our network to refine those anchor boxes as per the object boundaries.
+
+For every scale there are three anchors with three aspect ratios of 1:1, 1:2 and 2:1.
+
+we have 2294 locations and for every location we will consider 9 anchor boxes centered at the location
+as shown in Figure 4. Thus, in all, we will have 2294 x 9 = 20646 anchors.
+
+for locations near the border on an image, the corresponding bounding boxes will go out of the image. They are called 
+cross-boundary anchors. So when we remove the cross-boundary anchors from all the 20646 anchors, we will be left with around 
+6000 anchors.
+
+Note that these cross-boundary anchors are removing only for training. During testing , the cross-boundary anchors are clipped 
+to the image boundary.
+
+
+Labelling:
+
+	Positive Labels is assigned to two kinds of anchors:
+	
+	1. The anchors with highest IoU with ground truth box.
+	
+	2. The anchors with IoU greater than 0.7 with ground truth box.
+	
+	we assign a negative label to a non positive anchor if its IoU ratio is lower than 0.3 for all ground truth boxes.
+	
+Non Maximum Supression:
+	
+		Non-maximum suppression is a technique used to reduce the number of candidate boxes by eliminating boxes that overlap
+by an amount larger than a threshold.
+
+		Some of the anchors try to enclose the same object and have high overlap with each other. NMS considers IoU threshold
+(typically 0.7) and all the overlapping proposals with IoU less than the threshold are rejected, which leaves us with around 2000 
+region proposals to be processed by Fast RCNN detector.
+
+How does RoI pooling works?
+
+	Fast R-CNN can accept input image with any size such that the longer side should not exceed 1000 pixels
+when the shorter side is resized to 600 pixels.
+
+	
+		
+ROI Pooling:
+
+		The input images are resized such that the shorter side becomes 600 pixels. Fast R-CNN can accept input image with any 
+size such that the longer side should not exceed 1000 pixels when the shorter side is resized to 600 pixels.
+
+		The convolutional layers do not have any problem with this variable image size. But the output of convolutional layers is of
+different size for different sizes of input images. And next fully connected layers do not accept input of variable size. So it is 
+necessary to bring the output of convolutional layers to a fix size before feeding it to fully connected layers. This is done by RoI
+Pooling.
+
+		Suppose we want to resize the output of convolutional layers corresponding to region proposal to H x W. Then we divide the
+corresponding feature map into a grid of size H x W containing bins of size h/H and W/w where h and w are height and width of feature map
+corresponding to region proposal. Then max pooling is applied on all bins to get a resized feature map of H x W.
+
+Sharing Features with RPN and Fast R-CNN
+
+		In Faster R-CNN training is single stage using multi-task loss.The loss function is combination of classification loss and 
+bounding box regression loss.
+		
+		Faster R-CNN has two networks : RPN and Fast R-CNN. If we train them independently, then their layers will be modified 
+in different ways. But we want Faster R-CNN to be a unified network with shared convolutional layers.
+
+		In alternative training RPN is trained first which generates region proposals. Then Fast R-CNN is trained on those proposals.
+The network thus tuned by Fast R-CNN is then used to initialize RPN
+
+Multi-class Classification
+
+		RoI feature vectors obtained from RoI pooling are then passed through a sequence of fully connected layers. And the output goes 
+into two sibling output layers/branches : one branch of Multi-class Classification and the other branch containing bounding box 
+regressor.
+
+		The Multi-class Classification branch predicts probabilities of the corresponding RoI belonging to any of the object
+classes or to the ‘background’ class. In short, this branch performs Multi-class classification and it finds out the object that 
+is present in corresponding region of interest.
+
+		The bounding box regressor branch refines the boundaries of bounding boxes to fit the boundaries of 
+object present inside them.
+
+
+
+YOLO (You Look Only Once):
+
+		Before Yolo we slide windows of various size sequentially to detect object in an image.this approach is logical but sluggish.
+later, a special network appeared exposed the regions of interest some assumptions where something interesting could be on the image.
+but, even they were still too numerous, thousands. the fastest of the algorithms Faster-RCNN processed one picture on average equipment
+in 0.2 seconds ie. 5 frames per second. 
+
+		it turned out it's possible.for this we reformulated the problem slightly. the classification task turned into a regression
+task.Fast YOLO is the fastest detector on record for Pascal VOC detection and is still twice as accurate as any other real-time
+detector.YOLO is 10 mAP more accurate than the fast version while still well above real-time in speed.
+
+
+SSD:
+https://github.com/amdegroot/ssd.pytorch
+https://github.com/InsiderPants/SSD-Object-Detection
+https://github.com/pierluigiferrari/ssd_keras - keras.	
+
+
+
+
+Vision Transformer:
+https://towardsdatascience.com/implementing-visualttransformer-in-pytorch-184f9f16f632
+https://d2l.ai/chapter_attention-mechanisms-and-transformers/vision-transformer.html
+https://github.com/lucidrains/vit-pytorch
+https://github.com/pytorch/android-demo-app/tree/master/ViT4MNIST
+
+
+Image Caption using Vision Transformer + Transformer:
+https://www.kaggle.com/code/dschettler8845/bms-visiontransformer-transformer-vit#model_preperation
+
+
+
+
+
+https://towardsdatascience.com/difference-between-local-response-normalization-and-batch-normalization-272308c034ac#:~:text=LRN%20is%20a%20non%2Dtrainable,what%20the%20AlexNet%20paper%20used.
+https://github.com/cuiziteng/ICCV_MAET
+https://towardsdatascience.com/the-inductive-bias-of-ml-models-and-why-you-should-care-about-it-979fe02a1a56
+
+https://cs231n.github.io/neural-networks-2/#init
+
+----------------------------------------------------------------------------------------------------------------------------------
+Edge Detection:
+
+	Convert 2D image to a set of curves to detect the edges.
+	More Compact than the pixels.
+
+	edges corresponds to the maximum (extreme of derivative) change.
+	the gradient points in the direction of most rapid increase in the intensity.
+	
+	the edge strength is given by the gradient magnitude.
+	
+	the edge direction is given by gradient angle.
+	
+	Images are not continuous functions they are discrete functions F(x,y)?
+		discrete derivative(Finite difference approximation):
+				Diff(F)/Diff(x) ~ F(x+1,y) - F(x,y)
+				
+	Sobel operation is an approximation of Gaussian derivative.
+	Some of the edges are not properly detected.
+	
+	Minimize the probability of false detection.
+	Minimize distance between reported edge and true edge location.
+	
+	Non maximum supression(Thinning):
+		Check if pixel is local maximum along gradient direction.
+			requires interpolation.
+	
+	Canny Thresholding:
+		Low thresholds create more edges but at the cost of more spurious edge pixels.
+		
+		Canny proposes a two level threshold:
+			- Edge pixels gradient magnitude must be above low threshold and connected to the edge.
+			
+			- Recursively if the 
+	
+		Filter image with derivative of Gaussian.
+		find magnitude and orientation of gradient.
+		Non-Maximum suppression.
+		Linking and thresholding(hysteresis).
+		Sigma - too low too many details.
+		Sigma - too high too blurry.
+		
+		How to use edge detection for something useful?
+			- Must be robust to small differences in edge detector output.
+			
+		Straight lines?:
+			some edge pixels are missing,background clutter and multiple lines and how can we fit straight line
+			
+			try all possible ines and count how many points each line passes through.
+				- choose line with most support
+				
+		Hough transform:
+			Every pixel casts a vote for all the lines that could have generated it.
+			
+				- tabulate votes to find mostly likely line.
+				
+				- which possible line intercepts this point. 
+				
+				- Tabulate votes to find most likely lines.
+				
+				- for lines, we could parameterize in terms of slope and y-intercept. ie. y=mx+b.
+		
+Hough Transform:
+
+	
+
+
+Segmentation:
+
+	--> break apart an image into simpler components. grouping together similar things. how people group things together?
+using motion similarity, shape similarity, proximity. 
+
+patterns: Figure folds, seperate image into coherent objects.  segmentation algorithms are not perfect.
+shape analysis on segments is not perfect. superpixels - group together similar looking pixels for efficiency of further
+processing.
+
+toy example:
+
+	->three intensities define three groups.
+	-> clustering the intensity values together.
+kmeans:	-> best cluster centers minimize sum squared difference between each point. if we knew cluster centers, 
+	we assign points to groups by assigning each to its closest center.
+	-> if we know the groups we calculate the cluster centers.  (chicken and egg problem).
+	-> we identify three segments in the image.
+	
+might be a local minimum not a global minimum.
+
+	-> regions are not contiguous in space. we increase k to get more segments. add additional features to segmentation. 
+by increasing feature space 3D clustering is better than grayscale clustering.
+
+group pixels based on spatial similarity.
+
+spatial coherence: clustering based on clor, clustering pixels based on color and position. grouping pixels based on texture
+similarity. 
+
+converges to local minimum of within-cluster squared error.
+	
+Estimate k: based more on heuristics than on principle.
+
+non-parametric clustering: we might know an estimate of the clusters not the number of clusters.
+
+mean shift: alternative to kmeans no need to set k instead, need estimate of the size of the clusters.
+simple, robust non-parametric iterative procedure for estimating peaks in a distribution.
+
+	-> compute centroid of samples under a kernel.
+	-> move center of kernel to centroid location.
+	
+when to stop this process?
+
+	set k to a much larger value. 
+
+start a cluster at random data point.
+look at all points underneath the cluster and estimate the centroid. 
+
+when to use k means - good estimate of k. how similar two pixels have to be.
+
+2 common segmentation techniques:
+
+	1. view image as a graph(encode image as grid graphs). spanning tree - connected graph (vertices connected) with no cycles.
+	suppose edges are weighted, and we want a minimum overall weight tree.
+	
+	kruskal algo:
+		1. find minimum weight edge. 
+		2. add or expand the tree with minimum weighted edges until you find a cycle.
+	Goal: segmentation with minimum homogenous regions. represent an image as a graph.
+		-- vertices represent image pixels.
+		-- edges represent adjacent pixels.
+	use variation of kruskal algo find the min spanning tree and then remove a few high-weight edges.
+	
+felzenswalb & Huttenlocher algorithm:
+
+	1. sort edges into (e1,e2,e3,...en) by increasing weight.
+	2. initialize s with one coponent per pixel.
+	3. for each eq in e1,e2,...,en do:
+		if weight of eq small relative to internal difference of components it connects them merge components.
+
+joining the components if colour differences spike then probably we shouldn't merge.
+
+dial parameter up or down to get segments.
+		
+		
+ A saturated neural network is one where most of the hidden nodes have values close to -1.0 or +1.0
+ 
+ 
+traditional pattern recognition: 
+	--> two modules system.
+	feature extraction module:
+		-->
+		-->Easy to match and compare.
+	classifier module:
+	
+why we need feature extractor? classifier has limited abilities. need easily seperable classes. need low dims features to learn
+and work. need easily separable classes.
+
+FE relatively invariant w.r.t transformations and distortions.
+
+hand crafted features for a task: Contain prior knowledge for the task. re-designed for each new task.
+
+problem and progress: natural data has variablitily and richness.
+
+-> difficult to design a system entirely by hand. by hand --> 'designing appropriate set of features'.
+
+combined system: end to end trainable. architecture tailors for the task with the prior information embedded 
+into the architecture.
+
+LeNet: 
+
+Convolution: learnable filters, moves sequentially across the image and keep doing the computation again and again.
+Subsampling: reduce feature map size -> pooling, conv. wih step>1.
+Full Connection: all neurons of two layers are connected.
+Non-Linearity learns the non-learning mapping -> sigmoid, ReLu.
+Bipyramid Structure: at each layer, the feature maps is increased and resolution decreased.
+
+Local Receptive Fields:
+--> input from the small neighborhood in previous layer.
+--> low order features combined --> higher order features.(using lower order feature to map into higher order feature.)
+
+Shared weights:
+ -> common filter for whole feature map (same operation with different regions).
+ -> controls the capacity of the model by learnable parameters.
+ 
+Spatial Sub-Sampling:
+
+	-> extract the most dominant feature by reducing the resolution.
+	-> increase the number of feature maps we are generating.
+	-> reduce the feature resolution by half and also the sensitivity to shift and distortions.
+	-> effectively controls the #trainable parameters.
+	-> reduces the feature map size, increase the feature maps.
+	      close to creating easily seperable classes. 
+we are not able to control which region to look into we can able to control only the objective function.
+
+
+Number of trainable parameters:
+
+	parameters are modified in steps --> once per batch.
+	large parameters need more steps to find its minima.
+		more steps need variety of examples to be effective.
+		else large models can memorize --> overfitting.
+		
+bi pyramid str -  repeated application of geometric transformations.
+
+Lenet uses Sigmoid - 0 to 1. distinction between features in high-dims space.
+
+	greater degree of invariance to geometric transformations.
+	
+	Full connection: each neuron in previous layer is connected to every neuron in next layer.
+	trainable parameters increases exponentially.
+
+unstructured for images: No built in invariance w.r.t translations, local distortions.
+
+
+test error decides the performance of the model - performance on unseen data.
+
+decrease the gap: E_test - E_train = k(h/P)^(alpha)
+
+	P - no of samples.
+	h - machine capacity.
+	k - constant.
+
+	if P increases E_test - E_train - decreases.
+		but we don't have the infinite training set.
+	if h increase -> E_train decreases.
+		chances of overfitting.
+	if model becomes more powerful -> E_test - E_train increases resulting in chances of overfitting.
+		
+	Instead of minimizin Etrain, we minimize Etrain + Beta*H(W).
+		H(w) - regularizatio fn, Beta - constant.
+		
+Regularization controls the weights in convolution are modified. it prevents the model from closely learning the
+variation from train set.
+
+helps in the generalization of model on unseen data.
+
+local minima: not major problem. observation: if network is oversized for the task the presence of extra dimensions in the
+parameter space reduces the risk of unattainable regions (local minima not obtainable in 3rd dimension can be obtainable in
+the 4D).
+
+covolution handles shift, rotation but why do we need the augmentation: because we need to fill the holes to form a complete 
+data distribution
+
+Paper 2: Understanding the difficulty of training deep feedforward neural networks.
+
+
+sigmoid:
+	non zero mean, not desirable for activations.
+
+hyberbolic tangent: tails are exponential.
+	quickly approaches the flat region.
+	
+softsign: tails are quadratic.
+	slowly approaches the flat region.
+	
+Requirement of Non-linearity:
+	overly linear fn -> computes nothing interesting.
+	seperate distinguishing properties from each other.
+
+Saturation of Activation:
+	input reaches the flat region of activation.
+	additional changes to input have little or no effect on output.
+	
+Back Propagation Gradient Flow:
+	saturation fn have poor gradients.
+	small gradient of Fn --> gradient vanishes to zero.
+	
+train with sigmoid: layer 4 quickly saturates. slows down all the learning.
+Layer1 and Layer 2 not significant saturation breaks.
+Layer 3 learning something very slowly.
+learning happens -> Layer 4 comes out of saturation.
+
+tanh and softsign activations: normalized histograms of activations at the end of training.
+Better flow of gradients. L5 has the best shape.
+	no saturation. 
+	better gradient flow.
+	
+weight standard initialization: sample uniformly b/w 2 values (0,1) or (-1,1)
+
+back prop gradients decreases from output layer to input layer.
+
+
+activation values: 
+1. symmetric around 0
+2. 0-peak increases for higher layers.
+3. low to high layer:
+		-> peak values increases.
+weight gradients - 
+backpropagated gradient - weight gradient with backpropagated gradient (weight grads * back-prop gradients.)
+
+Normalize the variance to obtain an even distribution.
+
+Lecun Initialization:
+
+
+Xavier Initialization: random number from uniform distribution.
+
+maintains activation variance 
+boosts backpropagation of gradients.
+
+Standard initialization higher layer --> lower layer.
+
+Normalized initialization: symmetric around 0
+0 peak similar for all layers.
+low to high layers.
+better std for higher layer.
+
+
+Why does the gaussian give nice smooth image than box filter?
+Why lower resolution image look about the same as higher resolution image?
+And sometimes image totally different?
+Why does image compression work so well?
+
+
+Frequency domain is more important to answer these questions.
+
+Fourier theoram says that any function can be written by adding together many terms of the form:
+	
+		Asin(wx+pi)
+		
+		A - amplitude
+		w - frequency
+		pi - phase.
+		
+	 A*Summ(k-1,3,5 to inf){1/k*sin(kt)}
+	 
+	 we can characterize a function based on its frequency spectrum - the amplitudes and the frequencies that went into it.
+
+x axis - time y axis - amplitude.
+x axis - frequency y axis - amplitude.
+	
+we can start with the spectrum and reconstruct the signal:
+
+we think of music in terms of frequencies at different magnitudes.
+
+low frequency note on left side of graph and high frequency on right side.
+
+zero frequency at center and graphs are symmetric about the center. we want to get the high frequency by pointwise multiplication with
+the filter. bandpass filter - intermediate filter.
+
+Fourier analysis in images:
+
+sine wave that generates the images will create vertical and horizontal patterns.
+
+Intensity Space: Magnitude(intensity) of light at each spatial (x,y) position.
+
+Fourier Space: magnitude(energy) of signal at each frequency.
+
+horizontal frequency(cycles/pixel) for vertical lines and vertical frequency (cycles/pixel) for horizontal lines. 
+four lines represents in the frequency domain represents the combination of vertical and horizontal bars.
+
+we increase the frequency (cycles per pixel) and the horizontal lines gets spaced apart symmetrically.
+
+imaginary component consists of phase.
+real component consists of amplitude.
+
+square wave decomposed of multiple sine waves with increasing amplitude as we goes higher and higher on.
+
+when we translate the image we do not encode the phase information and thus we lose some information.
+
+radial patterns will encode in frequency domain and horizontal & vertical line also encodes. 
+super sharp edge also gets enconded as the diagonal. rotations are also normal when image rotates the
+fourier domain also rotates.
+
+modelling texture is very difficult. both these things are stochastic and in local level these are very hard to 
+represent. 
+
+Fourier transform: stores the magnitude and phase at each frequency.
+magnitde encodes how much signal there is at a particular frequency.
+phase encodes spatial information.
+for mathematical convenience, this is often notated in terms of real and complex numbers.
+
+
+Properties of Fourier transforms:
+
+obeys linearity.
+fourier transform of real signal is symmetric about the origin.
+the energy of signal is the same as the energy of its fourier transform.
+can be computed efficiently using FFT alforithm in nlogn time.
+
+
+Convolution theoram:
+
+	Fourier transform is deeply related to convolution of two functions is the product of their Fourier transforms.
+	
+		F[g*h] = F[g]F[h]
+		
+	The inverse Fourier transform of the product of the two fourier transforms is the convolution of the two inverse
+Fourier transforms.
+
+		F-1[gh] = F-1[g]*F-1[h]
+		
+Convolution in the spatial domain is equivalent to the multiplication in the frequency domain.
+	
+	
+Gaussian Filter removing the high frequency components and contains only the low frequency components.
+
+imaginary part encodes the spatial information.
+
+when multiply image with gaussian it smoothly attenuate the high frequency components.
+
+edge artifacts injects additional noise.
+
+combine all these properties - 
+
+
+Parameteric ReLu and Leaky Relu:
+
+Dead Gradient Solution
+
+		F(x) = max(0,x) + min(a.x,0)
+		
+	Trainable a --> Parametric ReLU.
+	
+	
+	Fixed 'a' --> Leaky ReLU.
+	a takes a small value --> 0.01
+	Lower part gradient --> small fixed value.
+	
+Weight Initialization is activation dependant.
+
+How to initialize weights?
+	Normalized Xavier Initialization. n --> input and m --> output neurons.
+	
+	He Initialization Gaussian or Uniform. mu --> 0 and sigma --> sqrt(2/n).
+	
+Pooling Layers: max pooling pooling regions has no overlap.
+stride 2 for 2*2.
+output feature size is halved.
+
+Overlapping Max Pooling: pooling regions has overlap.
+stride = 1 for 2*2.
+output features are bigger.
+
+Prevents overfitting.
+
+Other Pooling methods:
+	Average Pooling, Min Pooling.
+	
+Local Response Normalization:
+
+	for activations of i-th filter at (x,y) position
+	
+	sum over the responses of the defined n neighboring filters at same spatial position.
+	use k,n,alpha,Beta hyperparameters --> tuned with validation set.
+	
+applied after ReLU in Alexnet.
+
+creating competition for big activities amongst different features.
+
+
+A different thinned network is sampled every time.
+
+Exponential number of networks are learned during trainig.
+
+dropout reduces co-adaptation.
+
+dropout = p*n
+p - probability of retaining a unit.
+n - number of neurons.
+
+for alexnet we use p=0.5
+
+top 5 accuracy with images containing very similar colour,texture and location of object.
+Locality of pixel dependencies -  neighboring pixels tend to be correlated.
+Stationarity of statistics- something to do with spatial locations.	
+a lot of local statistics are common across multiple areas of the image.
+
+deeper layers: 1 --> positive values after ReLU.
+initial layers: 0 --> quickly learn if gradient is flowing.
+
+VGGNet:
+
+Images are not 2D --> H*W*C
+
+C --> number of Channels.
+color image: C = 3, RGB.
+
+#kernels/Filters used = #feature maps.
+
+counting params:
+
+Channel_in = 10
+Channel_out = 20
+kernel = 3,3
+
+total#params:
+	(kh*kw*cin)*cout
+	
+1*1 Convolution:
+input size: H*W*C
+Conv. Filter depth = Cin
+	Implicit unless you change.
+1*1 Cin convolution:
+kernel: 1*1 stride - 1
+# params: Cin*Cout
+output_size: H*W*Cout.
+if #output channels - Cout.
+Linear projection onto the space of same dimension with additional non-linearity.
+Increases non linearity of decision function without affecting receptive field.
+
+VGGnet: 
+3*3 filters 1 stride and 1 padding.
+max pooling 2*2, stride 2.
+no overlapping pooling.
+only 5 max pooling layer.
+bring in systematic way of designing the network.
+
+Each stack of Conv. Layers:
+Fixed # Feature maps.
+
+Same #neurons in fully connected layers.
+4096 --> 4096 --> 1000.
+20 M parameters - last 3 layers (Input * Output) = 4096*4096 + 4096*1000 = 20M parameters.
+
+stacking 3*3 layers: 1 7*7 49C2 parameters. and 2 3*3 layers: 27C2 parameters.
+
+use of small filters also does some regularization.
+
+Data Augumentation:
+
+random cropping, random horizontal flipping and RGB color shift.
+fills up the holes in data distribution.
+
+Convex Optimization Function:
+
+	A convex optimization problem is a problem where all of the constraints are convex functions, and the objective is a convex function
+if minimizing, or a concave function if maximizing. Linear functions are convex, so linear programming problems are convex problems.
+
+With a convex objective and a convex feasible region, there can be only one optimal solution, which is globally optimal. 
+Several methods -- notably Interior Point methods -- will either find the globally optimal solution, or prove that there is no feasible
+solution to the problem.
+
+parabola is a convex function.
+
+inverted parabola is a concave function.
+
+A non-convex function "curves up and down" -- it is neither convex nor concave.
+
+
+fourier transform of image and kernel element wise multiplied and then inverse fourier transform is done to get image back in 
+the O(nlogn) time. 
+
+why does image compression work so well?
+
+frequency space decomposition and throw the high frequencies. use discrete cosine transform to get only imaginary parts and
+store low frequency components very precisely and high frequency components coaresely.
+
+hybride image FFT: combine two image and apply low pass filter to one image and high pass filter to another image to get the 
+hybrid image.
+
+why do we get different, distance dependant interpretations of hybrid images?
+
+Image Scaling: Image is too big and we want to fit on a screen: we do subsampling throw away every other row and column to create 
+a 1/2 size image - called image sub-sampling.(on both dimensions).
+
+wagon wheel effect: wheel appears to be rotating backwards. 
+
+nyquist shannon sampling theoram: when sampling a signal at discreate intervals the sampling frequency must be greater than 2*fmax
+where fmax is the maximum frequency of the signal.this will allows to reconstruct the original perfectly from the sampled version.
+
+cut out the high frequencies before we subsample. get rid of all the frequencies that are greater than half the new sampling 
+frequency.
+
+solution: Filter the image and then subsample.
+
+sometimes it is easy to think of image and filtering in frequency domain. Images are mostly smooth. basis for compression.
+Can be faster to filter using FFT for large images. Remember to low-pass before sampling.
+
+
+Image Transformations:
+
+Parametric Warping: Transformation T is a coordinate changing machine. what does it mean that T is global?
+
+- Is the same for any point p.
+- can be described by a few numbers.
+
+For linear transformations, we can represent T as a matrix.
+
+	p' = Mp
+
+translation.
+rotation.
+
+image filtering: take an image and apply some transformation to the image.
+
+
+image warping: changing the coordinates of the locations of image.
+
+
+Scaling: Scaling a coordinate means multiplying each of its components by a scalar.
+
+Non - Uniform scaling: has different scalars per component.
+
+
+	x'      a    0      x
+	    =           * 
+	y'      0    b      y
+
+what is the transformation from (x',y') to (x,y)?
+
+inverse transform ie. 1/a   0
+					   0   1/b
+					   
+what types of transformations can be applied?
+
+
+2D-rotation:
+		x' = xcos(theta) - ysin(theta)
+		y' = xsin(theta) + ycos(theta)
+ 
+ 
+		x'      cos(theta)     -sin(theta)  x
+		    =                               
+		y' 		sin(theta)      cos(theta)  y
+		
+for rotation matrixes, det(R) = 1 and R-1 = R^T.
+
+2*2 transformation matrices:
+
+what types of transformations can be represented with a 2*2 matrix?
+
+2D Shear?
+
+	x' = x + shx*y
+	y' = shy*x + y
+	
+Any linear transformation can be written as a combination of scale, rotation,shear and mirror.
+
+we can multiply matrixes one by one and then apply linear transformation.
+
+Properties:
+origin -> origin
+lines -> lines
+parallel lines -> parallel.
+ratios are preserved.
+closed under composition.
+
+multiple pixels map to sample same pixel. we need to use some interpolation.
+
+what type of transformations can be represented with a 2*2 matrix?
+
+2D Translation:
+
+		x' = x + tx
+		
+		y' = y + ty.
+		
+		
+translation is not a linear transformation. only linear 2D transformations can be represented with a 2*2 matix.
+
+how can we represent the translation as a matrix?
+
+things that are not linear lower dimension are linear in higher dimension.
+
+homogenous coordinate: embed 2D coordinates back to 3D coordinate.
+ 
+embed in higher dimensional space:
+
+ -  x,y,w represents a point at 2D location.
+ -  x,y,0 represents a point at origin.
+ 
+use a 3*3 transformation matrix, T translation corresponds to last column of matrix.
+
+	x'      1   0  tx     x     x+tx
+	                            
+	y'  =   0   1  ty  *  y  =  y+ty
+	
+	1		0   0  1      1      1
+	
+translate,scale,rotate,shear.
+
+
+Affine transformations: no longer linear in 2D space but it is linear in 3D space.
+
+combination of linear transformations(rotation,scaling,shear,mirror) and translations.
+
+	x'       a    b    c   x
+	
+	y'   =   d    e    f * y
+	
+	w        0    0    1   w
+	
+projective transformations are combinations of affine transformations and projective wraps.
+
+H = a  b  c
+	d  e  f called as homography.
+	g  h  i
+	
+image plane in front can be transformed into a image plane below using the projective transformations.
+
+									D.O.F     preserves
+translation =     					  2       orientation
+euclidean  =  translation + rotation  3		  
+similarity                            4		  parallelism
+affine								  6
+projective							  8
+
+
+recovering Transformations.
+
+Translation:
+
+how many degrees of freedom? 2
+how many correspondences needed for translation? how many corresponding points we need? one pair of points needed for transformation.
+what is the transformation matrix?
+
+Euclidean # correspondances?
+how many DOF? 3
+how many correspondances needed for translation and rotations? 2 pair of points needed for transformation.
+
+Affine # correspondences?
+how many DOF? 6
+how many correspondances needed for affine? map traingles to triangles.
+
+Projective # Correspondances?
+how mant dof? 8.
+4 correspondances.
+
+rotations can be performed efficiently using a series of three shear operations.
+horizontal shear,vertical shear,horizontal shear.
+(-tan*theta/2), sin(theta), -tan(theta/2).
+
+
+If you are enlarging the image, you should prefer to use INTER_LINEAR or INTER_CUBIC interpolation.
+If you are shrinking the image, you should prefer to use INTER_AREA interpolation.
+
+Cubic interpolation is computationally more complex, and hence slower than linear interpolation. However, 
+the quality of the resulting image will be higher.
+
+
+given two images estimate dense depth map.
+
+lenses have two different polarization and as a result our eyes recieve the result of two different frames.
+
+epipolar geometry:
+
+	relationship between points in one camera to another camera. 
+	two cameras one at left and one at right viewing one point x. 
+	
+	baseline - line connecting two camera centers.
+	image plane is behind the camera but we kind of assume a virtual image plane in front of camera.
+	scene point is projected into the image.
+	epipolar plane - a plane containing baseline and scene point(X).
+	epipoles - intersection of baseline with image planes. where the projection of the other camera center.
+	epipolar lines tells where we can see the scene point in the other image.
+	epipolar lines - intersection of x and e (same x' and e').
+	
+epipolar constraint:
+
+	translation parameter and rotational parameter vector t&r both camera sees the pixel cooridinate at x and x'.
+	3 vectors are coplanar baseline ie at t. and vector from O to X is coplanar to t and vector from O' to x' is coplanar.
+	coplanar - all the 3 lines lie in the same plane.
+	tx - essential matrix describes the points in one image and the points in epipolar lines in other image.
+	if i know the points in one image then we know the points in other image.
+	
+	x*[t*(Rx')] = 0 orthogonal.
+	
+	E is singular(rank two).
+	
+	singular  - determinant is zero.
+	rank - number of independant columns in the matrix. we get the rank.
+	The rank of a singular matrix must be less than the minimum, i.e., less than the number of rows and number of columns. 
+	Since the rows of a singular matrix are not linearly independent, therefore say if the order of the matrix A is 3 × 3,
+	Then the rank of A ≤ 3.
+	
+	Ex' is the epipolar line ass with x'
+	Ex is the epipolar line ass with x.
+	Ee =0 
+	
+	if extrinsic parameters of camera are unknown.
+	xTEx' = 0 annd x=Kx^ and x' = K'x^'
+	F - fundamental matrix calculated from Essential and K claibration matrixes but we don't know K.
+	but we can solve for the fundamental matrixes.
+	F = K-TE-1k'-1
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+Two Stage Object Detection:
+
+RCNN, SppNet
+Fast RCNN and Faster RCNN
+Mask RCNN
+Pyramid Networks/FPN
+G-RCNN
+
+Single Stage Object Detection:
+
+YoLo
+SSD
+RetinaNet
+YoloV3
+Yolov4
+YoloR
+YoloV7
+Detectron2
+
+
+An object detector solves two subsequent tasks: 
+
+Task #1: Find an arbitrary number of objects (possibly even zero), and
+
+Task #2: Classify every single object and estimate its size with a bounding box. 
+
+To simplify the process, you can separate those tasks into two stages. Other methods combine both tasks into one step
+(single-stage detectors) to achieve higher performance at the cost of accuracy.
+
+The two-stage architecture involves 
+
+(1) object region proposal with conventional Computer Vision methods or deep networks, 
+followed by (2) object classification based on features extracted from the proposed region with bounding-box regression. 
+Two-stage methods achieve the highest detection accuracy but are typically slower. Because of the many inference steps per image,
+the performance (frames per second) is not as good as one-stage detectors. Various two-stage detectors include region convolutional 
+neural network (RCNN), with evolutions Faster R-CNN or Mask R-CNN. The latest evolution is the granulated RCNN (G-RCNN). Two-stage 
+object detectors first find a region of interest and use this cropped region for classification. However, such multi-stage detectors
+are usually not end-to-end trainable because cropping is a non-differentiable operation.
+
+One-stage detectors: One-stage detectors predict bounding boxes over the images without the region proposal step. 
+This process consumes less time and can therefore be used in real-time applications. One-stage object detectors prioritize
+inference speed and are super fast but not as good at recognizing irregularly shaped objects or a group of small objects.
+The most popular one-stage detectors include the YOLO, SSD, and RetinaNet. The latest real-time detectors are YOLOv7 (2022), 
+YOLOR (2021) and YOLOv4-Scaled (2020). View the benchmark comparisons below. The main advantage of single-stage is that those
+algorithms are generally faster than multi-stage detectors and structurally simpler.
+
+
+
+Few Shot Learning:
+	It tries to identify and recognizes the features of the object with few training examples of that category.
+
+One Shot Learning:
+	It tries to identify and recognizes the features of the object. with given only one training object of that category.
+
+Zero Shot Learning:
+	it tries to identify semantic attribute relationships and identifies the object in the image. the goal for the algorithm
+is to make predictions about new classes using the prior knowledge about class relationships that it already knows.
+
+Different Approaches:
+
+1. Attribute Based Approaches,
+2. Embedding Based Approaches,
+3. Generative Approaches - the model generates synthetic examples for unseen categories.
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+https://github.com/AlphaJia/pytorch-faster-rcnn
 
 ----------------------------------------------------------------------------------------------------------------------------------
 MegaPortraits:
 
 https://samsunglabs.github.io/MegaPortraits/
 
+
+Vision Transformers (Implementation must go through):
+
+https://medium.com/artificialis/vit-visiontransformer-a-pytorch-implementation-8d6a1033bdc5 (1)
+https://medium.com/artificialis/from-sound-to-sight-using-vision-transformers-for-audio-classification-aa6a0293914c (2)
+https://pub.towardsai.net/overview-of-vision-transformers-is-all-you-need-88727438ff8d (3)
+
+EfficientNetV2:
+https://towardsdatascience.com/efficientnetv2-faster-smaller-and-higher-accuracy-than-vision-transformers-98e23587bf04
+
+RetinaNet:
+https://towardsdatascience.com/review-retinanet-focal-loss-object-detection-38fba6afabe4
+
+Stable Diffusion:
+https://pub.towardsai.net/getting-started-with-stable-diffusion-f343639e4931
+https://towardsdatascience.com/what-are-stable-diffusion-models-and-why-are-they-a-step-forward-for-image-generation-aa1182801d46
+https://pub.towardsai.net/getting-started-with-stable-diffusion-f343639e4931
+https://medium.com/@steinsfu/stable-diffusion-clearly-explained-ed008044e07e
+https://towardsdatascience.com/how-to-fine-tune-stable-diffusion-using-textual-inversion-b995d7ecc095
+https://medium.com/codex/a-quick-look-under-the-hood-of-stable-diffusion-open-source-architecture-2f07fc1e729
+https://medium.com/geekculture/run-stable-diffusion-in-your-local-computer-heres-a-step-by-step-guide-af128397d424
+https://medium.com/@steinsfu/diffusion-model-clearly-explained-cd331bd41166
+
+https://medium.com/geekculture/converting-yolo-v7-to-tensorflow-lite-for-mobile-deployment-ebc1103e8d1e
+https://medium.com/mlearning-ai/object-detection-with-yolov7-a74fa1f03c7e
+https://towardsdatascience.com/creating-and-training-a-u-net-model-with-pytorch-for-2d-3d-semantic-segmentation-dataset-fb1f7f80fe55
+https://johschmidt42.medium.com/train-your-own-object-detector-with-faster-rcnn-pytorch-8d3c759cfc70
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Caption Transformer:
+
+https://github.com/saahiluppal/catr/blob/master/models/transformer.py
 
 ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -1267,3 +3958,138 @@ Important Blog:
 https://lilianweng.github.io/ - To be read.
 
 https://aman.ai/primers/ai/diffusion-models/
+
+https://github.com/Praneta-Paithankar/CSCI-B551-Elements-of-Artificial-Intelligence/blob/master/Assignment1/Problem1/route.py
+
+
+
+MIRNET for enhancing low light images:
+https://towardsdatascience.com/enhancing-low-light-images-using-mirnet-a149d07528a0
+
+
+GAN:
+https://towardsdatascience.com/understanding-generative-adversarial-networks-gans-cd6e4651a29
+
+
+Rust Detection using VGG-16:
+https://blog.floydhub.com/localize-and-detect-corrosion-with-tensorflow-object-detection-api/
+
+
+OCR Notes:
+https://towardsdatascience.com/a-gentle-introduction-to-ocr-ee1469a201aa
+
+
+Deep Learning For Computer Vision:
+http://cs231n.stanford.edu/schedule.html
+
+SSD:
+https://debuggercafe.com/object-detection-using-pytorch-and-ssd300-with-vgg16-backbone/
+https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection
+
+
+
+Deep Learning Acceleration Full Guide:
+https://github.com/Hulalazz/A-_Guide_-to_Data_Sciecne_from_mathematics/blob/master/Acceleration.md
+https://github.com/dair-ai/ML-Papers-Explained
+https://github.com/facebookresearch/maskrcnn-benchmark
+
+
+Detectron2 Tutorial:
+https://colab.research.google.com/drive/16jcaJoc6bCFAQ96jDe2HwtXj7BMD_-m5#scrollTo=YU5_W8wJF02F
+https://www.kaggle.com/code/rahuljauhari/bounding-box-prediction-using-faster-rcnn-resnet/notebook
+https://www.kaggle.com/datasets/garymk/kitti-3d-object-detection-dataset 3D DataSet.
+
+Object Detection Sample Applications:
+https://github.com/pytorch/android-demo-app/tree/master/ObjectDetection - YoLoV5.
+https://github.com/pytorch/android-demo-app/tree/master/D2Go - Detectron2Go.
+https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb
+https://github.com/facebookresearch/detr
+https://ai.facebook.com/blog/end-to-end-object-detection-with-transformers/
+https://www.kaggle.com/code/prokaj/end-to-end-object-detection-with-transformers-detr/notebook#DETR-(Detection-Transformer)
+https://ai.facebook.com/blog/-detectron2-a-pytorch-based-modular-object-detection-library-/
+
+
+https://medium.com/@van.evanfebrianto/how-to-train-custom-object-detection-models-using-retinanet-aeed72f5d701 - RetinaNet.
+
+React JS:
+https://reactjsexample.com/tag/redux/
+https://www.w3schools.com/REACT/DEFAULT.ASP
+https://reactjs.org/tutorial/tutorial.html
+https://reactjsexample.com/the-ecommerce-template-built-using-react-redux-context-and-material-ui/
+
+
+CLIP:
+https://towardsdatascience.com/clip-the-most-influential-ai-model-from-openai-and-how-to-use-it-f8ee408958b1
+https://towardsdatascience.com/beyond-tags-and-entering-the-semantic-search-era-on-images-with-openai-clip-1f7d629a9978
+https://www.udemy.com/course/question-generation-using-natural-language-processing/?referralCode=C8EA86A28F5398CBF763
+https://www.udemy.com/course/modern-natural-language-processingnlp-using-deep-learning/
+https://github.com/haltakov/natural-language-image-search
+https://openai.com/research/clip
+https://github.com/openai/CLIP
+
+
+https://github.com/SwinTransformer/Video-Swin-Transformer
+
+
+Content Recognition
+1.1. Image Classification
+1.2. Object Identification
+1.3. Object Detection and Localization
+1.4. Object and Instance Segmentation
+1.5. Pose Estimation
+Video Analysis
+2.1. Object Tracking
+2.2. Action Recognition
+2.3. Motion Estimation
+Content-aware Image Editing
+Scene Reconstruction
+References
+
+
+Aws ML Certification:
+https://towardsdatascience.com/how-i-prepared-for-the-aws-machine-learning-speciality-certification-10834924d192
+https://sudo-code7.github.io/posts/tech/ml/mls-c01/mls-c01-exap-prep-pass-guide/#few-pointers-from-my-experience-on-exam
+https://www.capitalone.com/tech/machine-learning/advice-for-taking-the-aws-machine-learning-specialty-exam/
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://d1.awsstatic.com/training-and-certification/docs-ml/AWS-Certified-Machine-Learning-Specialty_Exam-Guide.pdf
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://d1.awsstatic.com/training-and-certification/docs-data-analytics-specialty/AWS-Certified-Data-Analytics-Specialty_Exam-Guide.pdf
+https://techwithshadab.medium.com/how-did-i-clear-my-aws-ml-specialty-certification-on-the-first-attempt-9f023f739fa8
+https://www.youtube.com/watch?v=uQc8Itd4UTs&list=PLhr1KZpdzukcOr_6j_zmSrvYnLUtgqsZz
+https://aws.amazon.com/training/learning-paths/machine-learning/exam-preparation/
+https://aws.amazon.com/certification/certified-machine-learning-specialty/
+https://training.resources.awscloud.com/machine-learning-traincert?sc_icampaign=aware_tnc-ml-hub&sc_ichannel=ha&sc_icontent=awssm-12448_aware&sc_iplace=2up&trk=5154fab5-cedd-42dc-ba9e-0298290edf3e~ha_awssm-12448_aware
+
+https://www.capitalone.com/tech/machine-learning/advice-for-taking-the-aws-machine-learning-specialty-exam/ - Important Link
+
+
+https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu&culture=en-us&country=us
+
+
+Docker, KuberNates.
+
+Goals:
+
+1. Aws ML Certification.
+2. Computer Vision Project.
+3. React JS Project.
+4. LeetCode - DP & Greedy Problems Practice.
+5. Kaggle Competitions - attend.
+
+https://cl.indiana.edu/~ftyers/courses/2022/Autumn/L-645/
+
+
+AWS Certified Solutions Architect - Associate
+
+TikTok Reference:
+https://jobs.bytedance.com/referral/pc/position/6831261761505593613/detail?token=MzsxNjE3MDc0OTg2NDYxOzY4OTI5NDA1NTI1ODE0MTY0NTY7MA
+https://jobs.bytedance.com/referral/pc/position/6901394922193848584/detail?token=MzsxNjE3MDc0OTg2NDYxOzY4OTI5NDA1NTI1ODE0MTY0NTY7MA
+https://jobs.bytedance.com/referral/pc/position/6831333456565471502/detail?token=MzsxNjE3MDc0OTg2NDYxOzY4OTI5NDA1NTI1ODE0MTY0NTY7MA
+
+
+DeiT-B, which has the same architecture as ViT-B. When we fine-tune DeiT at a larger resolution, we append the resulting operating
+resolution at the end, e.g, DeiT-B↑384.The parameters of ViT-B (and therefore of DeiT-B) are fixed as D = 768, h = 12 and d = D/h = 64.
+The authors introduce two smaller models, namely DeiT-S and DeiT-Ti, for which we change the number of heads, keeping d fixed.
+
+
+The only parameters that vary across models are the embedding dimension and the number of heads, and we keep the dimension per head
+constant (equal to 64). Smaller models have a lower parameter count, and a faster throughput. 
+

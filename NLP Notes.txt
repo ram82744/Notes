@@ -6,6 +6,9 @@ https://blog.floydhub.com/long-short-term-memory-from-zero-to-hero-with-pytorch/
 ToDo's:
 
 https://github.com/huggingface/blog/blob/main/notebooks/03_reformer.ipynb
+
+https://towardsdatascience.com/fine-tuning-the-bart-large-model-for-text-summarization-3c69e4c04582
+
 -------------------------------------------------------------------------------------------------------------------------
 
 Word2Vec Intro:
@@ -610,6 +613,193 @@ Regular Expression in Python:
 
 BART - Foods and Events Summary
 
+--------------------------------------------------------------------------------------------------------------------------
+Bleu Score: (Bilingual Evaluation UnderStudy.) this is a score for comparing a candidate translation of text to one or more
+reference translations.BLEU for short, is a metric for evaluating a generated sentence to a reference sentence.
+
+A perfect match results in a score of 1.0, whereas a perfect mismatch results in a score of 0.0.
+
+The approach works by counting matching n-grams in the candidate translation to n-grams in the reference text, 
+where 1-gram or unigram would be each token and a bigram comparison would be each word pair. The comparison is made 
+regardless of word order.
+
+Although developed for translation, it can be used to evaluate text generated for a suite of natural language processing tasks.
+
+Calculating Bleu Scores:
+
+	The Python Natural Language Toolkit library, or NLTK, provides an implementation of the BLEU score that you can use
+to evaluate your generated text against a reference.
+
+Sentence BLEU Score:
+
+	NLTK provides the sentence_bleu() function for evaluating a candidate sentence against one or more reference sentences.
+
+The reference sentences must be provided as a list of sentences where each reference is a list of tokens. The candidate sentence
+is provided as a list of tokens.
+
+	from nltk.translate.bleu_score import sentence_bleu
+	reference = [['this', 'is', 'a', 'test'], ['this', 'is' 'test']]
+	candidate = ['this', 'is', 'a', 'test']
+	score = sentence_bleu(reference, candidate)
+
+Corpus Bleu Score:
+
+	NLTK also provides a function called corpus_bleu() for calculating the BLEU score for multiple sentences such as a 
+paragraph or a document.
+
+The references must be specified as a list of documents where each document is a list of references and each alternative 
+reference is a list of tokens, e.g. a list of lists of lists of tokens. 
+The candidate documents must be specified as a list where each document is a list of tokens, e.g. a list of lists of tokens.
+
+
+	# two references for one document
+	from nltk.translate.bleu_score import corpus_bleu
+	references = [[['this', 'is', 'a', 'test'], ['this', 'is' 'test']]]
+	candidates = [['this', 'is', 'a', 'test']]
+	score = corpus_bleu(references, candidates)
+	print(score)
+
+Transductive Learning:
+
+	Transduction or transductive learning is used in the field of statistical
+learning theory to refer to predicting specific examples given specific examples from a domain.
+
+	It is contrasted with other types of learning, such as inductive learning and deductive learning.
+	
+
+Induction: deriving the function from the given data. 
+Deduction: deriving the values of the given function for points of interest.
+Transduction: deriving the values of the unknown function for points of interest from the given data.
+
+
+the classical problem of “approximating a mapping function from data and using it to make a prediction” is seen as more 
+difficult than is required.Instead, specific predictions are made directly from the real samples from the domain. No function 
+approximation is required.
+
+
+Transformer:
+	The transformer model is a transduction model entirely depends on self attention mechanism to draw global dependencies 
+between the input and output. encoder maps an input sequence of symbol representations(x1,...,xn) to a sequence of continuous
+representations(z1,z2,....,zn). Given z, the decoder generates a output sequence (y1,y2,...ym) of symbols one element at a time.
+
+	The transformer follows overall architecture using self attention and point wise fully connected layers for both the 
+encoder and decoder.
+	
+Encoder:
+
+	Encoder composed of a stack of 6 identical layers. Each layers has two sub layers 1. multi-head attention mechanism and 2. simple
+	position wise fully connected feed forward network. we employ a residual connection around each of two sub-layers followed by the
+	layer normalization: LayerNorm(x+Sublayer(x)).all layers produce output of dimension dmodel = 512.
+
+Decoder:
+
+	Decoder composed of a stack of 6 identical layers. In addition to two sub-layers in each encoder layer, the decoder inserts a 
+	third sub-layer which performs multi-head attention over the encoder output. Similar to encoder we employ residual connections
+	around each of the sub-layers followed by layer normalization. we modify the self attention sub-layer in the decoder stack to
+	prevent positions from attending to subsequent positions. this masking combined with the fact that output embeddings are offset
+	by one position ensures that predictions for position i can depend only on known outputs at position less than i. 
+
+Attention:
+	
+	An attention function is a mapping of a query and a set of key-value pairs to an output, where the query,keys,values and output
+are all vectors. output is weighted sum of the values, where the weight assigned to each value is computed by the compatability
+function of the query with the corresponding key.
+
+Scaled-Dot-Product-Attention:
+
+	 The input consists of queries and keys of dimension dk, and values of dimension dv. We compute the dot products of the
+query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the values.
+
+	In practice, we compute the attention function on a set of queries simultaneously, packed together into a matrix Q. 
+The keys and values are also packed together into matrices K and V . We compute the matrix of outputs as:
+
+		Attention(Q,K,V) = softmax(Q*K^T/sqrt(dk))*V
+		
+	We suspect that for large values of dk, the dot products grow large in magnitude, pushing the softmax function into 
+regions where it has extremely small gradients. To counteract this effect, we scale the dot products by 1/√dk.
+	
+Multi-Head-Attention:
+
+		Instead of performing a single attention function with dmodel-dimensional keys, values and queries,
+we found it beneficial to linearly project the queries, keys and values h times with different, learned
+linear projections to dk, dk and dv dimensions, respectively. On each of these projected versions of
+queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional
+output values. These are concatenated and once again projected, resulting in the final values, as
+
+		Multi-head attention allows the model to jointly attend to information from different representation
+subspaces at different positions. With a single attention head, averaging inhibits this.
+
+			MultiHead(Q, K, V ) = Concat(head1, ..., headh)WO
+			
+			where head_i = Attention(Q*W^Qi, K*Wi^K, V*Wi^V)
+			
+	Where the projections are parameter matrices.
+	
+	In this work we employ h = 8 parallel attention layers, or heads. For each of these we use
+dk = dv = dmodel/h = 64. Due to the reduced dimension of each head, the total computational cost
+is similar to that of single-head attention with full dimensionality.
+	
+The Transformer uses multi-head attention in three different ways:
+
+1. the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder.
+This allows every position in the decoder to attend over all positions in the input sequence. This mimics the
+typical encoder-decoder attention mechanisms in sequence-to-sequence models
+
+2. The encoder contains self-attention layers. In a self-attention layer all of the keys, values
+and queries come from the same place, in this case, the output of the previous layer in the
+encoder. Each position in the encoder can attend to all positions in the previous layer of the
+encoder.
+
+3. self-attention layers in the decoder allow each position in the decoder to attend to
+all positions in the decoder up to and including that position. We need to prevent leftward
+information flow in the decoder to preserve the auto-regressive property. We implement this
+inside of scaled dot-product attention by masking out (setting to −∞) all values in the input
+of the softmax which correspond to illegal connections.
+
+Positional Encoding:
+
+	we must inject some information about the relative or absolute position of the tokens in the sequence. To this end, we add
+"positional encodings" to the input embeddings at the bottoms of the encoder and decoder stacks. The positional encodings have
+the same dimension dmodel as the embeddings, so that the two can be summed.
+
+In this work, we use sine and cosine functions of different frequencies:
+
+		PE(pos,2i) = sin(pos/100002i/dmodel)
+		PE(pos,2i+1) = cos(pos/100002i/dmodel)
+
+where pos is the position and i is the dimension. That is, each dimension of the positional encoding
+corresponds to a sinusoid. The wavelengths form a geometric progression from 2π to 10000 · 2π. We
+chose this function because we hypothesized it would allow the model to easily learn to attend by
+relative positions, since for any fixed offset k, P Epos+k can be represented as a linear function of PEpos.
+
+We also experimented with using learned positional embeddings instead, and found that the two
+versions produced nearly identical results. We chose the sinusoidal version because it may allow the model to extrapolate to
+sequence lengths longer than the ones encountered during training.
+
+Why Self-Attention:
+
+Three criterias:
+
+1. One is the total computational complexity per layer. 
+2. Another is the amount of computation that can be parallelized, as measured by the minimum number of sequential operations 
+required.
+3. The third is the path length between long-range dependencies in the network. Learning long-range dependencies is a key challenge
+in many sequence transduction tasks
+
+a self-attention layer connects all positions with a constant number of sequentially
+executed operations, whereas a recurrent layer requires O(n) sequential operations. In terms of
+computational complexity, self-attention layers are faster than recurrent layers when the sequence
+length n is smaller than the representation dimensionality d, which is most often the case with
+sentence representations used by state-of-the-art models in machine translations
+
+--------------------------------------------------------------------------------------------------------------------------
+
+Coreference Resolution:
+
+Coreference resolution is the task of finding all expressions that refer to the same entity in a text. It is an important
+step for a lot of higher level NLP tasks that involve natural language understanding such as document summarization, question
+answering, and information extraction.
+
 
 --------------------------------------------------------------------------------------------------------------------------
 
@@ -626,3 +816,67 @@ BART - Foods and Events Summary
 
 
 
+Large Language Models Notes:
+https://vinija.ai/models/
+https://vinija.ai/concepts/LLMOps/
+https://lamini.ai/blog/introducing-lamini
+
+
+Recommender System Notes:
+https://vinija.ai/recsys/papers/#pixie-a-system-for-recommending-3-billion-items-to-200-million-users-in-real-time
+
+https://pytorch.org/tutorials/beginner/vt_tutorial.html
+https://pytorch.org/tutorials/recipes/script_optimized.html
+https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html#mixing-scripting-and-tracing
+https://pytorch.org/tutorials/recipes/script_optimized.html
+https://pytorch.org/tutorials/recipes/quantization.html
+https://pytorch.org/docs/stable/quantization.html?highlight=quantization#dynamic-quantization
+https://pytorch.org/tutorials/beginner/vt_tutorial.html
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+NLP Lab:
+
+6/7/2023  Wednesday.
+
+SLUICING: I Pressed a button but i do not know which
+
+GAPPING: John tried to read a book and mary (....) a newsapaper
+Noun Elipsis: John bought a car and (.....John) stole a motor
+VP Elipsis: 
+
+
+NLTK to visualize
+
+
+Anaphoric reference means that a word in a text refers back to other ideas in the text for its meaning. 
+It can be compared with cataphoric reference, which means a word refers to ideas later in the text.
+
+
+I went out with Jo on Sunday. She looked awful.' ´She` clearly refers to Jo, there is no need to repeat her name.
+
+
+Anaphoric Reference;
+
+Rule: Backward reference
+
+(clause 1) “Three tech giants filed for bankruptcy.” (clause 2) “It was shocking.”
+
+(clause 1) subject (specified) + verb + obj. complement.
+(clause 2) subject (unspecified; it) + verb + obj. complement.
+
+The subject in the second clause is unspecified. However, it’s implicitly understood to be referencing the subject in the first clause. 
+In other words, tell the reader what the subject is first, then reference back to it and add information in the second clause
+
+Cataphoric Reference:
+
+Rule: Forward reference (converse of anaphora)
+
+(clause 1) “Yesterday’s news was shocking.” (clause 2) “Three tech giants filed for bankruptcy.”
+
+(clause 1) subject (unspecified; it) + verb + obj. complement.
+(clause 2) subject (specified) + verb + obj. complement.
+
+The subject in the first clause is unspecified, which begs the question: “what is it?” or “what is the subject?” The subject in the second clause provides
+clarifying information to the subject of the first clause.In other words, tell the reader some information about the subject, then reference forwards to the
+second clause and tell us what the subject is.

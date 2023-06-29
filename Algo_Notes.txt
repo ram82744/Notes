@@ -372,3 +372,892 @@ def minimax(state,depth,alpha,beta,maximizingPlayer):
 		for each next_state in successors(state):
 			eval = minimax()
 	
+	
+	
+	
+-----------------------------------------------------------------------------------
+
+https://yunrui-li.medium.com/leetcode-tree-577b96bb948b
+https://yunrui-li.medium.com/leetcode-union-find-data-sturcture-96ceb52eafe7
+
+
+Top recent Google tagged Coding Questions on LeetCode
+ ---
+Happy Number (easy)
+Minimum Meeting Rooms (medium)
+Number of Islands (medium)
+Merge Intervals (medium)
+Number of Closed Islands (medium)
+Making a Large Island (hard)
+Employee Free Time (hard)
+Alien Dictionary (hard)
+
+  
+Top Google System Design Questions
+---
+Design a Web Crawler
+Design Google Docs
+Design a Messenger
+Design YouTube
+
+
+-----------------------------------------------------------------------------------
+
+Detecting Cycles in Graph:
+
+Using DFS:
+
+The result of a depth-first search of a graph can be conveniently described in terms of a spanning tree of the vertices reached during the
+search. Based on this spanning tree, the edges of the original graph can be divided into three classes: forward edges, which point from a 
+node of the tree to one of its descendants, back edges, which point from a node to one of its ancestors, and cross edges, which do neither.
+Sometimes tree edges, edges which belong to the spanning tree itself, are classified separately from forward edges. If the original graph is
+undirected then all of its edges are tree edges or back edges
+
+
+
+There is a cycle in a graph only if there is a back edge present in the graph. Depth First Traversal can be used to detect a cycle in a 
+Graph, DFS for a connected graph produces a tree. If the graph is disconnected then get the DFS forest and check for a cycle in individual
+trees by checking back edges. To detect a back edge, keep track of vertices currently in the recursion stack of function for DFS traversal.
+If a vertex is reached that is already in the recursion stack then there is a cycle in the tree.
+
+
+Note: A Back edge is an edge that is from a node to itself (self-loop) or one of its ancestors in the tree produced by DFS.
+ Thus the edge that connects the current vertex to the vertex in the recursion stack is a back edge.
+ 
+ 
+Create the graph using the given number of edges and vertices.
+	1.Create a recursive function that initializes the current vertex, visited array, and recursion stack.
+	2.Mark the current node as visited and also mark the index in the recursion stack.
+	3.Find all the vertices which are not visited and are adjacent to the current node and recursively call the function for those 
+vertices
+		a.If the recursive function returns true, return true.
+		b.If the adjacent vertices are already marked in the recursion stack then return true.
+	4.Create a wrapper function, that calls the recursive function for all the vertices, and
+		a.If any function returns true return true. 
+		b.Else if for all vertices the function returns false return false.
+		
+
+
+---------------------------------------------------------------------------------------------------------------------------
+Optimization Problem:
+
+In mathematics, computer science and economics, an optimization problem is the problem of finding the best solution from all
+feasible solutions.
+
+Optimization problems can be divided into two categories, depending on whether the variables are continuous or discrete:
+
+An optimization problem with discrete variables is known as a discrete optimization, in which an object such as an integer, 
+permutation or graph must be found from a countable set.
+
+A problem with continuous variables is known as a continuous optimization, in which an optimal value from a continuous function
+must be found. They can include constrained problems and multimodal problems.
+
+
+Dynamic Programming (DP) is an algorithmic technique for solving an optimization problem by breaking it down into simpler 
+subproblems and utilizing the fact that the optimal solution to the overall problem depends upon the optimal solution to its 
+subproblems.
+
+---------------------------------------------------------------------------------------------------------------------------
+Depth First Search Algorithm:
+	
+	The Algorithm
+	
+		1.Pick any node. If it is unvisited, mark it as visited and recur on all its adjacent nodes.
+		2.Repeat until all the nodes are visited, or the node to be searched is found.
+
+
+graph = {
+    'A' : ['B','C'],
+    'B' : ['D', 'E'],
+    'C' : ['F'],
+    'D' : [],
+    'E' : ['F'],
+    'F' : []
+}
+
+visited = set() # Set to keep track of visited nodes.
+
+def dfs(visited, graph, node):
+    if node not in visited:
+        print (node)
+        visited.add(node)
+        for neighbour in graph[node]:
+            dfs(visited, graph, neighbour)
+
+# Driver Code
+dfs(visited, graph, 'A')
+
+
+Since all the nodes and vertices are visited, the average time complexity for DFS on a graph is O(V + E)
+O(V+E)
+, where V
+V
+ is the number of vertices and E
+E
+ is the number of edges. In case of DFS on a tree, the time complexity is O(V)
+O(V)
+, where V
+V
+ is the number of nodes.
+ 
+ 
+ Time Complexity : O(V+E) where V is the number of vertices in graph and E is the number of edges in graph
+ 
+Handling A Disconnected Graph:
+
+	This will happen by handling a corner case. 
+
+The above code traverses only the vertices reachable from a given source vertex. All the vertices may not be reachable from a
+given vertex, as in a Disconnected graph. To do a complete DFS traversal of such graphs, run DFS from all unvisited nodes after 
+a DFS. The recursive function remains the same.
+
+Follow the below steps to solve the problem:
+
+	Create a recursive function that takes the index of the node and a visited array.
+	Mark the current node as visited and print the node.
+	Traverse all the adjacent and unmarked nodes and call the recursive function with the index of the adjacent node.
+	Run a loop from 0 to the number of vertices and check if the node is unvisited in the previous DFS, then call the recursive
+	function with the current node.
+	
+Breadth First Search or BFS for a Graph:
+
+	The only catch here is, that, unlike trees, graphs may contain cycles, so we may come to the same node again. To avoid 
+processing a node more than once, we divide the vertices into two categories:
+
+	Visited and
+	Not visited.
+
+	A boolean visited array is used to mark the visited vertices. For simplicity, it is assumed that all vertices are reachable 
+from the starting vertex. BFS uses a queue data structure for traversal.
+
+Implementation of BFS traversal:
+
+	Follow the below method to implement BFS traversal.
+
+		1.Declare a queue and insert the starting vertex.
+		2.Initialize a visited array and mark the starting vertex as visited.
+		3.Follow the below process till the queue becomes empty:
+		4.Remove the first vertex of the queue.
+		5.Mark that vertex as visited.
+		6.Insert all the unvisited neighbours of the vertex into the queue.
+		
+		
+   # Function to print a BFS of graph
+    def BFS(self, s):
+ 
+        # Mark all the vertices as not visited
+        visited = [False] * (max(self.graph) + 1)
+ 
+        # Create a queue for BFS
+        queue = []
+ 
+        # Mark the source node as
+        # visited and enqueue it
+        queue.append(s)
+        visited[s] = True
+ 
+        while queue:
+ 
+            # Dequeue a vertex from
+            # queue and print it
+            s = queue.pop(0)
+            print (s, end = " ")
+ 
+            # Get all adjacent vertices of the
+            # dequeued vertex s. If a adjacent
+            # has not been visited, then mark it
+            # visited and enqueue it
+            for i in self.graph[s]:
+                if visited[i] == False:
+                    queue.append(i)
+                    visited[i] = True
+					
+					
+Note: Depth First Traversal can be used to detect a cycle in a Graph
+
+Detect Cycle in a Directed Graph
+	
+	There are two situations the graph would be determined as having a cycle:
+
+	1. A back edge is from a node to itself (self-loop)
+    2. A node has an ancestor point to the node which is already been visited
+
+In order to record which node has been visited and the visit process, we use two list visited and recstack. If the node’s linked 
+vertices have not been visited, run check_cycle_util for linked vertices, otherwise, check that linked vertices is in the recstack
+or not, it means some node before the current node has already visited the linked vertices, and now we gonna visit it again, we 
+could consider it as a cycle.
+
+from collections import defaultdict
+class Graph():
+    def __init__(self, vertices):
+        self.graph = defaultdict(list)
+        self.V = vertices
+    def add_edge(self, u, v):
+        self.graph[u].append(v)
+    def check_cycle_util(self, v, visited, recstack):
+        visited[v] = True
+        recstack[v] = True
+    for linked_vertices in self.graph[v]:
+            if not visited[linked_vertices]:
+                if self.check_cycle_util(linked_vertices, visited, recstack):
+                    return True
+            elif recstack[linked_vertices]:
+                return True
+    def check_cycle(self):
+        visited = [False] * (self.V)
+        recstack = [False] * (self.V)
+        for vertex in range(self.V):
+            if not visited[vertex]:
+                if self.check_cycle_util(vertex, visited, recstack):
+                    return True
+        return False
+result
+
+g = Graph(5)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+g.add_edge(1, 3)
+g.add_edge(3, 0)
+g.add_edge(3, 4)
+g.add_edge(3, 3)
+if g.check_cycle() == 1:
+    print("Graph has a cycle")
+else:
+    print("Graph has no cycle")
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Graph has a cycle
+
+Undirected Graph:
+
+The situation of detecting a cycle in an undirected graph is similar to directed graph, but for an undirected graph, we need one
+more condition: parent. If the adjacent node is not a parent and already visited then it is a cycle.
+
+from collections import defaultdict
+class Graph:
+    def __init__(self,vertices):
+        self.graph = defaultdict(list)
+        self.V= vertices
+        
+    def add_edge(self,v,w):
+        # Because the graph is undirected,
+        # add two way for adjacent list
+        # Add w to v_s list
+        self.graph[v].append(w)
+        # Add v to w_s list
+        self.graph[w].append(v)
+    def check_cycle_util(self, v, visited, parent):
+        visited[v]= True
+ 
+        for i in self.graph[v]:
+            if  not visited[i]:
+                if(self.check_cycle_util(i, visited, v)):
+                    return True
+            # If an adjacent vertex is visited
+            # and not parent of current vertex,
+            # then there is a cycle
+            elif  parent != i:
+                return True
+        return False
+          
+    def check_cycle(self):
+        visited =[False]*(self.V)
+        for vertex in range(self.V):
+            if not visited[vertex]:
+                if self.check_cycle_util(vertex, visited,-1):
+                    return True
+        return False
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Two Pointers Technique:
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Sliding Window Approach is mostly used for positive integers.
+
+The general use of Sliding window technique can be demonstrated as following:
+
+	1.Find the size of window required 
+	2.Compute the result for 1st window, i.e. from start of data structure
+	3.Then use a loop to slide the window by 1, and keep computing the result window by window.
+
+
+Fixed-Size Sliding Window Pattern:
+
+	The fixed-size sliding window pattern optimizes algorithms that involve searching an array or string for a consecutive 
+subsection, of a given size, that satisfies a given condition
+
+	Applying the fixed-size sliding window pattern can reduce the time complexity to O(n) and space complexity to O(1).
+	
+	Sometimes, an auxiliary data structure (e.g. hash table) is needed instead of a primitive data type to track a result.
+	
+We are moving in the right direction when the problem:
+
+
+	1. involves a data structure that is iterable (arrays, strings, etc.)
+	2. asks to find a subsection (substring/subarray) that meets a desired condition/target value
+	(e.g. max/min/common/longest/shortest/contains)
+	3. does NOT have a size constraint
+
+
+Requirements:
+
+	Analyze the requirements even in simple questions, they might not be so simple!
+	Subarrays are contiguous by definition, so the elements should be adjacent.
+	Input size could be anything.
+
+
+	Input size is unlimited, so memory can blow up if we are not careful of what we keep in memory.
+
+Dynamic-Size Sliding Window Pattern:
+
+	Unlike the fixed-size sliding window, this window’s size changes as it moves along the data structure.
+	
+	In this pattern, two pointers create a window that represents the current subsection of the data structure.
+One pointer is the leading edge and the other pointer is the trailing edge. This window, or chunk, is evaluated to see if it
+satisfies the given criteria (e.g. the sum of its values is equal to k).
+
+	Even if the window satisfies the given criteria, the window’s size is changed to see if it can do better
+	(e.g. create a longer/shorter subsection with the sum of its values equal to k).
+
+	The window grows (by incrementing the leading edge) or shrinks (by incrementing the trailing edge), moving it along
+	the data structure
+
+	The window keeps inching along until it reaches the stopping condition, usually the end of the data structure.
+	
+	The criteria will vary from problem to problem. Based on the problem’s criteria, the solution will usually need two 
+	variables, in addition to the pointers, to help track the result.
+	Sometimes, an auxiliary data structure (e.g. hash table) is needed instead of a primitive data type to track a result.
+	
+Consider an array arr[] = {5, 2, -1, 0, 3} and value of k = 3 and n = 5
+
+This is the initial phase where we have calculated the initial window sum starting from index 0 . At this stage the window sum 
+is 6. Now, we set the maximum_sum as current_window i.e 6. 
+
+Now, we slide our window by a unit index. Therefore, now it discards 5 from the window and adds 0 to the window. Hence, we will
+get our new window sum by subtracting 5 and then adding 0 to it. So, our window sum now becomes 1. Now, we will compare this 
+window sum with the maximum_sum. As it is smaller, we wont change the maximum_sum. 
+
+Similarly, now once again we slide our window by a unit index and obtain the new window sum to be 2. Again we check if this 
+current window sum is greater than the maximum_sum till now. Once, again it is smaller so we don’t change the maximum_sum.
+Therefore, for the above array our maximum_sum is 6.
+
+
+grow the window until we satisfy the constraint.
+shrink the window until we don't satisfy the constraint.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Disjoint Set —
+
+	A disjoint set is a group of sets where no item can be in more than one set. In other words, if we take any two sets from the Disjoint set then
+their intersection will result in an empty set. In even simpler terms a disjoint set is a data structure where similar elements are kept in a single
+group.
+
+There are two main operations DSU performs on sets:
+
+Find — Tells us an element/node belongs to which subset.
+
+Union — Join two subsets, if they share a common attribute
+
+In this approach, we represent the nodes using an array, and the value of the item at that index tells which set that node belongs to. 
+
+
+UNION and FIND Operations for Disjoint Sets:
+
+	A union-find algorithm is an algorithm that performs two useful operations on such a data structure:
+
+Find: Determine which subset a particular element is in. This can be used for determining if two elements are in the same subset.
+
+Union: Join two subsets into a single subset. Here first we have to check if the two subsets belong to same set. If no, then we 
+cannot perform union. 
+
+
+
+A relation over a set of elements a1, a2,…a n  can be divided into equivalent classes. The equivalent class of an element a is the subset 
+of S that contains all the elements of S that are related to a.
+
+Divide a set of elements into equivalent classes through the two operations
+
+2. FIND
+
+It determines in which subset a particular element is in and returns the representative of that particular set.
+An item from this set typically acts as a “representative” of the set.
+
+A set is divided into subsets. Each subset contains related elements. If we come to know that the two element ai
+and aj are related, then we can do the followings:
+
+1. Find the subset : Si containing ai
+
+2.Find the subset : Sj containing aj
+
+3. If Si and Sj are two independent subsets
+
+then we create a new subset by taking union of Si and Sj
+
+New subset = Si ∪ Sj
+
+This algorithm is dynamic as during the course of the algorithm, the sets can change via the union operation.
+
+
+Union-Find is a data structure that is capable of tracking and merging of disjoint sets. As a structure it is very important inside
+other algorithms like Prolog unification or percolation problem.
+
+There are two signification improvements that can be made to speed the algorithm up, weighting and path compression. I’ve implemented path 
+compression, only, the code is short and performance is pretty good.
+
+https://github.com/coells/100days
+
+algorithm
+def find(data, i):
+    if i != data[i]:
+        data[i] = find(data, data[i])
+    return data[i]
+def union(data, i, j):
+    pi, pj = find(data, i), find(data, j)
+    if pi != pj:
+        data[pi] = pj
+def connected(data, i, j):
+    return find(data, i) == find(data, j)
+
+
+Disjoint–set forests are data structures where each set is represented by a tree data in which each node holds a reference to its parent
+and the representative of each set is the root of that set’s tree.
+
+Find follows parent nodes until it reaches the root.
+
+Union combines two trees into one by attaching one tree’s root into the root of the other.
+
+For example, consider five disjoint sets S1, S2, S3, S4, and S5 represented by a tree, as shown below diagram. Each set initially contains only
+one element each, so their parent pointer points to itself or NULL.
+
+S1 = {1}, S2 ={2}, S3 = {3}, S4 ={4} and S5 = {5}
+
+The Find operation on element i will return representative of Si, where 1 <= i <= 5, i.e., Find(i) = i.
+
+Union–Find Algorithm
+
+If we do Union (S3, S4), S3 and S4 will be merged into one disjoint set, S3. Now,
+
+S1 = {1}, S2 ={2}, S3 = {3, 4} and S5 = {5}.
+
+Find(4) will return representative of set S3, i.e., Find(4) = 3
+
+Union–Find Algorithm – Step 1
+
+If we do Union (S1, S2), S1 and S2 will be merged into one disjoint set, S1. Now,
+
+S1 = {1, 2}, S3 = {3, 4} and S5 = {5}.
+
+Find(2) or Find(1) will return the representative of set S1, i.e., Find(2) = Find(1) = 1
+
+Union–Find Algorithm – Step 2
+
+If we do Union (S3, S1), S3 and S1 will be merged into one disjoint set, S3. Now,
+
+S3 = {1, 2, 3, 4} and S5 = {5}.
+
+Union–Find Algorithm – Step 3
+
+One way of implementing these might be:
+
+function MakeSet(x)
+    x.parent = x
+ 
+function Find(x)
+    if x.parent == x
+        return x
+    else
+        return Find(x.parent)
+ 
+function Union(x, y)
+    xRoot = Find(x)
+    yRoot = Find(y)
+    xRoot.parent = yRoot
+	
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Dynammic Programming:
+
+SRTBOT - sub problems, relation, Topological order, Base Cases, Original Problem, Time Analysis.
+
+
+Subproblem definition.
+Relate Subproblems.
+Topological order - to guarantee acyclic call DAG.
+
+
+bowling:
+
+
+
+
+memoization - remember and reuse the solutions for subproblems.
+
+maintain dictionary mapping subproblems -> solutions.
+recursive function return stored solution or if doesnt exist, compute and store it.
+
+
+
+memo = {}
+
+def func(subprob):
+	if(subprob in memo):
+		return memo[subprob]
+	base case 
+	
+	memo[s] = recurse via relation.
+	
+Bottom-Up Dp:
+
+Base Case
+Topological Order
+Recurrence Relation.
+return Orginal problem solution.
+
+Edit Distance:
+
+
+
+Subproblem
+
+
+Recurrence Relation
+
+		
+Topological Order
+
+Base Case
+
+Original
+
+Time Analysis
+
+
+SQL Indexing:
+https://dataschool.com/sql-optimization/how-indexing-works/
+https://www.w3schools.com/sql/default.asp -- SQL Concepts.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+React Application:
+
+	In React, a component is a reusable module that renders a part of our app. These parts can be big or small, but they 
+are usually clearly defined: they serve a single, obvious purpose.
+
+Let's open src/App.js, since our browser is prompting us to edit it. This file contains our first component, App, and a few other lines
+of code:
+
+
+The App.js file consists of three main parts: some import statements at the top, the App component in the middle, and an export statement
+at the bottom. Most React components follow this pattern.
+
+The second statement imports the CSS related to our App component. Note that there is no variable name and no from directive. 
+This is called a side-effect import — it doesn't import any value into the JavaScript file, but it tells Webpack, the bundler,
+to add the referenced CSS file to the final CSS bundle.
+
+import React from 'react'. Skipping this step would result in an error: React turned the JSX we write into React.createElement(), 
+so all React components needed to import the React module. React 17 introduced a new, rewritten version of the JSX transform that 
+makes this statement unnecessary
+
+The App component
+After the imports, we have a function named App. Whereas most of the JavaScript community prefers camel-case names like helloWorld,
+React components use pascal-case variable names, like HelloWorld, to make it clear that a given JSX element is a React component,
+and not a regular HTML tag. If you were to rename the App function to app, your browser would show you an error.
+ 
+Let's look at App more closely.
+
+The App function returns a JSX expression. This expression defines what your browser ultimately renders to the DOM.
+
+Line 7 calls React's ReactDOM.createRoot() function with the DOM element inside which we want the component to be rendered, in this case
+the element with an ID of root. If you look inside public/index.html, you'll
+see that this is a <div> element just inside the <body>. React will create a root for this node, and take over managing the DOM inside it
+The function returns the root which we can use to render a React element into the DOM.
+
+Line 8 calls root.render() with the component we want to render, <App /> in this case.
+All of this tells React that we want to render our React application with the App component as the root, or first component.
+
+reportWebVitals are a set of useful metrics that aim to capture the user experience of a web page, 
+but they're not in scope for this article. You can delete its import line, as well as the reportWebVitals(); line.
+ 
+ 
+Variables and props:
+
+Next, we'll use a few of our JavaScript skills to get a bit more comfortable editing components and working with data in React. 
+We'll talk about how variables are used inside JSX, and introduce props, which are a way of passing data into a component.
+
+
+Let's try making a variable of our own. Before the return statement of App, add const subject = 'React';.
+Your App component should now look like this: 
+
+Change line 8 to use our subject variable instead of the word "World", like this:
+
+Variables are convenient, but the one we've just set doesn't make great use of React's features. That's where props come in.
+
+Component props:
+
+A prop is any data passed into a React component. React props are comparable to HTML attributes. Where HTML elements have attributes, 
+React components have props. Props are written inside component calls, and use the same syntax as HTML attributes — prop="value". 
+In React, dataflow is unidirectional: props can only be passed from Parent components down to Child components; and props are read-only.
+
+Let's open index.js and give our <App/> call its first prop.
+
+Add a prop of subject to the <App/> component call, with a value of Clarice. When you are done, your code should look 
+something like this
+
+	root.render(<App subject="Clarice" />);
+	
+Back in App.js, let's revisit the App function itself, which reads like this (with the return statement shortened for brevity):
+
+Change the signature of the App function so that it accepts props as a parameter, and delete the subject const. Just like any other
+function parameter,you can put props in a console.log() to print it to your browser's console. Go ahead and do that before the return
+statement, like so:
+	
+	With this change, {subject} becomes undefined, so comment out the line Hello, {subject}! for now. Save your file and check your 
+browser's JavaScript console. You should see something like this logged:
+
+The object property subject corresponds to the subject prop we added to our <App /> component call, and the string Clarice 
+corresponds to its value. Component props in React are always collected into objects in this fashion.
+
+Now that subject is one of our props, let's utilize it in App.js. Change the subject constant so that, instead of defining
+it as the string React, you are reading the value of props.subject. Now, you can also uncomment the line Hello, {subject}! and,
+if you wish, delete your console.log().
+
+When you save, the app should now greet you with "Hello, Clarice!". If you return to index.js, edit the value of subject, 
+and save, your text will change. Note that if you wanted to leave in the Hello line throughout this change, you could also have
+updated the JSX variable to {props.subject}
+
+In React:
+
+Components can import modules they need and must export themselves at the bottom of their files.
+Component functions are named with PascalCase.
+You can read JSX variables by putting them between curly braces, like {so}.
+Some JSX attributes are different than HTML attributes so that they don't conflict with JavaScript reserved words. 
+For example, class in HTML translates to className in JSX. Note that multi-word attributes are in camelCase.
+Props are written just like attributes inside component calls and are passed into components.
+
+As a user, I can
+
+read a list of tasks.
+add a task using the mouse or keyboard.
+mark any task as completed, using the mouse or keyboard.
+delete any task, using the mouse or keyboard.
+edit any task, using the mouse or keyboard.
+view a specific subset of tasks: All tasks, only the active task, or only the completed tasks.
+
+
+Two of the files we're deleting are for testing the application. We will not cover testing here.
+If you stopped your server to do the terminal tasks mentioned above, you'll have to start it again using npm start.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Django Application:
+
+To create your app, make sure you’re in the same directory as manage.py and type this command:
+
+	python manage.py startapp polls
+
+Django comes with a utility that automatically generates the basic directory structure of an app, 
+so you can focus on writing code rather than creating directories.
+ 
+ 
+The include() function allows referencing other URLconfs. Whenever Django encounters include(), it chops off whatever part of the
+URL matched up to that point and sends the remaining string to the included URLconf for further processing.
+
+The idea behind include() is to make it easy to plug-and-play URLs. Since polls are in their own URLconf (polls/urls.py), 
+they can be placed under “/polls/”, or under “/fun_polls/”, or under “/content/polls/”, or any other path root, and the app will
+still work.
+
+The path() function is passed four arguments, two required: route and view, and two optional: kwargs, and name. At this point, 
+it’s worth reviewing what these arguments are for.
+
+path() argument: route
+
+route is a string that contains a URL pattern. When processing a request, Django starts at the first pattern in urlpatterns
+ and makes its way down the list, comparing the requested URL against each pattern until it finds one that matches.
+ 
+path() argument: view
+
+When Django finds a matching pattern, it calls the specified view function with an HttpRequest object as the first argument
+and any “captured” values from the route as keyword arguments. We’ll give an example of this in a bit. 
+
+path() argument: kwargs
+
+Arbitrary keyword arguments can be passed in a dictionary to the target view. We aren’t going to use this feature 
+of Django in the tutorial.
+
+path() argument: name
+
+Naming your URL lets you refer to it unambiguously from elsewhere in Django, especially from within templates. 
+This powerful feature allows you to make global changes to the URL patterns of your project while only touching a single file.
+
+
+Now, open up mysite/settings.py. It’s a normal Python module with module-level variables representing Django settings.
+
+
+If you wish to use another database, install the appropriate database bindings and change the following keys in the DATABASES
+'default' item to match your database connection settings:
+
+ENGINE – Either 'django.db.backends.sqlite3', 'django.db.backends.postgresql', 'django.db.backends.mysql',
+or 'django.db.backends.oracle'. Other backends are also available.
+
+NAME – The name of your database. If you’re using SQLite, the database will be a file on your computer;
+in that case, NAME should be the full absolute path, including filename, of that file. The default value,
+BASE_DIR / 'db.sqlite3', will store the file in your project directory.
+If you are not using SQLite as your database, additional settings such as USER, PASSWORD, and HOST must be added.
+For more details, see the reference documentation for DATABASES.
+
+By default, INSTALLED_APPS contains the following apps, all of which come with Django:
+
+django.contrib.admin – The admin site. You’ll use it shortly.
+django.contrib.auth – An authentication system.
+django.contrib.contenttypes – A framework for content types.
+django.contrib.sessions – A session framework.
+django.contrib.messages – A messaging framework.
+django.contrib.staticfiles – A framework for managing static files.
+These applications are included by default as a convenience for the common case.
+
+Some of these applications make use of at least one database table, though, so we need to create the tables in the database
+before we can use them. To do that, run the following command:
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Feature Engineering:
+
+
+Data Visualization:
+
+https://towardsdatascience.com/data-visualization-using-matplotlib-16f1aae5ce70
+
+
+Skewness in Data:
+https://www.kaggle.com/getting-started/110134
+
+Square Root,Cube Root, Log transformation are used to reduce right skewness.
+
+The Box-Cox transformation is a technique to transform non-normal data into normal shape.
+This is a procedure to identify a suitable exponent (Lambda = l) to use to transform skewed data.
+
+if your data is of ordinal data type you can also use the arcsine transformation method.
+
+other visualization techniques that you can carry out to examine the distribution of your dependent variables. For example, you can use boxplots, stripplots, 
+swarmplots, kernel density estimation, or violin plots. These plots give you a lot of (more) information about your dependent variables.
+
+
+
+What is Feature Selection? Feature selection is the process where you automatically or manually select the features that contribute the most to your prediction 
+variable or output.
+
+Everyone can just pass data from models using sklearn or do automl stuffs using pycaret or any other python library but the idea is what will make the winners
+different from rest of us so answer is very simple: feature engineering and selection phases of machine learning pipeline will.
+
+Obviously, if the attribute has no relationship to the outcome then its representation is irrelevant. However, it is very important to realize that there are
+a multitude of types of models and that each has its own sensitivities and needs.
+
+Some models cannot tolerate attributes that measure the same underlying quantity
+(i.e., multicollinearity or correlation between attributes).
+
+Many models cannot use samples with any missing values.
+
+Some models are severely compromised when irrelevant attributes are in the data.
+
+Feature engineering and variable selection can help mitigate many of these issues. The goal of this notebook is to help practitioners build better models
+by focusing on the attributes.
+
+Visualizing Numeric Features
+
+One of the first steps of the exploratory data process when the ultimate purpose is to predict the output, is to create visualizations that 
+help get knowledge of the output and then to uncover relationships between the attributes and the output.
+
+Important characteristics between attributes can be identified by examining
+
+		Scatter plots of individual Attributes and the output labels,
+		A pairwise correlation plot among the Attributes,
+		A projection of high-dimensional Attributes into a lower dimensional space,
+		Line plots for time-based Attributes,
+		The first few levels of a regression or classification tree,
+		A heatmap across the samples and Attributes, or
+		Mosaic plots for examining associations among categorical variables.
+		
+In fact, a simple scatter plot can elicit insights that a model may not be able to uncover, and can lead to the creation of a new attributes or to a 
+transformation of a attributes or the output that improves model performance. The challenge here lies in developing intuition for knowing how to visually 
+explore data to extract information for improvement.
+
+So, lets focus on Univariate visualizations. These plots are used to understand the distribution of a single variable. A few common univariate visualizations are 
+box-and-whisker plots (i.e., box plot), violin plots, or histograms.
+
+Skewness also plays key role in understanding the distribution of the attribute will elaborate on skewness further in the notebook.
+
+positive skew - mean > median > mode. tail is in the right direction. a right-skewed distribution would have a longer tail on the right side
+and would be "lopsided" to the right, with more data points on the left side.
+
+negative skew - mean < median < mode. the tail is longer on the left side and the distribution is "lopsided" to the left,
+with more data points on the right side.
+
+normal skew - mean = median = mode. there is no tail and data is normally distributed.
+
+In this notebook I will cover following plots for Univariate visualizations:-
+
+Box Plots
+Violin Plots
+Histograms
+
+Box-Plot:
+
+Box Plot help us visualize distribution of single attribute which further help us understanding dataset.
+
+Moving towards technical definition of Box Plots it is a method for graphically demonstrating the locality, spread and skewness groups of numerical data 
+through their quartiles. In addition to the box on a box plot, there can be lines (which are called whiskers) extending from the box indicating variability 
+outside the upper and lower quartiles,thus, the plot is also termed as the box-and-whisker plot and the box-and-whisker diagram.
+
+Median The median (middle quartile) marks the mid-point of the data line that divides the box into two parts. Half the scores are greater than or
+equal to this value and half are less.
+
+Inter-quartile range(IQR) The middle “box” represents the middle 50% of scores for the group. The range of scores from lower to upper quartile 
+is referred to as the inter-quartile range. The middle 50% of scores fall within the inter-quartile range.
+
+Upper quartile Seventy-five percent of the scores fall below the upper quartile.
+
+Lower quartile Twenty-five percent of scores fall below the lower quartile.
+
+Whiskers The upper and lower whiskers represent scores outside the middle 50%.
+Whiskers often (but not always) stretch over a wider range of scores than the middle quartile groups.
+
+If the median is closer to the lower end of the box and the box is longer towards the upper end, then the data is right-skewed.
+When the median is closer to the bottom of the box, and if the whisker is shorter on the lower end of the box, then the distribution is positively 
+skewed (skewed right).
+
+if the median is closer to the upper end of the box and the box is longer towards the lower end, then the data is left-skewed.
+When the median is closer to the top of the box, and if the whisker is shorter on the upper end of the box, then the distribution is negatively
+skewed (skewed left).
+
+
+You can also look at the length of the whiskers to get a sense of the range of the data. If the whiskers are relatively long, 
+it suggests that the data has a wider range of values.
+
+Scatter-Plot:
+
+Scatter plot helps in visualizing 2 numeric variables. It helps in identifying the relationship of the data with each variable
+i.e correlation or trend patterns. It also helps in detecting outliers in the plot.
+
+When to use: It is used in Machine learning concepts like regression, where x and y are continuous variables. It is also used in clustering scatters 
+or outlier detection.
+
+plt.scatter() takes 2 numeric arguments for scattering data points in the plot. It is similar to line plot except without the connected straight lines. By corr 
+we mean correlation and it means that how correlated GDP is with life expectancy, as we can see that it is positive it means as GDP of a country increases,
+life expectancy too increases.

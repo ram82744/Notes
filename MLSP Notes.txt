@@ -1,3 +1,706 @@
+
+Pandas Functions:
+	1. loc - access rows and columns by labels
+	2. iloc - access rows and columns by index.
+	3. head - access first 4 rows.
+	4. info - gives information about columns.
+	5. df['column_name'].unique() - gives the unique column values.
+	6. where - applies the filter condition(one or more) to the dataset and the rows not satisfying the condition is filled with NaN value
+	7. value_counts - Return a Series containing counts of unique values.
+			- normalize - give relative freq or normalize value of related to 1.
+			- sort - sort by frequencies
+			- ascending - sort in ascending order.
+			- bins - creates bins and puts the count of values under these bins.
+	8. corr - this method is used to find the pairwise correlation of all columns in the Pandas Dataframe in Python.
+	Any NaN values are automatically excluded. Any non-numeric data type or columns in the Dataframe, it is ignored.
+	While correlation is commonly used with numerical data, it is also possible to calculate the correlation between categorical variables.
+	One common method for this is to use the chi-squared test of independence, which calculates a statistic that measures the degree
+	of association between two categorical variables.
+	9. reset_index - Reset the index of the DataFrame, and use the default one instead. If the DataFrame has a MultiIndex,
+	this method can remove one or more levels.
+	10. drop_duplicates - drop the duplicate values in the dataframe.
+	11. pivot_table - create table with respect to the index and columns by showing various aggeregated values.
+	
+		Data : DataFrame, whose data is turned into pivot table.
+		values : This is an optional parm. Column to aggregate.
+		index : column, Grouper, array. Index is the feature that provides you to group the data.
+		columns : column, Grouper, array, or list of the previous. Column, it is used for aggregating the values according to specific features.
+		aggfunc : It is an aggregation function and we can set this param with a list of functions, dict, default is numpy.mean. 
+		If it is set to a list of functions, the resulting pivot table forms a hierarchical column and this list of functions will be a top-level column.
+		If it is set to dictionary the key is a column to aggregate and the value is a function or list of functions.
+		Aggregate function aggfunc param takes np.mean() function as a default function for grouping the data. 
+		
+	12. drop - In order to remove columns use axis=1 or columns param. For example df.drop("Discount",axis=1) 
+		removes Discount column by kepping all other columns untouched. This gives you a DataFrame with all columns with out one unwanted column.
+		
+	13. difference -  Using Series.difference() Method to Select All Columns Except One
+	You can use list of columns you don’t wante to select to Series.difference() Method. For E.x, df[df.columns.difference(["Fee"])] select all columns,
+	except one “Fee” column in Dataframe. or You can also try using isin() method with negate operator for example:
+	df.loc[:, ~df.columns.isin(['Fee'])] This returns a DataFrame with all columsn except Fee column.
+		
+	
+	
+	
+Pandas attributes:
+	1. columns - gives the columns of dataset.
+	2. values - gives the values of the dataset.
+	3. dtypes -  gives the columns datatypes of the dataframe.
+	4. 
+
+
+difference between loc and iloc:
+
+loc -  This function is primarily label based, but it’s also used with a boolean array when we create statements.
+If we want to look at only rows for male customers here, we would use pandas. DataFrame.loc to locate with labels.
+pandas.DataFrame.loc is used for accessing multiple columns.
+
+titanic.loc[titanic[‘Sex’]==’male’]
+
+iloc:
+
+The .iloc function is integer position based, but it could also be used with a boolean array. If we want to locate a cell of the data set, we can enter.
+
+titanic.iloc[0,0]
+
+This command gives the element at row = 0, and column = 0. I can also extract a slice of the data set.
+
+titanic.iloc[0:4,2:5]
+
+it provides us rows zero-to-three and columns two-to-four.Function .loc is primarily used for label indexing, 
+and the .iloc function is mainly used for integer indexing.
+
+Pandas GroupBy and Transform Function:
+
+	In this article, we will cover the following most frequently used Pandas transform() features:
+
+		1. Transforming values
+		2. Combining groupby() results
+		3. Filtering data
+		4. Handling missing value at the group level
+		
+Let’s take a look at pd.transform(func, axis=0)
+
+	The first argument func is to specify the function to be used for manipulating data. It can be a function, a string function name,
+	a list of functions, or a dictionary of axis labels -> functions
+	
+	func can be a list of functions. for example sqrt and exp from NumPy.
+	
+	A dict of axis labels -> function. func can be a dict of axis labels -> function. For example
+	
+	The 2nd argument axis is to specify which axis the func is applied to. 0 for applying the func to each column and 1 for applying 
+	the func to each row. Let’s see how transform() works with the help of some examples.
+	
+	df = pd.DataFrame({'col_A': [1,2,3], 'col_B': [10,20,30] })
+	def plus_10(x):
+		return x+10
+	df.transform(plus_10)
+	
+	index col_A	  col_B
+
+	  0    11	    20
+
+	  1    12		30
+	  
+	  2    13		40
+	  
+2. Combining groupby() results
+		
+		One of the most compelling usages of Pandas transform() is combining grouby() results.
+		
+		
+There are 2 solutions:
+
+Solution 1: groupby(), apply(), and merge()
+
+	The first solution is splitting the data with groupby() and using apply() to aggregate each group, then merge the results back
+into the original DataFrame using merge().By default, the merge function performs an inner join.
+
+Using merge function to combine the results:
+	
+	city_sales = df.groupby('city')['sales'].sum().rename('city_total_sales').reset_index()
+	df_new = pd.merge(df, city_sales, how='left')
+	
+	The group results get merged back into the original DataFrame using merge() with how='left' for left outer join.
+	
+Inner Join:
+
+	Inner join is the most common type of join you’ll be working with. It returns a dataframe with only those 
+rows that have common characteristics.
+
+	An inner join requires each row in the two joined dataframes to have matching column values. 
+This is similar to the intersection of two sets.
+
+The return value type of the merge function is dataframe.
+
+There is another function in pandas called the concat function. From the name, it suggests that we can concatenate strings
+using this function, but it actually just concatenates two dataframes.
+
+Here, I have performed inner join on the product and customer dataframes on the ‘Product_ID’ column.
+
+But what if the column name strings are different in the two dataframes? Then, we have to explicitly mention both column names str.
+we cannot pass empty strings in left_on or right_on arguments.
+
+We can pass an iterable object of column names to the left_on and right_on arguments, 
+which can be a list or a tuple, as they are iterable in left_on or right_on:
+
+‘left_on’ and ‘right_on’ are two parameters through which we can achieve this. ‘left_on’ is the name of the key in the left dataframe 
+and ‘right_on’ in the right dataframe, so the syntax will be:
+
+pd.merge(product,customer,left_on='Product_name',right_on='Purchased_Product')
+
+Full Join in Pandas:
+
+	We have to combine both dataframes in order to find all the products that are not sold and all the customers who didn’t
+	purchase anything from us.
+
+	Full Join, also known as Full Outer Join, returns all those records which either have a match in the left or right dataframe.
+	
+	When rows in both the dataframes do not match, the resulting dataframe will have NaN for every column of the dataframe that 
+	lacks a matching row.
+
+	We can perform Full join by passing the how parameter as ‘outer’ to the merge() function, which takes input python strings as arguments:
+
+	pd.merge(product,customer,on='Product_ID',how='outer')
+	
+	By mentioning the indicator argument as True in the function, a new column of name _merge will be created in the resulting dataframe.
+	
+Left Join in Pandas:
+	
+	Now, let’s say the leadership team wants information about only those customers who bought something from us.
+	
+	Left join, also known as Left Outer Join, returns a dataframe containing all the rows of the left dataframe.
+	
+	All the non-matching rows of the left dataframe contain NaN for the columns in the right dataframe. 
+	It is simply an inner join plus all the non-matching rows of the left dataframe filled with NaN for columns 
+	of the right dataframe.
+	
+	Performing a left join is actually quite similar to a full join. Just change 
+	the how argument to a different str that is ‘left’:
+
+
+Right Join in Pandas:
+
+Similarly, if we want to create a table of customers including the information about the products they bought, we can use the right join.
+
+	Right join, also known as Right Outer Join, is similar to the Left Outer Join.
+	The only difference is that all the rows of the right dataframe are taken as it is and only those of the left dataframe
+	that are common in both.
+	
+	Similar to other joins, we can perform a right join by changing the how argument to ‘right’
+	
+Handling Redundancy/Duplicates in Python Joins:
+
+	Duplicate values can be tricky obstacles. They can cause problems while performing joins.
+	These values won’t give an error but will create redundancy in our resulting dataframe.
+
+	As you can see, we have duplicate rows in the resulting dataset as well. To solve this, there is a validate argument in the merge() function,
+	which we can set to ‘one_to_one,’ ‘one_to_many,’ ‘many_to_one,’ and‘many_to_many.’
+
+	This ensures that there exists only a particular mapping across both the dataframes. If the mapping condition is not satisfied,
+	then it throws a MergeError.
+	
+	pd.merge(product_dup.drop_duplicates(),customer,how='inner',on='Product_ID')
+
+	But, if you want to keep these duplicates, then you can give validate values as per your requirements, and it will not throw an error:
+
+	pd.merge(product_dup,customer,how='inner',on='Product_ID',validate='many_to_many')
+	
+Pandas Index Join
+	
+	To merge the Dataframe on indices pass the left_index and right_index arguments as True i.e. both the Dataframes are merged on an 
+	index using default Inner Join.
+	
+import pandas as pd
+ 
+	# Creating dataframe a
+	a = pd.DataFrame()
+	 
+	# Creating Dictionary
+	d = {'id': [1, 2, 10, 12],
+		 'val': ['a', 'b', 'c', 'd']}
+	 
+	a = pd.DataFrame(d)
+	 
+	# Creating dataframe b
+	b = pd.DataFrame()
+	 
+	# Creating dictionary
+	d = {'id': [1, 2, 9, 8],
+		 'val': ['p', 'q', 'r', 's']}
+	b = pd.DataFrame(d)
+	 
+	# index join
+	df = pd.merge(a, b, left_index=True, right_index=True)
+	 
+	# display dataframe
+	df
+	
+	id_x val_x id_y val_y
+ 0	  1    a     1    p
+	  
+ 1	  2    b     2    q
+	  
+ 2	  10   c     9    r
+	  
+ 3	  12   d     8    s
+	
+	
+groupby() and transform()
+
+	Method 1: Use groupby() and transform() with built-in function
+	
+		df['new'] = df.groupby('group_var')['value_var'].transform('mean')
+	
+	Method 2: Use groupby() and transform() with custom function
+	
+		df['new'] = df.groupby('group_var')['value_var'].transform(lambda x: some function)
+		
+The most important thing about the Pandas GroupBy Transform is that it can only be applied to a single column at once and 
+can not be applied to multiple columns at once. If you want to access multiple columns at once and do computation on it you can pre-compute 
+the DataFrame and then apply the transform().
+
+
+Label Encoding vs Ordinal Encoding vs One Hot Encoding:
+
+Label encoding is used when there is no intrinsic order or hierarchy among the categories in a feature.One Hot Encoding is used when the categorical feature
+has no intrinsic order or hierarchy among its categories and when the categories are not related to each other in any meaningful way.
+
+Ordinal encoding is used when there is an intrinsic order or hierarchy among the categories in a feature.
+
+
+
+Regex Patterns:
+\d is a digit (a character in the range [0-9]), and + means one or more times. Thus, \d+ means match one or more digits.
+
+\s stands for “whitespace character”. Again, which characters this actually includes, depends on the regex flavor. 
+In all flavors discussed in this tutorial, it includes [ \t\r\n\f]. That is: \s matches a space, a tab, a carriage return, a line feed
+
+Placing r or R before a string literal creates what is known as a raw-string literal. 
+Raw strings do not process escape sequences (\n, \b, etc.) and are thus commonly used for Regex patterns, which often contain a lot of \ characters.
+
+
+\ means	Signals a special sequence (can also be used to escape special characters)
+. means "any character".
+* means "any number of this".
+.* therefore means an arbitrary string of arbitrary length.
+^ indicates the beginning of the string.
++ indicates one or more occurrences.
+$ indicates the end of the string.
+? indicates	Zero or one occurrences.
+| indicates	Either or.
+{} indicates Exactly the specified number of occurrences.
+
+txt = "hello planet"
+
+we used re.search() to find the first match for a pattern. 
+findall() finds *all* the matches and returns them as a list of strings, with each string representing one match.
+
+#Search for a sequence that starts with "he", followed excactly 2 (any) characters, and an "o":
+
+x = re.findall("he.{2}o", txt)
+
+print(x)
+['hello']
+
+The regular expression says: There may be any number of characters between the expression (?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]) 
+and the beginning and end of the string that is searched.
+
+^.* //Start of string followed by zero or more of any character (except line break)
+
+.*$ //Zero or more of any character (except line break) followed by end of string
+
+
+Tensor.dim() → int
+Returns the number of dimensions of self tensor.
+
+
+Re regex Module:
+
+https://www.w3schools.com/python/python_regex.asp
+
+
+The re module offers a set of functions that allows us to search a string for a match:
+
+Function		Description
+findall		Returns a list containing all matches
+search		Returns a Match object if there is a match anywhere in the string
+split		Returns a list where the string has been split at each match
+sub			Replaces one or many matches with a string
+	
+----------------------------------------------------------------------------------------------------------------------------------------	
+SNS PairPlot:
+	
+	To plot multiple pairwise bivariate distributions in a dataset, you can use the .pairplot() function.
+
+SNS BoxPlot:
+
+Draw a box plot to show distributions with respect to categories.
+
+	A box plot (or box-and-whisker plot) shows the distribution of quantitative data in a way that facilitates comparisons between variables or across levels of a 
+categorical variable. The box shows the quartiles of the dataset while the whiskers extend to show the rest of the distribution, except for points that are 
+determined to be “outliers” using a method that is a function of the inter-quartile range.
+
+SNS CountPlot:
+	Show the counts of observations in each categorical bin using bars.
+
+A count plot can be thought of as a histogram across a categorical, instead of quantitative, variable. Show the number of datapoints with each value of a
+categorical variable.
+
+SNS KdePlot:
+		a Kernel Distribution Estimation Plot which depicts the probability density function 
+of the continuous or non-parametric data variables i.e. we can plot for the univariate or multiple
+variables altogether.Kernel Density Estimation plot for the seaborn library.	
+	
+OrdinalEncoder:
+
+
+LabelEncoder:	
+	A bit difference is the idea behind. OrdinalEncoder is for converting features, while LabelEncoder is for converting target variable.
+
+That's why OrdinalEncoder can fit data that has the shape of (n_samples, n_features) while LabelEncoder can only fit data that has the shape of (n_samples,) 
+(though in the past one used LabelEncoder within the loop to handle what has been becoming the job of OrdinalEncoder now).
+	
+OrdinalEncoder is for 2D data with the shape (n_samples, n_features)
+LabelEncoder is for 1D data with the shape (n_samples,)
+
+What is the difference between LabelEncoder and Ordinalencoder?
+LabelEncoder should be used to encode target values, i.e. y, and not the input X. Ordinal encoding should be used for ordinal variables
+(where order matters, like cold , warm , hot ); 
+vs Label encoding should be used for non-ordinal (aka nominal) variables (where order doesn't matter, like blonde , brunette )
+
+
+S.No.	OrdinalEncoder											LabelEncoder										OneHotEncoder
+1		Used to encode the input.							Used to encode the output 							Used to encode the input.
+															(aka target or label).								
+2		Returns a single column of integers
+		(0 to n_categories - 1) per feature.				Returns a single column of integers              Returns a single column (1 indicating presence
+																(0 to n_labels - 1).						of a feature and 0 indicating absence) per feature.
+																											
+ValueError : Truth value of a series is ambiguous Use a.empty() a.bool() or a.item() or a.any() or a.all()
+
+https://towardsdatascience.com/fix-valueerror-truth-value-of-a-series-is-ambiguous-pandas-a683f0fd1b2f
+
+
+numpy einsum:
+
+https://stackoverflow.com/questions/26089893/understanding-numpys-einsum
+
+What does einsum do?
+Imagine that we have two multi-dimensional arrays, A and B. Now let's suppose we want to...
+
+multiply A with B in a particular way to create new array of products; and then maybe
+sum this new array along particular axes; and then maybe
+transpose the axes of the new array in a particular order.
+There's a good chance that einsum will help us do this faster and more memory-efficiently than combinations of the NumPy 
+functions like multiply, sum and transpose will allow.
+
+
+numpy.apply_along_axis(func1d, axis, arr, *args, **kwargs)[source]
+	
+		Apply a function to 1-D slices along the given axis.
+
+axis -  0 represents the columns and 1 represents the rows of the matrix.
+
+
+numpy.apply_over_axes(func, a, axes)[source]
+	
+	The numpy.apply_over_axes()applies a function repeatedly over multiple axes in an array.
+
+Syntax : 
+
+	numpy.apply_over_axes(func, array, axes)
+	
+	1d_func  : the required function to perform over 1D array. It can only be applied in 
+1D slices of input array and that too along a particular axis. 
+	axis     : required axis along which we want input array to be sliced
+	array    : Input array to work on
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+Statistical Tests:
+
+Quantitative variables are any variables where the data represent amounts.
+
+Categorical variables are any variables where the data represent groups.
+
+
+Left Skewed:
+
+Left skewed distributions occur when the long tail is on the left side of the distribution. Statisticians also refer to them as negatively skewed.
+
+In box plot, When the median is closer to the box’s higher values and the lower whisker is longer, it’s a left skewed distribution.
+
+Right Skewed:
+
+Right skewed distributions occur when the long tail is on the right side of the distribution. Analysts also refer to them as positively skewed.
+
+In box plot, When the median is closer to the box’s lower values and the upper whisker is longer, it’s a right skewed distribution.
+Notice how the longer tail extends into the higher values, making it positively skewed.
+
+The mean, median, and mode are all equal in the normal distribution and other symmetric distributions.
+
+Right skewed: The mean is greater than the median. The mean overestimates the most common values in a positively skewed distribution.
+
+Left skewed: The mean is less than the median. The mean underestimates the most common values in a negatively skewed distribution.
+
+Because the mean over or underestimates the most frequently occurring values in asymmetric distributions, analysts often use the median in these cases.
+
+
+To remove skewness 3 most common methods used are:
+1. Log Transform
+2. Square Root Transform
+3. Box Cox Transform.
+
+
+A correlation matrix serves as a diagnostic for regression.
+
+One key assumption of multiple linear regression is that no independent variable in the model is highly correlated with
+another variable in the model.
+
+When two independent variables are highly correlated, this results in a problem known as multicollinearity and
+it can make it hard to interpret the results of the regression.
+
+One of the easiest ways to detect a potential multicollinearity problem is to look at a correlation matrix and visually check 
+whether any of the variables are highly correlated with each other.
+
+
+Null & Alternate Hypothesis:
+
+A p-value is a statistical measurement used to validate a hypothesis against observed data.
+A p-value measures the probability of obtaining the observed results, assuming that the null hypothesis is true.
+The lower the p-value, the greater the statistical significance of the observed difference.
+A p-value of 0.05 or lower is generally considered statistically significant.
+
+Null: Two sample means are equal.
+
+Alternate: Two sample means are not equal
+
+To reject a null hypothesis, one needs to calculate test statistics, then compare the result
+with the critical value. If the test statistic is greater than the critical value, we can reject the null hypothesis.
+
+
+p-value ≤  α
+ : significant result, reject null hypothesis.
+p-value >  α
+ : not significant result, fail to reject the null hypothesis.
+ 
+ 
+Null hypothesis (H0): There is no significant association between the two variables.
+
+Alternative hypothesis: (Ha): There is a significant association between the two variables.
+
+STATISTICAL TESTS: THE T-TEST, THE CHI-SQUARE AND MORE
+Z-Test
+T-Test
+Chi-Square Test
+ANOVA
+
+T-Test:
+
+We use a t-test to compare the mean of two given samples. Like a z-test, a t-test also assumes a normal 
+distribution of the sample. When we don’t know the population parameters (mean and standard deviation), we use t-test.
+
+THE THREE VERSIONS OF A T-TEST
+
+Independent sample t-test: compares mean for two groups
+Paired sample t-test: compares means from the same group at different times
+One sample t-test: tests the mean of a single group against a known mean
+
+
+The statistic for this hypothesis testing is called t-statistic, the score for which we calculate as:
+
+		t=(x1—x2) / (σ / √n1 + σ / √n2), where
+
+x1=mean of sample 1
+
+x2=mean of sample 2
+
+n1=sample size 1
+
+n2=sample size 2
+
+There are multiple variations of the t-test.
+
+This article focuses on normally distributed data. You can use z-tests and t-tests for data which is non-normally distributed
+as well if the sample size is greater than 20, however there are other preferable methods to use in such a situation.
+
+
+Chi-Square Test:
+
+We use the chi-square test to compare categorical variables.
+
+When to use the chi-square test of independence
+
+There’s another type of chi-square test, called the chi-square test of independence.
+
+Use the chi-square goodness of fit test when you have one categorical variable and you want to test a hypothesis about its distribution.
+Use the chi-square test of independence when you have two categorical variables and you want to test a hypothesis about their relationship.
+
+THE TWO TYPES OF CHI-SQUARE TEST
+
+Goodness of fit test: determines if a sample matches the population
+
+A chi-square fit test for two independent variables: used to compare two variables in a contingency table to check if the data fits
+A small chi-square value means that data fits.
+
+A large chi-square value means that data doesn’t fit.
+
+The hypothesis we’re testing is:
+
+Null: Variable A and Variable B are independent.
+Alternate: Variable A and Variable B are not independent.
+
+The statistic used to measure significance, in this case, is called chi-square statistic. The formula we use to calculate the statistic is:
+
+Χ2 = Σ [ (Or,c — Er,c)2 / Er,c ] where
+
+Or,c=observed frequency count at level r of Variable A and level c of Variable B.
+
+Er,c=expected frequency count at level r of Variable A and level c of Variable B.
+
+
+You have seen the  χ2
+  test statistic used in three different circumstances. The following bulleted list is a summary that will help you decide which  χ2
+  test is the appropriate one to use.
+
+Goodness-of-Fit: Use the goodness-of-fit test to decide whether a population with an unknown distribution "fits" a known distribution. In this case 
+there will be a single qualitative survey question or a single outcome of an experiment from a single population. Goodness-of-Fit is typically used 
+to see if the population is uniform (all outcomes occur with equal frequency), the population is normal, or the population is the same as another 
+population with a known distribution. The null and alternative hypotheses are:
+	
+	H0: The population fits the given distribution.
+	Ha: The population does not fit the given distribution.
+
+Independence: Use the test for independence to decide whether two variables (factors) are independent or dependent. In this case there will be
+two qualitative survey questions or experiments and a contingency table will be constructed. The goal is to see if the two variables are unrelated 
+(independent) or related (dependent). The null and alternative hypotheses are:
+	
+	H0: The two variables (factors) are independent.
+	Ha: The two variables (factors) are dependent.
+
+Homogeneity: Use the test for homogeneity to decide if two populations with unknown distributions have the same distribution as each other.
+In this case there will be a single qualitative survey question or experiment given to two different populations. The null and alternative hypotheses
+are:
+
+	H0: The two populations follow the same distribution.
+	Ha: The two populations have different distributions.
+
+
+Monotonic Relation: 
+
+A monotonic relationship is a relationship that does one of the following: 
+(1) as the value of one variable increases, so does the value of the other variable;
+(2) as the value of one variable increases, the other variable value decreases.
+
+
+
+ANOVA
+
+We use analysis of variance (ANOVA) to compare three or more samples with a single test. 
+
+THE TWO MAJOR TYPES OF ANOVA
+
+One-way ANOVA: Used to compare the difference between three or more samples/groups of a single independent variable.
+
+MANOVA: Allows us to test the effect of one or more independent variables on two or more dependent variables. 
+In addition, MANOVA can also detect the difference in correlation between dependent variables given the groups of independent variables.
+
+The statistics used to measure the significance in this case are F-statistics. We calculate the F-value using the formula:
+
+		F= ((SSE1—SSE2)/m)/ SSE2/n-k,
+
+where
+
+	SSE=residual sum of squares
+
+	m=number of restrictions
+
+	k=number of independent variables
+
+There are multiple tools available such as SPSS, R packages, Excel etc.
+to carry out ANOVA on a given sample.
+
+In all of these tests we’re comparing a statistic with a critical value to accept or reject a hypothesis. However, the statistic and the way 
+to calculate it differ depending on the type of variable, the number of samples you’re analyzing and whether or not we know the population parameters.
+We can thus choose a suitable statistical test and null hypothesis.
+
+Fisher’s exact test
+
+Fisher’s exact test is an alternative to Pearson’s chi-squared test for independence. While actually valid for all sample sizes,
+Fisher’s exact test is practically applied when sample sizes are small. A general recommendation is to use Fisher’s exact test- 
+instead of the chi-squared test - whenever more than 20 % of cells in a contingency table have expected frequencies < 5.
+
+Fisher’s exact test is used to determine whether there is a significant association between two categorical variables in a contingency table.
+
+What is the difference between a chi-square test and a t test?
+
+Chi-Square Test for independence: Allows you to test whether or not not there is a statistically significant association between 
+two categorical variables. When you reject the null hypothesis of a chi-square test for independence, it means there is a significant association
+between the two variables.
+
+Here's a step-by-step guide to interpreting the p-value in a chi-square test:
+
+	1. Set up the null hypothesis (H0) and the alternative hypothesis (H1).
+	2. Compute the chi-square statistic using the observed data and expected frequencies.
+	3. Determine the degrees of freedom (df) for the chi-square test. This depends on the number of categories or groups being compared.
+	4. Calculate the p-value associated with the chi-square statistic using the chi-square distribution table or statistical software.
+	5. Compare the p-value to the chosen significance level (α).
+			If p-value ≤ α, reject the null hypothesis (H0).
+			If p-value > α, fail to reject the null hypothesis (H0).
+
+When variables are dependent, it means that there is a relationship or association between them. In the context of statistical analysis, dependency between variables can be examined using various
+statistical tests and measures.
+
+If you have two categorical variables, you can determine their dependency using a chi-square test of independence. The chi-square test compares the observed frequencies of the categories with the expected
+frequencies under the assumption that the variables are independent. If the test results in a low p-value (typically below the chosen significance level), it suggests that the variables are dependent.
+
+When variables are dependent, it implies that changes in one variable are associated with changes in the other variable. The strength and nature of the dependency can further be explored using measures like Cramér's V,
+contingency coefficients, or phi coefficient, which provide information about the magnitude of the relationship.
+
+In the case of continuous variables, the dependency can be assessed using correlation coefficients such as Pearson's correlation coefficient or Spearman's rank correlation coefficient. These coefficients measure the 
+strength and direction of the linear relationship between the variables.
+
+If variables are dependent, there are several types of modeling techniques that can be used to explore and understand the relationship between them.
+
+1. Linear Regression
+2. Logistic Regression.
+3. Decision Trees
+4. Time Series Analysis.
+
+
+
+t-Test for a difference in means: Allows you to test whether or not there is a statistically significant difference between two population means.
+When you reject the null hypothesis of a t-test for a difference in means, it means the two population means are not equal.
+
+Both chi-square tests and t tests can test for differences between two groups. However, a t test is used when you have a dependent quantitative 
+variable and an independent categorical variable (with two groups). A chi-square test of independence is used when you have 
+two categorical variables.
+
+If you have two variables that are both categorical, i.e. they can be placed in categories like male, female and republican,
+democrat, independent, then you should use a chi-square test.
+
+But if one variable is categorical (e.g. type of study plan – either plan 1 or plan 2) and the other is continuous (e.g. exam score – 
+measured from 0 to 100), then you should use a t-test.
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+The output array. Shape of the output array can be different depending on whether func 
+changes the shape of its output with respect to its input.
+
+https://www.geeksforgeeks.org/numpy-apply_over_axes-python/
+
+
+Statistical Tests:
+
+https://www.kaggle.com/code/gauravsharma99/statistical-analysis-on-mpg-data
+
+Data Visualization:
+
+https://towardsdatascience.com/data-visualization-using-matplotlib-16f1aae5ce70
+
+
+------------------------------------------------------------------------------------------------------------------------------
 Python Function Arguments:
 
 	A function in python can have unknown number of arguments by putting * in front of the parameter passed to the function.
@@ -32,6 +735,29 @@ greet(firstname='Steve', lastname='Jobs')
 greet(lastname='Jobs', firstname='Steve')
 greet(firstname='Bill', lastname='Gates', age=55) 
 greet(firstname='Bill') # raises KeyError 
+
+
+Difference between Dataset and TensorDataset in Pytorch:
+
+https://stackoverflow.com/questions/67683406/difference-between-dataset-and-tensordataset-in-pytorch
+
+If you just want to create a dataset that contains tensors for input features and labels, then use the TensorDataset directly:
+
+	dataset = TensorDataset(input_features, labels)
+
+Note that input_features and labels must match on the length of the first dimension.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+The numpy.ravel() functions returns contiguous flattened array(1D array with all the input-array elements and with the
+same type as it). A copy is made only if needed.
+
+Return:
+	Flattened array having same type as the Input array and and order as per choice. 
+	
+	
+array.ravel is equivalent to reshape(-1, order=order)
 
 --------------------------------------------------------------------------------------------------------------------------------
 Python Dictionary Comprehension:
@@ -207,14 +933,44 @@ where it is defined, not where the model is called). globals() method doesn't ta
 --------------------------------------------------------------------------------------------------------------------------------
 Pytorch Functions:	
 
+torch.jit.script
+
+	If obj is nn.Module, script returns a ScriptModule object. The returned ScriptModule will have the same set of sub-modules and 
+parameters as the original nn.Module. If obj is a standalone function, a ScriptFunction will be returned. If obj is a dict, then script 
+returns an instance of torch._C.ScriptDict. If obj is a list, then script returns an instance of torch._C.ScriptList.
+	
+	Scripting an nn.Module by default will compile the forward method and recursively compile any methods, submodules, and functions 
+called by forward. If a nn.Module only uses features supported in TorchScript, no changes to the original module code should be necessary.
+script will construct ScriptModule that has copies of the attributes, parameters, and methods of the original module.
+
+To compile a method other than forward (and recursively compile anything it calls), add the @torch.jit.export decorator to the method.
+To opt out of compilation use @torch.jit.ignore or @torch.jit.unused.
+
+
 What is the difference between Tensor.size and Tensor.shape, Tensor.numel() in Pytorch?
 
 Tensor.size and Tensor.shape, Tensor.numel() -  these are metadata for a tensor object.
 
+torch.cumsum(input, dim, *, dtype=None, out=None) - 
+
+Returns the cumulative sum of elements of input in the dimension dim.
+
+For example, if input is a vector of size N, the result will also be a vector of size N, with elements.
+
+	yi = x1 + x2 + x3 + x4 + x5 + x6 + x7 + ... + xi.
+	
+
+
 Tensor.Size - this is a function that is same as shape attribute.
 Tensor.Shape - this is  a attribute that is same as size function.
 Tensor.numel - this gives the total number of elements present in the tensor object.
------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+What does x.numel() do for a tensor x
+
+numel() method returns the total number of elements in the input tensor.
+Syntax: torch.numel(input)
+Arguments.
+Return: It returns the length of the input tensor.
 
 What does x.contiguous() do for a tensor x
 
@@ -381,6 +1137,29 @@ the dimension of the original tensor in the output as well, then you've set the 
 	tensor([[ 8],
 			[24],
 			[23]])
+			
+------------------------------------------------------------------
+difference between the torch.stack and torch.cat ?
+
+So, what is the basic difference between these two methods? torch.cat() concatenates a sequence of tensors along an existing dimension, 
+hence not changing the dimension of the tensors. torch. stack() stacks the tensors along a new dimension, as a result, 
+it increases the dimension.
+
+stack
+
+	Concatenates sequence of tensors along a new dimension.
+
+cat
+
+	Concatenates the given sequence of seq tensors in the given dimension.
+
+So if A and B are of shape (3, 4):
+
+torch.cat([A, B], dim=0) will be of shape (6, 4)
+torch.stack([A, B], dim=0) will be of shape (2, 3, 4)
+
+
+
 ------------------------------------------------------------------			
 			
 	torch.argmin(input, dim=None, keepdim=False) → LongTensor
@@ -874,6 +1653,28 @@ as seen in this formula:
 
 P(X and Y) = P(X|Y)*P(Y)P(X∩Y) = P(X∣Y)×P(Y)
 
+
+GridSearchCV:
+
+GridSearchCV is the process of performing hyperparameter tuning in order to determine the optimal values for a given model. As mentioned above, 
+the performance of a model significantly depends on the value of hyperparameters.
+
+GridSearchCV tries all the combinations of the values passed in the dictionary and evaluates the model for each combination 
+using the Cross-Validation method. Hence after using this function we get accuracy/loss for every combination of hyperparameters and we can
+choose the one with the best performance.
+
+sklearn.model_selection.GridSearchCV(estimator, param_grid,scoring=None,
+          n_jobs=None, iid='deprecated', refit=True, cv=None, verbose=0, 
+          pre_dispatch='2*n_jobs', error_score=nan, return_train_score=False)
+		  
+1.estimator: Pass the model instance for which you want to check the hyperparameters.
+2.params_grid: the dictionary object that holds the hyperparameters you want to try
+3.scoring: evaluation metric that you want to use, you can simply pass a valid string/ object of evaluation metric
+4.cv: number of cross-validation you have to try for each selected set of hyperparameters
+5.verbose: you can set it to 1 to get the detailed print out while you fit the data to GridSearchCV
+6.n_jobs: number of processes you wish to run in parallel for this task if it -1 it will use all available processors.		  
+
+
 Bayes Theoram:
 
 		Bayes theoram is a principled way of calculating conditional probability 
@@ -993,11 +1794,55 @@ minima or local maxima of a function subject to equality and inequality constrai
 
 Variance, Covariance and Correlation Coefficient Definition and examples:
 
-s = summation(xi - x(mean))2//(n-1)  -> correlation.
+Before you start the machine learning process, it is critical to prepare your data so that only the relevant parts of your
+dataset is used for training. To understand the relationships in your dataset, you need to understand the 
+following concepts:
 
+	1.Variance
+	2.Covariance
+	3.Correlation
+	
+
+
+Variance:
+	Variance is the spread of values in a dataset around its mean value. It tells you how far each number in the dataset 
+is from its mean.
+	
+		s = summation(xi - x(mean))**2//(n-1)  -> correlation.
+		
+	For sample variance, the denominator is n-1. For population variance, the denominator is n.
+
+For sample variance, the denominator is n-1. For population variance, the denominator is n.
+
+
+The square root of variance (s²) is the standard deviation (s). Variance is calculated by taking the difference of each number
+in the dataset from the mean, summing all the differences, and finally dividing it by the number of values in the dataset.
+
+A large variance indicates that the numbers in the dataset are far from the mean and far from each other. A small variance, 
+on the other hand, indicates that the numbers are close to the mean and to each other. A variance of 0 indicates that all 
+the numbers in the dataset are the identical. Finally, the valid value of variance is always a positive number (0 or more).
+
+
+Covariance:
 
 Covariance is a measure of how much two random variables vary together. It’s similar to variance, 
 but where variance tells you how a single variable varies, co variance tells you how two variables vary together.
+
+While variance measures the spread of data within its mean value, 
+covariance measures the relationalship between two random variables.In statistics, covariance is the measure of the directional
+relationship between two random variables.
+
+In statistics, a and b are known to have a positive covariance. A positive covariance indicates that both random variables
+tend to move upward or downward at the same time.
+
+In statistics, b and c are known to have a negative covariance. A negative covariance indicates that both variables tend 
+to move away from each other — when one moves upward the other moves downward, and vice versa.
+
+In statistics, c and d are known to have zero covariance (or close to zero). When two random variables are independent,
+the covariance will be zero. However, the reverse is not necessarily true — a covariance of zero does not mean that 2 random 
+variables are independent (a non-linear relationship can still exist between 2 random variables that has zero covariance). 
+In the above example, you can see that there exists some sort of non-linear v-shape relationship.
+
 
 Note on dividing by n or n-1:
 
@@ -1008,15 +1853,163 @@ var(x) = ((xi-x(mean))*(xi-x(mean)))/(n-1) -> variance
 
 cov(x,y) = (xi - x(mean))*(yi - y(mean)) // (n-1) -> covariance.
 
+Covariance between 2 random variables is calculated by taking the product of the difference between the value of each 
+random variable and its mean,summing all the products, and finally dividing it by the number of values in the dataset.
+
 r(xy) = cov(x,y)/s(x)*s(y) =
  (summation(xi-x(mean))*summation(yi-y(mean)))/(sqrt(summation(xi-x(mean)))*sqrt(summation(yi-y(mean))))
  
-Pearson’s Correlation – 
-Covariance standardized for variance (covariance divided by product of standard deviations)
+ 
+Correlation:
+
+	Correlation is a statistical technique that is used to measure and describe a relationship between the two variables. Usually the two variables are simply observed, not manipulated.
+	
+Correlations have three important characterstics. they can tell us about the direction of the relationship, the form (shape) of the relationship and the degree (strength) of the 
+relationship between two variables.
+
+1. The Direction of a Relationship: The correlation measure tells us about the direction of the relationship between the two variables. The direction can be positive or negative.
+
+Positive In a positive relationship, both variables tend to move in the same direction. if one variable increases, the other also tends to increases.If one decreases, the other tends to decrease.
+
+Negative In a negative relationship, the variables tend to move in the opposite direction. If one variable tends to increase then the other tends to decrease.
+
+The direction of the relationship between two variables is identified by the sign of the correlation coefficient for the variables. Postive relationships have a "plus" sign,
+whereas negative relationships have a "minus" sign.
+
+2. The Form (Shape) of a Relationship: The form or shape of a relationship refers to whether the relationship is straight or curved.
+
+Linear: A straight relationship is called linear, because it approximates a straight line.
+
+Curvilinear: A curved relationship is called curvilinear, because it approximates a curved line.
+
+3. The Degree (Strength) of a Relationship: Finally, a correlation coefficient measures the degree(strength) of the relationship between the two variables. the measures we discuss only measure the strength of the 
+linear relationship between the two variables. Two specific strengths are:
+	
+Perfect Relationship:	when two variables are exactly(linear) related the correaltion coefficient is either +1 or -1. They are said to be perfectly linearly related either positively or negatively.
+
+No Relationship: when two variables are having no relationship at all, their correlation is 0.0. 
+
+Where & Why we use Correlation
+
+Prediction: Correlations can be used to help make predictions. If two variables have been known in the past to correlate, then we can assume they will continue to correlate in the future. 
+We can use the value of one variable that is known now to predict the value that the other variable will take on in the future.
+
+Relaibility: Correlations can be used to determine the reliability of some measurement process. For example, we could administer our new IQ test on two different occasions to the same group 
+of people and see what the correlation is. If the correlation is high, the test is reliable. If it is low, it is not.
+ 
+Pearson’s Correlation Coefficient(Linear Association)– 
+		
+		Covariance standardized for variance (covariance divided by product of standard deviations)
 
 r(xy) = cov(x,y)/s(x)*s(y) = (xi - x(mean)) * (yi - y(mean)) / sqrt(summation(x(i)-x(mean))) * sqrt(summation(y(i)-y(mean)))
 
+The Pearson correlation coefficient is just a normalized covariance between the two variables to give an interpretable score such that  Corrp(x,y)∈[−1,1]. It can be used to summarize the strength of the linear
+relationship between two data samples. The use of mean and standard deviation in the calculation suggests the need for the two data samples to have a Gaussian or Gaussian-like distribution 
+hence it's a parametric statistic.
 
+As a statistical hypothesis test, the method assumes that the samples are uncorrelated (fail to reject H0).
+
+Assumptions of pearson correlation:
+	1. Both variables should have a Gaussian or Gaussian-like distribution.
+	2. Relationship between the variables should be linear.
+	3. Homoscedasticity i.e., a sequence of random variables where all its random variables have the same finite variance.
+	
+Also Pearson is quite sensitive to outliers.
+
+Removing features with zero or very low correlation: Features that show little or no correlation with the target variable may not contribute much to the
+predictive power of a model. Removing such features can help reduce noise and simplify the model. 
+The specific threshold for "low correlation" depends on the context and problem at hand, but a common threshold is a correlation 
+coefficient below 0.3 or 0.4.
+
+Exploring highly correlated features: When two features have a high positive or negative correlation (close to +1 or -1) with each other, it indicates that they
+are strongly related and may provide redundant information. In such cases, it can be beneficial to explore and potentially remove one of the highly correlated 
+features to avoid multicollinearity, which can cause instability or overfitting in certain models. However, the decision to remove a highly correlated 
+feature should be based on the context and domain knowledge. Sometimes, both features may still be relevant and capture different aspects of the target variable.
+
+Ordinal Association (Rank correlation):
+
+	Two variables may be related by a nonlinear relationship, such that the relationship is stronger or weaker across the distribution of the variables. In these cases, even when variables have a strong association, 
+Pearson’s correlation would be low. Further, the two variables being considered may have a non-Gaussian distribution. To properly identify association between variables with non-linear relationships,
+we can use rank-based correlation approaches.
+
+	Rank correlation refers to the methods that quantify the association between the variables using the ordinal relationship between the values rather than the specific values like in Pearson's coefficient.
+(ie). rank correlation focuses on the ordinal relationship or the order of the values.
+
+	When variables are measured on an ordinal scale, which means the values have a natural ordering or ranking (e.g., small, medium, large), rank correlation becomes useful. Instead of considering the specific values, 
+these methods examine the relative positions or ranks of the values. The underlying assumption is that even though the actual values might differ, the ordinal relationship or the order of the values remains meaningful.
+
+	By comparing the rankings of the variables, rank correlation methods provide a measure of how closely the variables are related.these methods are particularly suited for situations where the data is not normally
+distributed.These methods are particularly suitable for situations where the data are not normally distributed or when the variables are measured on an ordinal scale rather than a continuous scale.
+
+Overall, rank correlation allows us to assess the association between variables based on their ordinal relationship.Four types of rank correlation methods are as follows:
+
+1. Spearman's Rank Correlation:
+	
+		Corr(x,y) = Cov(rank(x),rank(y))/sigma_rank(x)*sigma_rank(y).
+	
+	Spearman's Correlation is a non-parametric rank correlation and is also interpretable because  Corrs(x,y)∈[−1,1] . In this instead of calculating the coefficient using covariance and 
+standard deviations on the samples themselves, these statistics are calculated by converting the raw data into rank data hence non-parametric. This is a common approach used in non-parametric statistics.
+
+	As a statistical hypothesis test, the method assumes that the samples are uncorrelated (fail to reject H0).
+
+2. Kendall's Rank Correlation:	
+	
+	The intuition for the test is that it calculates a normalized score for the number of matching or concordant rankings between the two samples. As a statistical hypothesis test, 
+the method assumes that the samples are uncorrelated (fail to reject H0).
+
+3. Goodman and Kruskal’s Rank Correlation:
+
+4. Somers’ Rank Correlation
+
+	Types of Correlation:
+		Positive: both variables change in the same direction.
+		Neutral: no relationship in the change of the variables.
+		Negative: variables change in opposite directions.
+	
+--------------------------------------------------------------------------------------------------------------------------------
+Parametric models are those that require the specification of some parameters before they can be used to make predictions,
+while non-parametric models do not rely on any specific parameter settings and therefore often produce more accurate results.
+
+What’s the difference between parametric and non-parametric models?
+
+The following is the list of differences between parametric and non-parametric machine learning models.
+
+In case of parametric models, the assumption related to the functional form is made and linear model is considered.
+In case of non-parametric models, the assumption about the functional form is not made.
+
+Parametric models are much easier to fit than non-parametric models because parametric machine learning models only require
+the estimation of a set of parameters as the model is identified prior as linear model. In case of non-parametric model, one
+needs to estimate some arbitrary function which is a much difficult task.
+
+Parametric models often do not match the unknown function we are trying to estimate. The model performance is comparatively 
+lower than the non-parametric models. The estimates done by the parametric models will be farther from being true.
+
+Parametric models are interpretable unlike the non-parametric models. This essentially means that one can go for parametric
+models when the goal is to find inference. Instead, one can choose to go for non-parametric models when the goal is to make
+prediction with higher accuracy and interpretability or inference is not the key task.
+
+Such models are called as parametric machine learning models. The parametric models are linear models which includes 
+determining the parameters such as that shown above. The most common approach to fitting the above model is referred to as
+ordinary least squares (OLS) method. However, least squares is one of many possible ways to fit the linear model. Example of
+parametric models include linear algorithms such as Lasso regression, linear regression and to an extent, generalized additive
+models (GAMs).
+
+Building non-parametric models do not make explicit assumptions about the functional form such as linear model in case of 
+parametric models. Instead non-parametric models can be seen as the function approximation that gets as close to the data 
+points as possible. The advantage over parametric approaches is that by avoiding the assumption of a particular functional 
+form such as linear model, non-parametric models have the potential to accurately fit a wider range of possible shapes for 
+the actual or true function. Any parametric approach brings with it the possibility that the functional form (linear model) 
+which is very different from the true function, in which case the resulting model will not fit the data well. Example of 
+non-parametric models include fully non-linear algorithms such as bagging, boosting, support vector machines bagging boosting
+with non-linear kernels, and neural networks (deep learning).
+
+When the goal is to achieve models with high performance prediction accuracy, one can go for non-linear methods such as bagging,
+boosting, support vector machines bagging boosting with non-linear kernels, and neural networks (deep learning). When the goal
+is to achieve modeling for making inferences, one can go for parametric methods such as lasso regression, linear regression etc
+which have high interpretability.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
 Clustering:
 
 Introduction
@@ -1086,6 +2079,10 @@ Properties of Clustering:
 1. All the data points in a cluster should be similar to each other.
 2. The data points from different clusters should be as different as possible.		
 
+
+
+K-means++ Algorithm:
+https://www.geeksforgeeks.org/ml-k-means-algorithm/
 
 Eigen Values and Eigen Vectors:
 
@@ -2048,6 +3045,19 @@ Here, we can see that we want a model or hypothesis (h) that best explains the o
 optimization problem involves estimating the posterior probability for each candidate hypothesis.
 
 ---------------------------------------------------------------------------------------------------------------------------------
+Chain Rule of Probability:
+
+
+	The chain rule for two random events A and B says:
+		
+		P(A Intersection B) = P(B|A)*P(A)
+		
+	P(A Intersection B Intersection C Intersection D) = P(A| B Intersection C Intersection D)*P(B Intersection C Intersection D)
+				
+				= P(A | B Intersection C Intersection D)*P(B | C Intersection D)* P(C | D) * P(D)
+
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Conjugate Prior:
 
@@ -2196,31 +3206,393 @@ the output, the lower the loss.
 (When do we use it?): we use it for the classification problems and the output of model is a probability distribution.	
 
 
+---------------------------------------------------------------------------------------------------------------------------------
+
+Cholesky decomposition for Matrix Inversion
+
+	Matrix inversion is a classical problem, and can be very complicated for large matrices. There are many ways to simplify
+this for special types of matrices. Among them, one is to transform the matrix into a set of upper or lower triangular matrices. 
+Consider our target matrix A which is Hermitian and positive-definite. Such matrices are quite famous and an example
+is the covariance matrix in statistics. It’s inverse is seen in the Gaussian probability density function for vectors. Then, 
+Cholesky decomposition breaks
+
+	A = L*L^T = U^T*U
+
+where L is a lower triangular matrix, while U is an upper triangular matrix.
+
+It is much easier to compute the inverse of a triangular matrix and there exist numerical solutions. Then the original matrix 
+inverse is computed simply by multiplying the two inverses as
+
+	A-1 = (L-1)^T*(L-1) = (U-1)*(U-1)^T
+
+As bonus, the determinant is also much easier to compute.
+
+	det(A) = det(A^2)
+
+One can also use complex matrices, and just use a conjugate-transpose instead of transpose alone.
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+what is the difference between XGBoost and LightGBM? In this post, we'll compare both algorithms and see which one might be the
+best option for your problem.
+
+Overall, both tools are excellent for creating accurate machine learning models. However, there are some key differences you should keep 
+in mind:
+
+Speed: LightGBM is known to be faster than XGBoost. This is because it uses subsampling techniques to reduce the amount of data it
+needs to process.
+
+Memory usage: XGBoost tends to use more memory than LightGBM. This can be a problem if you have a very large dataset.
+
+Accuracy: In terms of accuracy, both tools are similar. However, in some cases, XGBoost may be more accurate than LightGBM.
+
+In summary, if your dataset is very large and speed is an important factor, then LightGBM might be the best option. If accuracy is your
+main concern, then you could opt for XGBoost. Either way, both tools are excellent options for decision tree-based machine learning
+problems.
 
 
 
+Chi-Squared Distribution:
+
+	In probability theory and statistics, chi squared distribution with k degrees of freedom is the distribution of a sum of squares
+of k independant standard normal random variables. it is a special case of gamma distribution and is used in constructing confidence
+intervals and in hypothesis testing.
+
+	the chi squared distribution is used in the common chi squared tests for goodness of fit of an observed distribution to a 
+theoretical one. the independence of two criteria of classification of qualitative data.the independence of two criteria
+of classification of qualitative data, and in confidence interval estimation for a population standard deviation of a normal distribution
+from a sample standard deviation
+
+	The X^2 test is carried out in the following steps:
+	
+	1. Subtract each expected number from each observed number. (O-E)
+	2. Square the Difference.
+	3. Divide the squares so obtained for each cell of the table by the
+	   expected number for that cell.
+	4. X^2 is the sum of (O-E)^2/E.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Contrastive Loss:
+
+	Calculating Distance:  In 2 or 3 dimensions the euclidian distance (“ordinary” or straight-line distance) is a great choice for 
+measuring the distance between two points. However, in a large dimensional space, all points tend to be far apart by the euclidian
+measure. In higher dimensions, the angle between vectors is a more effective measure. The cosine distance measures the cosine of the 
+angle between the vectors. The cosine of identical vectors is 1 while orthogonal and opposite vectors are 0 and -1 respectively.
+More similar vectors will result in a larger number. Calculating the cosine distance is done by taking the dot product of the vectors.
+
+	# P1 and p2 are nearly identically, thus close to 1.0
+		pos_dot = p1.dot(p2)
+		pos_dot -> 0.999999716600668
+	# Most of the negatives are pretty far away, so small or negative
+		num_neg = len(neg)
+		neg_dot = np.zeros(num_neg)
+		for i in range(num_neg):
+			neg_dot[i] = p1.dot(neg[i])
+		neg_dot -> [-0.91504053,  0.30543542, -0.37760565, -0.44443608, -0.64698801]
+
+
+	Softmax: The softmax function takes a vector of real numbers and forces them into a range of 0 to 1 with the sum of 
+all the numbers equaling 1. One other nice property of softmax is that one of the values is usually much bigger than the others. When 
+calculating the loss for categorical cross-entropy, the first step is to take the softmax of the values, then the negative log of the 
+labeled category.
+
+Contrastive Loss:
+
+	Contrastive loss looks suspiciously like the softmax function. That’s because it is, with the addition of the vector similarity 
+and a temperature normalization factor. The similarity function is just the cosine distance that we talked about before. The other 
+difference is that values in the denominator are the cosign distance from the positive example to the negative samples. Not very 
+different from CrossEntropyLoss. The intuition here is that we want our similar vectors to be as close to 1 as possible, since
+-log(1) = 0, that’s the optimal loss. We want the negative examples to be close to 0 , since any non-zero values will reduce the value
+of similar vectors.
+
+	# Contrastive loss of the example values
+	# temp parameter
+		t = 0.07
+	# concatenated vector divided by the temp parameter
+		logits = np.concatenate(([pos_dot], neg_dot))/t
+	#e^x of the values
+		exp = np.exp(logits)
+	# we only need to take the log of the positive value over the sum of exp. 
+		loss = - np.log(exp[0]/np.sum(exp))
+		loss -> 4.9068650660314756e-05
+
+Contrastive loss, like triplet and magnet loss, is used to map vectors that model the similarity of input items.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Skewness test:
+
+If the skewness is between -0.5 and 0.5, the data are fairly symmetrical
+
+· If the skewness is between -1 and — 0.5 or between 0.5 and 1, the data are moderately skewed
+
+· If the skewness is less than -1 or greater than 1, the data are highly skewed
 
 
 
+Kurtosis test:
+
+ Kurtosis is one of the two measures that quantify shape of a distribution. kutosis determine the volume of the outlier
+
+· Kurtosis describes the peakedness of the distribution.
+
+· If the distribution is tall and thin it is called a leptokurtic distribution(Kurtosis > 3). Values in a leptokurtic distribution are near the mean or at the extremes.
+
+· A flat distribution where the values are moderately spread out (i.e., unlike leptokurtic) is called platykurtic(Kurtosis <3) distribution.
+
+· A distribution whose shape is in between a leptokurtic distribution and a platykurtic distribution is called a mesokurtic(Kurtosis=3) distribution. A mesokurtic distribution looks more close to a normal distribution.
+
+Mesokurtic distributions
+
+Mesokurtic distributions have kurtosis values close to that of a normal distribution. These distributions have a value of approximately 3 or an excess value near zero.
+When sample data have kurtosis values that are notably different from the normal distribution, it indicates that the population might not follow a normal distribution.
+
+Leptokurtic distributions – High Kurtosis
+
+ These distributions have heavy tails that are longer and contain more extreme values. In short, there is a greater tendency for outliers. They have values of greater than 3 or positive excess values (> 0).
+
+Platykurtic distributions – Low Kurtosis
+
+Platykurtic distributions have less kurtosis than the normal distribution. They have lighter tails that are shorter and contain fewer outliers. These distributions have values of less than 3 
+or negative excess values (< 0).
+
+
+https://statisticsbyjim.com/basics/kurtosis/
+https://github.com/manvendra7/Skewness-and-kurtosis
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Time Series Analysis and Forecasting:
+
+
+the difference between Multi and Univariate forecasting. The former uses only the previous values in time to forecast future values. The latter makes use 
+of different predictors other than the series itself.
+
+A useful abstraction for selecting forecasting methods is to break a time series down into systematic and unsystematic components.
+
+Systematic: Components of the time series that have consistency or recurrence and can be described and modeled.
+Non-Systematic: Components of the time series that cannot be directly modeled.
+A given time series is thought to consist of three systematic components including level, trend, seasonality, and one non-systematic component called noise.
+
+These components are defined as follows:
+
+Level: The average value in the series.
+Trend: The increasing or decreasing value in the series.
+Seasonality: The repeating short-term cycle in the series.
+Noise: The random variation in the series.
+
+It is helpful to think of the components as combining either additively or multiplicatively.
+
+
+An additive model suggests that the components are added together:
+	y(t) = Level + Trend + Seasonality + Noise
+	
+	A linear trend is a straight line. A linear seasonality has the same frequency (width of cycles) and amplitude (height of cycles).
+A additive model is linear where changes over time is consistently made by same amount.
+
+A multiplicative model suggests that the components are multiplied together as follows:
+
+	y(T) = level*trend*seasonality*Noise.
+
+A multiplicative model is non linear like quadratic or exponential. Changes decrease or increase over time. A non-linear trend is a curved line.
+
+A non-linear seasonality is a increasing or decreasing frequency and/or amplitude over time.
+
+Decomposition as a tool:
+
+	You may address it explicitly in terms of modeling the trend and subtracting it from your data, or implicitly by providing enough history for an algorithm 
+to model a trend if it may exist.
+
+	You may or may not be able to cleanly or perfectly break down your specific time series as an additive or multiplicative model. Real world problems are 
+messy and noisy. There may be additive or multiplicative components. There may be an increasing or decreasing trend followed. There may be non-repeating cycles
+mixed in with repeating seasonality components.
+
+	
+	The result object provides access to the trend and seasonal series as arrays. It also provides access to the residuals, 
+which are the time series after the trend, and seasonal components are removed. Finally, the original or observed data is also stored.
+
+	from statsmodels.tsa.seasonal import seasonal_decompose
+	series = ...
+	result = seasonal_decompose(series, model='additive')
+	print(result.trend)
+	print(result.seasonal)
+	print(result.resid)
+	print(result.observed)	
+	
+Multiplicative Decomposition
+
+	Exponential changes can be made linear by data transforms. In this case, a quadratic trend can be made linear by taking the square root. An exponential growth
+in seasonality may be made linear by taking the natural logarithm.
+
+	Again, it is important to treat decomposition as a potentially useful analysis tool, but to consider exploring the many different ways it could be applied for
+your problem, such as on data after it has been transformed or on residual model errors.
+	
+
+	
+White noise:
+
+White noise, by definition, is random data. A time series is white noise(random) if the variables are independent and identically distributed(i.i.d) with a mean 
+of zero. In other words, the time series has a mean μ = 0 and a constant standard deviation σ = c. Since our mean is well above zero, we can rest assured 
+that our data is not white noise.
+
+Since the definition of white noise implies randomness, you cannot model it and make predictions. Once you see white noise,
+do not continue with any predictive model!
+
+Arima is short for Auto-Regressive Integrated Moving Average, which is a forecasting algorithm based on the assumption
+that previous values carry inherent information and can be used to predict future values. time series that are univariate (one variable),
+linear, and non-seasonal, which are great candidates for regular ARIMA models.
+
+We can develop a predictive model to predict xt given past values., formally denoted as the following: p(xₜ | xₜ₋₁, … ,x₁)
+
+The ARIMA model takes in three parameters:
+
+1. p is the order of the AR term
+2. q is the order of the MA term
+3. d is the number of differencing
+
+Autoregressive AR and Moving average MA:
+
+a stationary time series has its statistical properties remain constant across time. So it is easier to model and make predictions based on such a series.
+it has no clear trend, and oscillates around a mean of 0 with constant variance.
+
+For different time series, we might be able to fit them with any of the combinations of the three components of ARIMA:
+
+AR (Auto-Regressive): the time series is linearly regressed on its own past values
+I (Integrated): if not stationary, the time series can be differenced to become stationary, i.e., 
+compute the differences between consecutive observations
+MA (Moving Average): the time series is ‘regressed’ on the past forecast errors
+
+Here is the relationship of these three components in ARIMA: AR and MA are two models that usually work on stationary time series
+– if the time series is not stationary, we can use the I part to make it stationary.
+
+ARIMA parameters p, d, q:
+
+	p: the number of past values included in the AR model
+	
+	d: the number of times the time series is differenced. For example, the first order differencing 
+	
+	q: the number of past forecast errors included in the MA model, or the size of the moving average window. 
+	It’s named the MA model since each yt can be considered as a weighted moving average of the past forecast errors
+
+
+Causation refers to a cause-and-effect relationship between two variables, where a change in one variable directly leads to a change in the other variable. 
+It implies that the presence or absence of one variable causes the presence or absence of the other variable.Correlation, on the other hand, measures the 
+statistical relationship between two variables, indicating how they tend to vary together. While correlation can help identify associations and patterns between
+variables, it does not imply a causal relationship. Here are a few reasons why correlation does not imply causation:
+
+Spurious correlation: Correlation can occur by chance or due to the influence of other variables that are not directly related. When two variables are correlated,
+it does not necessarily mean that changes in one variable cause changes in the other. There may be an underlying third factor or a combination of factors driving
+the observed correlation.
+
+Reverse causality: Correlation does not provide information about the direction of causality. It is possible for two variables to be correlated, but the causal 
+relationship may actually be the opposite of what is initially assumed.
+
+
+These models rely on the assumption that the statistical properties of the time series, such as mean, variance, and autocorrelation, remain constant over time. 
+If the data is non-stationary, the statistical properties may change over time, making it difficult to make accurate predictions.
+
+A non-stationary time series may have a trend, meaning that the mean or the level of the series changes over time, or it may have a seasonality component,
+where the patterns in the data repeat at regular intervals. In addition, a non-stationary time series may exhibit autocorrelation, where the correlation between
+observations at different time points is not constant over time.
+
+By transforming a non-stationary time series into a stationary time series, we can apply statistical models that assume stationarity, which can provide more
+accurate predictions. Common techniques to transform non-stationary time series into stationary time series include differencing and detrending.	
+
+ACF and PACF plots:
+
+ACF is straightforward to measure. But in reality, the relationships among lags are more complicated. For example, we can assume that yt and yt-1 are correlated, 
+and yt-1 and yt-2 are also correlated. Due to their correlations with yt-1, yt and yt-2 must also be correlated. How can we measure if there is new information
+in yt-2 to predict yt, besides their relationships with yt-1?
+
+That’s why we need another definition called partial autocorrelations. The PACF (partial autocorrelation function) shows the partial correlation of the time series
+with its lags, after removing the effects of lower-order-lags between them. For example, the partial autocorrelation of yt and yt-k is the correlation that is not
+explained by their relationships with the lags yt-1, yt-2, …, yt-k+1. It measures the balance amount of variance in yt-k to predict the future value of yt.
+
+
+Plotting the partial autocorrelation function and drawing the lines of the confidence interval is a common way to analyze the order of an AR model. To evaluate the order,
+one examines the plot to find the lag after which the partial autocorrelations are all within the confidence interval. This lag is determined to likely be the AR
+model's order
+
+Medium Article for ACF:
+https://medium.com/@krzysztofdrelczuk/acf-autocorrelation-function-simple-explanation-with-python-example-492484c32711
 
 
 
+Time Series Decomposition:
+
+	Time Series data exhibit a variety of patterns and mainly shows three patterns: trend, seasonality and cycles. we usually combine trend and cycle into a single
+component called as the trend-cycle component(sometimes called as the trend). thus the time series comprises of three components: a trend-cycle component, a seasonal
+component, and a remainder component(anything else). 
+
+		yt = St+ Tt+ Rt  (additive decomposition) or yt = St*Rt*Tt 
+		
+		where St = seasonal component, Tt = Trend cycle component, Rt = remainder component. 
+		
+    The additive decomposition is appropriate when the magnitude of seasonal fluctuations or variation around the trend cycle does not vary with the level of the 
+time series.When the variation in the seasonal pattern, or the variation around the trend-cycle, appears to be proportional to the level of the time series, then
+a multiplicative decomposition is more appropriate. Multiplicative decompositions are common with economic time series.
+
+Seasonally Adjusted Data:
+
+	If the seasonal component is removed from the original data, the resulting values are the "Seasonally adjusted data". yt-St gives for additive decomposition.
+yt/St represents multiplicative seasonal decomposition. 
+
+	If the variation due to seasonality is not of primary interest, the seasonally adjusted series can be useful. For example, monthly unemployment data are usually
+seasonally adjusted in order to highlight variation due to the underlying state of the economy rather than the seasonal variation. An increase in unemployment due 
+to school leavers seeking work is seasonal variation, while an increase in unemployment due to an economic recession is non-seasonal. Most economic analysts who 
+study unemployment data are more interested in the non-seasonal variation. Consequently, employment data (and many other economic series) are usually seasonally 
+adjusted.
+	
+	Seasonally adjusted series contain the remainder component as well as the trend-cycle. Therefore, they are not “smooth”, and “downturns” or “upturns” can be 
+misleading. If the purpose is to look for turning points in a series, and interpret any changes in direction, then it is better to use the trend-cycle component 
+rather than the seasonally adjusted data.
 
 
+Moving Average(taking average over a window of length k):
+
+The first step in a classical decomposition is to use a moving average method to estimate the trend-cycle. A moving average of order m is written as:
+
+		Tt = 1/m * Summ(-k to k)yt+j.
+		
+where m = 2k + 1. that is the estimate of the trend-cycle at time t is obtained by averaging the values of the time series within k periods of time t. Observations
+that are nearby in time are likely to be closer in value. the averaging eliminates the randomness in the data leaving a smooth trend-cycle component.which is called
+as moving average of order m(m-MA).
+
+The order of the moving average determines the smoothness of the trend-cycle estimate. In general, a larger order means a smoother curve.
+
+Moving averages of moving averages:
+
+	It is possible to apply a moving average to a moving average. One reason for doing this is to make an even-order moving average symmetric. For example, 
+we might take a moving average of order 4, and then apply another moving average of order 2 to the results.
+
+	When a 2-MA follows a moving average of an even order (such as 4), it is called a “centred moving average of order 4”.
+This is because the results are now symmetric.It is now a weighted average of observations that is symmetric. In general, 
+an even order MA should be followed by an even order MA to make it symmetric. Similarly, an odd order MA should be followed by an odd order MA.
 
 
+Estimating the trend-cycle with seasonal data:
+
+	The most common use of centred moving averages is for estimating the trend-cycle from seasonal data. Consider the  
+2× 4 -MA.
+
+	Tt = 1/8*(yt-2) + 1/4*(yt-1) + 1/4*(yt) + 1/4*(yt+1) + 1/8*(yt+2).
+	
+	When applied to quarterly data, each quarter of the year is given equal weight as the first and last terms apply to the same quarter in consecutive years.
+Consequently, the seasonal variation will be averaged out and the resulting values of ^Tt will have little or no seasonal variation remaining. A similar effect
+would be obtained using a  2×8 -MA or a  2×12 -MA to quarterly data.
+
+	In general, a  2×m-MA is equivalent to a weighted moving average of order  m+1 where all observations take the weight  
+1/m, except for the first and last terms which take weights  1/(2m). So, if the seasonal period is even and of order  m, we use a  2×m -MA to estimate the
+trend-cycle. If the seasonal period is odd and of order  m, we use a  m-MA to estimate the trend-cycle. For example, a  2×12-MA can be used to estimate the 
+trend-cycle of monthly data and a 7-MA can be used to estimate the trend-cycle of daily data with a weekly seasonality.
+
+Other choices for the order of the MA will usually result in trend-cycle estimates being contaminated by the seasonality in the data.
 
 
+Weighted moving averages
 
+	Combinations of moving averages result in the weighted moving averages. For example the 2*4 MA is discussed above is equivalent to the weighted 5-MA with the 
+weights given by [1/8,1/4,1/4,1/4,1/8]. In general, a weighted m-MA is written as:
 
-
-
-
-
-
-
-
-
-
-
-
+		Tt = Summ{aj*y}
